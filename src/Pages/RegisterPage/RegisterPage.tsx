@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './RegisterPage.css';
+import ComboboxSeguro from '../../Components/ComboBox/ComboboxSeguro.tsx';
 
 
 function RegisterPage(){
@@ -58,9 +59,17 @@ function RegisterPage(){
                                 />
                             </div>
                         </div>
-                            <div className="Campo-Grupo">
+                        <div className="Campo-Grupo" style={{ width: '100%', marginTop: '5px' }}>
                             <label>Seguro Médico / Previsión:</label>
-                            </div>
+                            <ComboboxSeguro 
+                                value={seguroMedico} 
+                                onChange={(valor) => setSeguroMedico(valor)} 
+                            />
+                        </div>
+
+                        <button className='Boton-RegisterPage'>
+                            Iniciar Sesion
+                        </button>
                     </form>
                 </div>
             </div>
