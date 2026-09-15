@@ -1,0 +1,125 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: sans-serif;
+    min-height: 100vh;
+    background-color: #FFFFFF;
+}
+
+.Contenedor-Centrado{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 100vw;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.Contenedor-LoginPage{
+    width: 30%;
+    height: 60dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ContenedorTexto-LoginPage{
+    width: 100%;
+    height: 15dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.ContenedorTexto-LoginPage h1{
+    color: #1E9CF1;
+    font-size: 40px;
+}
+
+.ContenedorTexto-LoginPage p{
+    color: black;
+    font-size: 20px;
+}
+
+.ContenedorFormulario-LoginPage{
+    width: 100%;
+    height: 45dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ContenedorFormulario-LoginPage form{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+.ContenedorFormulario-LoginPage label{
+    width: 75%;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.ContenedorFormulario-LoginPage input{
+    width: 75%;
+    height: 40px;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    border: 1px solid #E1EAEF;
+    outline: none;
+    box-sizing: border-box;
+    padding: 0 20px;
+}
+
+.ContenedorFormulario-LoginPage input:focus{
+    border: 1px solid #1E9CF1;
+}
+
+.Boton-LoginPage{
+    width: 40%;
+    height: 50px;
+    background-color: #1E9CF1;
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    margin-top: 40px;
+}
+
+.Boton-LoginPage:hover{
+    background-color: #4dabe9;
+}
+
+
+.Texto-Registro{
+    width: 70%;
+    text-align: left;
+    margin-top: 20px;
+}
+
+.Texto-Registro a{
+    color: #1E9CF1;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.Texto-Registro a:hover {
+  text-decoration: underline;
+}
