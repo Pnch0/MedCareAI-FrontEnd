@@ -31,7 +31,7 @@ function LoginPage(){
                         />
 
                         <p className="Texto-Registro">
-                            ¿No tienes cuenta? <Link to="/registro">Haz clic aquí para crearla</Link>
+                            ¿No tienes cuenta? <Link to="/register-page">Haz clic aquí para crearla</Link>
                         </p>
 
                         <button className='Boton-LoginPage'>

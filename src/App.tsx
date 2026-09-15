@@ -3,6 +3,7 @@ import { Toaster } from 'sonner';
 import { ProtectedRoute, PublicRoute } from './Components/Routes/ProtectedRoutes.tsx';
 import MainLayout from './Components/Layouts/MainLayout/MainLayout.tsx';
 import LoginPage from './Pages/LoginPage/LoginPage.tsx';
+import RegisterPage from './Pages/RegisterPage/RegisterPage.tsx';
 
 function App() {
 
@@ -19,6 +20,7 @@ function App() {
         <Routes>
           <Route element={<PublicRoute />}>
             <Route path="/" element={<LoginPage />} />
+            <Route path="/register-page" element={<RegisterPage />} />
           </Route>
 
           <Route element={<ProtectedRoute />}>

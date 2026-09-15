@@ -1,0 +1,113 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: sans-serif;
+    min-height: 100vh;
+    background-color: #FFFFFF;
+}
+
+.Contenedor-Centrado{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 100vw;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.Contenedor-RegisterPage{
+    width: 30%;
+    height: 65dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ContenedorTexto-RegisterPage{
+    width: 100%;
+    height: 15dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.ContenedorTexto-RegisterPage h1{
+    color: #1E9CF1;
+    font-size: 40px;
+}
+
+.ContenedorTexto-RegisterPage p{
+    color: black;
+    font-size: 20px;
+}
+
+
+.ContenedorFormulario-RegisterPage{
+    width: 100%;
+    height: 50dvh;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ContenedorFormulario-RegisterPage form{
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+    gap: 20px;
+}
+
+.Fila-Doble {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 15px;
+}
+
+.Campo-Grupo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+    
+
+.Campo-Grupo label {
+    margin-bottom: 15px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+}
+
+.Campo-Grupo input {
+    width: 90%;
+    height: 40px;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    border: 1px solid #E1EAEF;
+    outline: none;
+    box-sizing: border-box;
+    padding: 0 12px;
+}
+
+.Campo-Grupo input:focus {
+    border: 1px solid #1E9CF1;
+}
+
+
+
+
