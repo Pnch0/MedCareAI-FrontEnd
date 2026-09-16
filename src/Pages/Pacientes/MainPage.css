@@ -1,0 +1,177 @@
+body {
+    font-family: sans-serif;
+    min-height: 100vh;
+    background-color: #FFFFFF;
+    box-sizing: border-box;
+}
+
+
+.Contenedor-Navbar{
+    width: 100%;
+    height: 12dvh;
+    background-color: #1E9CF1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 80px;
+    padding-right: 50px;
+
+}
+
+.Boton-Reserva{
+    height: 50px;
+    padding: 0px 20px;
+    background-color: #FFFFFF;
+    outline: none;
+    border: 1px solid #1E9CF1;
+    cursor: pointer;
+    color: #1E9CF1;
+    font-weight: bold;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.Boton-Usuario{
+    background-color: transparent;
+    outline: none;
+    border: none;
+    cursor: pointer;
+}
+
+.Icono-Usuario{
+    font-size: 50px;
+    color: #FFFFFF;
+}
+
+.Contenedor-ImagenPrincipal{
+    width: 75%;
+    height: 65dvh;
+    margin: auto;
+    margin-top: 40px;
+    border-radius: 10px;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+}
+
+.Contenedor-SobreNosotros{
+    width: 80%;
+    height: 55dvh;
+    margin: auto;
+    margin-top: 125px;
+    display: flex;
+    flex-direction: row;
+    gap: 50px;
+}
+
+.ContenedorTexto-SobreNosotros{
+    width: 50%;
+    height: 55dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.Contenedor-TextoSuperior{
+    width: 100%;
+    height: 20dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+.Contenedor-TextoSuperior h1, h3, p{
+    margin-bottom: 10px;
+}
+
+.Contenedor-TextoSuperior h1{
+    color: #1E9CF1;
+}
+
+.ContenedorImagen-SobreNosotros{
+    width: 50%;
+    height: 55dvh;
+    background-color: #F7F8F8;
+    border-radius: 10px;
+    border: 1px solid #E1EAEF;
+
+}
+
+.Contenedor-TextoInferior{
+    width: 100%;
+    height: 35dvh;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.Contenedor-Izquierda, .Contenedor-Derecha{
+    width: 40%;
+    height: 35dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+.Contenedor-Numero{
+    width: 100%;
+    height: 10dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 35px;
+    font-weight: bold;
+    color: #1E9CF1;
+}
+
+.Contenedor-Texto{
+    width: 100%;
+    height: 25dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;  
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+
+.Contenedor-AgendaHoras{
+    width: 40%;
+    height: 20dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: auto;
+    margin-top: 120px;
+    margin-bottom: 80px;
+}
+
+.Contenedor-AgendaHoras h2{
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.Contenedor-AgendaHoras p{
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.Contenedor-AgendaHoras button{
+    background-color: #1E9CF1;
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: bold;
+    height: 50px;
+    padding: 0 25px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.Contenedor-AgendaHoras button:hover{
+    background-color: #4dabe9;
+}

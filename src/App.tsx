@@ -4,6 +4,7 @@ import { ProtectedRoute, PublicRoute } from './Components/Routes/ProtectedRoutes
 import MainLayout from './Components/Layouts/MainLayout/MainLayout.tsx';
 import LoginPage from './Pages/LoginPage/LoginPage.tsx';
 import RegisterPage from './Pages/RegisterPage/RegisterPage.tsx';
+import MainPage from './Pages/Pacientes/MainPage.tsx';
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
           <Route element={<PublicRoute />}>
             <Route path="/" element={<LoginPage />} />
             <Route path="/register-page" element={<RegisterPage />} />
+            <Route path="/main-page-paciente" element={<MainPage />} />
           </Route>
 
           <Route element={<ProtectedRoute />}>
