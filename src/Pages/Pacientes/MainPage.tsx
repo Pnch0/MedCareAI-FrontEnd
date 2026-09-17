@@ -1,14 +1,20 @@
+import { useState } from 'react';
 import './MainPage.css';
 import { FaUserCircle } from "react-icons/fa";
 import { Contador } from '../../Components/Contador/Contador.tsx'
+import { ModalReserva } from '../../Components/ModalReserva/ModalReserva.tsx';
 
 
 function MainPage(){
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+    const openModal = () => setIsModalOpen(true);
+    const closeModal = () => setIsModalOpen(false);
 
     return(
         <>
         <div className="Contenedor-Navbar">
-            <button className='Boton-Reserva'>
+            <button className='Boton-Reserva' onClick={openModal}>
                 Reservar Hora
             </button>
             <button className='Boton-Usuario'>
@@ -56,10 +62,12 @@ function MainPage(){
         <div className="Contenedor-AgendaHoras">
             <h2>Agenda tu atención hoy mismo</h2>
             <p>No postergues el cuidado de tu salud ni el de tu familia. Te invitamos a reservar tu cita médica en simples pasos: elige el especialista que necesitas, selecciona el horario que mejor se adapte a tu rutina y asegura tu atención sin filas ni demoras. Estamos listos para brindarte el cuidado y la dedicación que mereces.</p>
-            <button>
+            <button onClick={openModal}>
                 Agenda tu Cita
             </button>
         </div>
+
+        <ModalReserva isOpen={isModalOpen} onClose={closeModal} />
         </>
     )
 }
