@@ -6,7 +6,7 @@ interface CounterProps {
   prefix?: string;
 }
 
-export const Counter: React.FC<CounterProps> = ({ target, duration = 2000, prefix = "+" }) => {
+export const Contador: React.FC<CounterProps> = ({ target, duration = 2000, prefix = "+" }) => {
   const [count, setCount] = useState<number>(0);
   const elementRef = useRef<HTMLSpanElement | null>(null);
   const hasAnimated = useRef<boolean>(false);

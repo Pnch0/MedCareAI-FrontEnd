@@ -1,5 +1,6 @@
 import './MainPage.css';
 import { FaUserCircle } from "react-icons/fa";
+import { Contador } from '../../Components/Contador/Contador.tsx'
 
 
 function MainPage(){
@@ -29,7 +30,7 @@ function MainPage(){
                 <div className="Contenedor-TextoInferior">
                     <div className="Contenedor-Izquierda">
                         <div className="Contenedor-Numero">
-                            +20000
+                            <Contador target={20000} duration={2500} prefix="+" />
                         </div>
                         <div className="Contenedor-Texto">
                             <h3>Pacientes Atendidos</h3>
@@ -38,7 +39,7 @@ function MainPage(){
                     </div>
                     <div className="Contenedor-Derecha">
                         <div className="Contenedor-Numero">
-                            +15
+                            <Contador target={15} duration={1800} prefix="+" />
                         </div>
                         <div className="Contenedor-Texto">
                             <h3>Especialistas Médicos</h3>
