@@ -192,3 +192,37 @@
 .Nav-Button:hover {
     background-color: #e0e0e0;
 }
+
+.Sintomas-Container {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #E1EAEF;
+}
+
+
+.Sintomas-Textarea {
+    width: 100%;
+    min-height: 80px;
+    max-height: 150px;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #333;
+    resize: vertical;
+    box-sizing: border-box;
+    transition: all 0.2s;
+}
+
+.Sintomas-Textarea:focus {
+    outline: none;
+    border-color: #1E9CF1;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(30, 156, 241, 0.2);
+}
+
+.Sintomas-Textarea::placeholder {
+    color: #a0aab2;
+}

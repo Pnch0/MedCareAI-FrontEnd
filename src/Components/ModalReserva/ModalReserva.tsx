@@ -15,10 +15,9 @@ interface DayInfo {
 export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose }) => {
     const [baseDate, setBaseDate] = useState<Date>(new Date());
     const [days, setDays] = useState<DayInfo[]>([]); 
-    
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [selectedTime, setSelectedTime] = useState<string>('12:00');
-
+    const [sintomas, setSintomas] = useState<string>('');
     const times = ['07:00', '08:00', '09:00', '09:30', '10:00', '11:00', '12:00'];
     const dayNames = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
 
@@ -85,6 +84,15 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose }) =
         return `${day} ${month}, ${year}`;
     };
 
+    const handleReservar = () => {
+        console.log("Reserva confirmada:", {
+            fecha: selectedDay,
+            hora: selectedTime,
+            sintomas: sintomas
+        });
+        onClose();
+    };
+
     return (
         <div className="Modal-Overlay" onClick={onClose}>
             <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
@@ -135,6 +143,17 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose }) =
                                 </button>
                             ))}
                         </div>
+
+                        <div className="Sintomas-Container">
+                            <h4 className="Modal-Subtitle">Describe tus síntomas (Opcional):</h4>
+                            <textarea 
+                                className="Sintomas-Textarea" 
+                                placeholder="Ej: Tengo dolor de cabeza desde hace 3 días, fiebre por las noches y cansancio general..."
+                                value={sintomas}
+                                onChange={(e) => setSintomas(e.target.value)}
+                            />
+                        </div>
+
                     </div>
 
                     <div className="Modal-Panel Derecho">
@@ -143,7 +162,7 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose }) =
                             <p><strong>Dia:</strong> {formatSummaryDate(selectedDay)}</p>
                             <p><strong>Hora:</strong> {selectedTime} {parseInt(selectedTime) >= 12 ? 'PM' : 'AM'}</p>
                         </div>
-                        <button className="Boton-Reservar-Final" onClick={onClose}>
+                        <button className="Boton-Reservar-Final" onClick={handleReservar}>
                             Reservar
                         </button>
                     </div>
