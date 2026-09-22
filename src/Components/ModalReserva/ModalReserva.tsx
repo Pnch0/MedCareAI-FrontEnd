@@ -16,14 +16,11 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose }) =
     const [baseDate, setBaseDate] = useState<Date>(new Date());
     const [days, setDays] = useState<DayInfo[]>([]); 
     
-
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [selectedTime, setSelectedTime] = useState<string>('12:00');
 
-    // Mantenemos tus constantes
     const times = ['07:00', '08:00', '09:00', '09:30', '10:00', '11:00', '12:00'];
     const dayNames = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
-
 
     useEffect(() => {
         const current = new Date(baseDate);
@@ -51,7 +48,6 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose }) =
 
     if (!isOpen) return null;
 
-
     const nextWeek = () => {
         const newDate = new Date(baseDate);
         newDate.setDate(baseDate.getDate() + 7);
@@ -62,6 +58,22 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose }) =
         const newDate = new Date(baseDate);
         newDate.setDate(baseDate.getDate() - 7);
         setBaseDate(newDate);
+    };
+
+    const nextMonth = () => {
+        const newDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 1);
+        setBaseDate(newDate);
+    };
+
+    const prevMonth = () => {
+        const newDate = new Date(baseDate.getFullYear(), baseDate.getMonth() - 1, 1);
+        setBaseDate(newDate);
+    };
+
+    const getDisplayMonthYear = () => {
+        const monthName = baseDate.toLocaleString('es-ES', { month: 'long' });
+        const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+        return `${capitalizedMonth} ${baseDate.getFullYear()}`;
     };
 
     const formatSummaryDate = (date: Date | null) => {
@@ -80,13 +92,19 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose }) =
                 
                 <div className="Modal-Body">
                     <div className="Modal-Panel Izquierdo">
-                        <div className="Week-Header">
-                            <h4 className="Modal-Subtitle">Seleccione Dia:</h4>
-                            <div className="Week-Navigation">
-                                <button onClick={prevWeek} className="Nav-Button">◀ Ant</button>
-                                <button onClick={nextWeek} className="Nav-Button">Sig ▶</button>
-                            </div>
+                        
+                        <div className="Month-Container">
+                            <button onClick={prevMonth} className="Nav-Button">◀</button>
+                            <span className="Month-Label">{getDisplayMonthYear()}</span>
+                            <button onClick={nextMonth} className="Nav-Button">▶</button>
                         </div>
+
+                        <div className="Week-Container">
+                            <button onClick={prevWeek} className="Nav-Button">◀ Semana Anterior</button>
+                            <button onClick={nextWeek} className="Nav-Button">Semana Siguiente ▶</button>
+                        </div>
+
+                        <h4 className="Modal-Subtitle">Seleccione Dia:</h4>
 
                         <div className="Days-Grid">
                             {days.map((day, index) => {

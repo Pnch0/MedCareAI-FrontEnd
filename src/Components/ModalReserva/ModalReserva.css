@@ -120,7 +120,6 @@
     color: white;
 }
 
-
 .Image-Placeholder {
     width: 100%;
     height: 120px;
@@ -152,20 +151,30 @@
     background-color: #3b8ce0;
 }
 
-.Week-Header {
+
+.Month-Container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #E1EAEF; 
+}
+
+.Month-Label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    min-width: 150px;
+    text-align: center;
+}
+
+.Week-Container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-}
-
-.Week-Header .Modal-Subtitle {
-    margin-bottom: 0;
-}
-
-.Week-Navigation {
-    display: flex;
-    gap: 8px;
+    margin-bottom: 15px; 
 }
 
 .Nav-Button {
