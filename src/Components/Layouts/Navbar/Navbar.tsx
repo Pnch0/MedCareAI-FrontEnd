@@ -4,7 +4,7 @@ function Navbar(){
 
     return(
         <>
-            <div className="Contenedor-Navbar">
+            <div className="Contenedor-NavbarPrincipal">
                 
             </div>
         </>
