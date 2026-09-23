@@ -18,7 +18,7 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose }) =
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [selectedTime, setSelectedTime] = useState<string>('12:00');
     const [sintomas, setSintomas] = useState<string>('');
-    const times = ['07:00', '08:00', '09:00', '09:30', '10:00', '11:00', '12:00'];
+    const times = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
     const dayNames = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
 
     useEffect(() => {
