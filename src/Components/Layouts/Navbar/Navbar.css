@@ -1,5 +1,86 @@
 .Contenedor-NavbarPrincipal{
-    width: 20%;
+    width: 18%;
     height: 100dvh;
-    background-color: rebeccapurple;
+    background-color: #1E9CF1;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.Contenedor-PaginasNavbar{
+    width: 100%;
+    height: 85dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding-left: 20px;
+}
+
+.Contenedor-PaginasNavbar ul{
+    margin: 0;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.Contenedor-PaginasNavbar li{
+    list-style: none;
+    width: 100%; 
+    display: flex;
+    align-items: center;
+}
+
+.nav-item{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    text-decoration: none;
+    color: #FFFFFF;
+    font-size: 20px;
+    gap: 15px;
+}
+
+
+.Icono-NavbarPrincipal{
+    font-size: 45px;
+    color: #FFFFFF;
+}
+
+
+.Contenedor-NombreNavbar{
+    width: 100%;
+    height: 15dvh;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px;
+    gap: 20px;
+}
+
+.Contenedor-InicialesNombre{
+    width: 80px;
+    height: 80px;
+    background-color: #FFFFFF;
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1E9CF1;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.Contenedor-Nombre{
+    width: 100%;
+    height: 15dvh;
+    display: flex;
+    align-items: center;
+    color: #FFFFFF;
+    font-size: 24px;
+    font-weight: bold;
 }

@@ -2,7 +2,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: row;
-  background-color: #050406;
+  background-color: #FFFFFF;
 }
 
 .Content {
@@ -10,7 +10,7 @@
   padding: 2rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
   width: 100%;
   overflow-y: auto;
+  margin: 20px;
 }
