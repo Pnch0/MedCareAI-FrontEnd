@@ -1,25 +1,28 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: sans-serif;
     min-height: 100vh;
     background-color: #FFFFFF;
-    box-sizing: border-box;
 }
 
-
-.Contenedor-Navbar{
+.Contenedor-Navbar {
     width: 100%;
-    height: 12dvh;
+    min-height: 80px;
     background-color: #1E9CF1;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
-    gap: 80px;
-    padding-right: 50px;
-
+    gap: 40px;
+    padding: 15px 50px;
 }
 
-.Boton-Reserva{
+.Boton-Reserva {
     height: 50px;
     padding: 0px 20px;
     background-color: #FFFFFF;
@@ -30,148 +33,214 @@ body {
     font-weight: bold;
     border-radius: 10px;
     font-size: 16px;
+    transition: all 0.3s;
 }
 
-.Boton-Usuario{
+.Boton-Reserva:hover {
+    background-color: #f0f8ff;
+}
+
+.Boton-Usuario {
     background-color: transparent;
     outline: none;
     border: none;
     cursor: pointer;
+    display: flex;
+    align-items: center;
 }
 
-.Icono-Usuario{
+.Icono-Usuario {
     font-size: 50px;
     color: #FFFFFF;
 }
 
-.Contenedor-ImagenPrincipal{
-    width: 75%;
-    height: 65dvh;
-    margin: auto;
-    margin-top: 40px;
+.Contenedor-ImagenPrincipal {
+    width: 80%;
+    height: 60vh;
+    aspect-ratio: 16 / 9;
+    margin: 40px auto 0;
     border-radius: 10px;
     background-color: #F7F8F8;
     border: 1px solid #E1EAEF;
 }
 
-.Contenedor-SobreNosotros{
+
+.Contenedor-SobreNosotros {
     width: 80%;
-    height: 55dvh;
-    margin: auto;
-    margin-top: 125px;
+    margin: 120px auto;
     display: flex;
     flex-direction: row;
     gap: 50px;
-}
-
-.ContenedorTexto-SobreNosotros{
-    width: 50%;
-    height: 55dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
 }
 
-.Contenedor-TextoSuperior{
-    width: 100%;
-    height: 20dvh;
+.ContenedorTexto-SobreNosotros {
+    width: 50%;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    gap: 30px;
 }
 
-.Contenedor-TextoSuperior h1, h3, p{
+.Contenedor-TextoSuperior h1, 
+.Contenedor-TextoSuperior h3, 
+.Contenedor-TextoSuperior p {
     margin-bottom: 10px;
 }
 
-.Contenedor-TextoSuperior h1{
+.Contenedor-TextoSuperior h1 {
     color: #1E9CF1;
 }
 
-.ContenedorImagen-SobreNosotros{
-    width: 50%;
-    height: 55dvh;
+.ContenedorImagen-SobreNosotros {
+    width: 40%;
+    min-height: 300px;
     background-color: #F7F8F8;
     border-radius: 10px;
     border: 1px solid #E1EAEF;
-
 }
 
-.Contenedor-TextoInferior{
+
+.Contenedor-TextoInferior {
     width: 100%;
-    height: 35dvh;
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: space-evenly;
+    gap: 20px;
 }
 
-.Contenedor-Izquierda, .Contenedor-Derecha{
-    width: 40%;
-    height: 35dvh;
+.Contenedor-Izquierda, .Contenedor-Derecha {
+    width: 35%;
     display: flex;
     flex-direction: column;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
 }
 
-.Contenedor-Numero{
-    width: 100%;
-    height: 10dvh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.Contenedor-Numero {
     font-size: 35px;
     font-weight: bold;
     color: #1E9CF1;
-}
-
-.Contenedor-Texto{
-    width: 100%;
-    height: 25dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-around;
-    background-color: #F7F8F8;
-    border: 1px solid #E1EAEF;  
-    text-align: center;
-    padding: 10px;
-    border-radius: 10px;
-}
-
-
-.Contenedor-AgendaHoras{
-    width: 40%;
-    height: 20dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: auto;
-    margin-top: 120px;
-    margin-bottom: 80px;
-}
-
-.Contenedor-AgendaHoras h2{
-    font-size: 28px;
     margin-bottom: 10px;
 }
 
-.Contenedor-AgendaHoras p{
-    text-align: center;
-    margin-bottom: 40px;
+.Contenedor-Texto {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.Contenedor-AgendaHoras button{
+
+.Contenedor-AgendaHoras {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 80px auto;
+    text-align: center;
+}
+
+.Contenedor-AgendaHoras h2 {
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.Contenedor-AgendaHoras p {
+    margin-bottom: 30px;
+}
+
+.Contenedor-AgendaHoras button {
     background-color: #1E9CF1;
     color: #FFFFFF;
     font-size: 20px;
     font-weight: bold;
     height: 50px;
-    padding: 0 25px;
+    padding: 0 30px;
     border: none;
     outline: none;
     cursor: pointer;
     border-radius: 10px;
+    transition: background-color 0.3s;
 }
 
-.Contenedor-AgendaHoras button:hover{
+.Contenedor-AgendaHoras button:hover {
     background-color: #4dabe9;
+}
+
+/* MEDIA QUERIES */
+
+@media (max-width: 1100px) {
+    .Contenedor-SobreNosotros {
+        flex-direction: column;
+        width: 90%;
+        gap: 40px;
+    }
+
+    .ContenedorTexto-SobreNosotros,
+    .ContenedorImagen-SobreNosotros {
+        width: 100%;
+    }
+
+    .ContenedorImagen-SobreNosotros {
+        min-height: 400px; 
+    }
+
+    .Contenedor-TextoInferior {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .Contenedor-Izquierda, .Contenedor-Derecha {
+        width: 48%;
+    }
+
+    .Contenedor-AgendaHoras {
+        width: 80%;
+    }
+}
+
+
+@media (max-width: 600px) {
+    .Contenedor-Navbar {
+        padding: 15px 20px;
+        gap: 20px;
+    }
+
+    .Boton-Reserva {
+        font-size: 14px;
+        padding: 0 15px;
+    }
+
+    .Icono-Usuario {
+        font-size: 40px;
+    }
+
+    .Contenedor-ImagenPrincipal {
+        width: 90%;
+        min-height: 30vh;
+    }
+
+
+    .Contenedor-TextoInferior {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .Contenedor-Izquierda, .Contenedor-Derecha {
+        width: 100%;
+    }
+
+    .Contenedor-AgendaHoras {
+        width: 95%;
+        margin: 60px auto;
+    }
+    
+    .Contenedor-AgendaHoras h2 {
+        font-size: 24px;
+    }
 }
