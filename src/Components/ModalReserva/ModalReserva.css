@@ -226,3 +226,83 @@
 .Sintomas-Textarea::placeholder {
     color: #a0aab2;
 }
+
+
+/* MEDIA QUERIES */
+
+@media (max-width: 850px) {
+    .Modal-Content {
+        padding: 25px;
+        width: 95%; 
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .Modal-Body {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .Izquierdo, .Derecho {
+        flex: none;
+        width: 100%;
+    }
+
+    .Derecho {
+        margin-top: 10px; 
+    }
+
+    .Boton-Reservar-Final {
+        margin-top: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .Modal-Content {
+        padding: 15px;
+    }
+
+    .Modal-Title {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .Modal-Panel {
+        padding: 15px;
+    }
+
+    .Month-Container {
+        gap: 10px;
+    }
+
+    .Month-Label {
+        min-width: 120px;
+        font-size: 14px;
+    }
+
+    .Days-Grid {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .Day-Button {
+        flex: 1 1 18%;
+        padding: 8px 2px;
+    }
+
+    .Times-Grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+}
+
+
+@media (max-width: 400px) {
+    .Times-Grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .Day-Button {
+        flex: 1 1 30%;
+    }
+}
