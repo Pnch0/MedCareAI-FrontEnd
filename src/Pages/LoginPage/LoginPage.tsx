@@ -1,8 +1,25 @@
 import './LoginPage.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+
 
 
 function LoginPage(){
+
+    const navigate = useNavigate();
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const rolSimulado = 'medico'; 
+
+
+        localStorage.setItem('userRole', rolSimulado);
+        if (rolSimulado === 'medico') {
+            navigate('/home-page-medico');
+        } else {
+            navigate('/main-page-paciente');
+        }
+    };
 
     return(
         <>
@@ -13,7 +30,7 @@ function LoginPage(){
                     <p>Inicia sesión con sus datos</p>
                 </div>
                 <div className="ContenedorFormulario-LoginPage">
-                    <form>
+                    <form onSubmit={handleLogin}>
                         <label htmlFor="RUT">RUT:</label>
                         <input 
                         type="text" 

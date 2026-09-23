@@ -5,6 +5,7 @@ import MainLayout from './Components/Layouts/MainLayout/MainLayout.tsx';
 import LoginPage from './Pages/LoginPage/LoginPage.tsx';
 import RegisterPage from './Pages/RegisterPage/RegisterPage.tsx';
 import MainPage from './Pages/Pacientes/MainPage.tsx';
+import HomePageMedico from './Pages/Medicos/HomePage/HomePage.tsx';
 
 function App() {
 
@@ -27,6 +28,7 @@ function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route element={<MainLayout />}>
+            <Route path="/home-page-medico" element={<HomePageMedico />} />
 
             </Route>
           </Route>
