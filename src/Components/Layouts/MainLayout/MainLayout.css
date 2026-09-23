@@ -7,10 +7,8 @@
 
 .Content {
   flex: 1;
-  padding: 2rem;
   display: flex;
   flex-direction: column;
   width: 100%;
   overflow-y: auto;
-  margin: 20px;
 }

@@ -1,0 +1,147 @@
+
+
+.ContenedorPrincipal-HomeMedico{
+    width: 100%;
+    height: 100dvh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.ContenedorNombre-HomeMedico{
+    width: 100%;
+    height: 20dvh;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    color: #1E9CF1;
+}
+
+.Contenedor-DashboardMedico{
+    width: 100%;
+    height: 80dvh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 30px;
+}
+
+
+.ContenedorDarboard-Izquierda{
+    width: 65%;
+    height: 80dvh;
+}
+
+.Contenedor-AgendaMedico{
+    width: 100%;
+    height: 80dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 25px;
+}
+
+.Contenedor-EncabezadoAgenda{
+    width: 100%;
+    height: 12dvh;
+    border-radius: 25px 25px 0px 0px;
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    font-size: 20px;
+    color: #1E9CF1;
+    border-bottom: 1px solid #E1EAEF;
+}
+
+
+.ContenedorDarboard-Derecha{
+    width: 30%;
+    height: 80dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+}
+
+.Contenedor-ResumenClinico{
+    width: 100%;
+    height: 39dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+}
+
+.Titulo-ResumenClinico{
+    width: 100%;
+    height: 10dvh;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1E9CF1;
+    font-size: 20px;
+}
+
+.ContenedorListado-ResumenClinico{
+    width: 90%;
+    height: 26dvh;
+    margin: auto;
+    border-radius: 15px;
+    border: 1px solid #E1EAEF;
+    background-color: #FFFFFF;
+    padding: 20px;
+}
+
+.ContenedorListado-ResumenClinico h3{
+    font-size: 20px;
+}
+
+.ContenedorListado-ResumenClinico p{
+    color: #A2A2A2;
+    font-weight: 400;
+    margin-bottom: 10px;
+}
+
+.ContenedorDiagnostico-ResumenClinico{
+    width: 100%;
+    height: 16dvh;
+    background-color: #FFFFFF;
+    border: 1px solid #E1EAEF;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.ContenedorDiagnostico-ResumenClinico p{
+    color: black;
+}
+
+.Contenedor-ControlCita{
+    width: 100%;
+    height: 39dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.Titulo-ControlCita{
+    width: 100%;
+    height: 10dvh;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1E9CF1;
+    font-size: 20px;
+
+}
+
+.ContenedorListado-ControlCita{
+    width: 80%;
+    height: 25dvh;
+    background-color: #FFFFFF;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+}
