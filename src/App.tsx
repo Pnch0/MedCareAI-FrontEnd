@@ -6,6 +6,8 @@ import LoginPage from './Pages/LoginPage/LoginPage.tsx';
 import RegisterPage from './Pages/RegisterPage/RegisterPage.tsx';
 import MainPage from './Pages/Pacientes/MainPage.tsx';
 import HomePageMedico from './Pages/Medicos/HomePage/HomePage.tsx';
+import HomePageRecepcionista from './Pages/Recepcionista/HomePage/HomePage.tsx';
+import HomePageAdministrador from './Pages/Administrador/HomePage/HomePage.tsx';
 
 function App() {
 
@@ -29,7 +31,8 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<MainLayout />}>
             <Route path="/home-page-medico" element={<HomePageMedico />} />
-
+            <Route path="/home-page-recepcionista" element={<HomePageRecepcionista />} />
+            <Route path="/home-page-administrador" element={<HomePageAdministrador />} />
             </Route>
           </Route>
         </Routes>

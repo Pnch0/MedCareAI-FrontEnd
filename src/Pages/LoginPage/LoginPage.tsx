@@ -32,6 +32,12 @@ function LoginPage() {
         navigate('/main-page-paciente');
     };
 
+    const simularAcceso = (role: string, path: string) => {
+        localStorage.setItem('token', 'dev-token');
+        localStorage.setItem('userRole', role);
+        navigate(path);
+    };
+
     return (
         <div className="Contenedor-Centrado">
             <div className="Contenedor-LoginPage">
@@ -76,6 +82,21 @@ function LoginPage() {
                     </form>
                 </div>
             </div>
+
+            {import.meta.env.DEV && (
+                <div className="Contenedor-AccesoRapido">
+                    <div className="ContenedorTexto-AccesoRapido">
+                        <h2>Acceso rápido</h2>
+                        <p>Solo desarrollo - simula un rol sin autenticación</p>
+                    </div>
+                    <div className="ContenedorBotones-AccesoRapido">
+                        <button className="Boton-AccesoRapido" onClick={() => simularAcceso('paciente', '/main-page-paciente')}>Paciente</button>
+                        <button className="Boton-AccesoRapido" onClick={() => simularAcceso('medico', '/home-page-medico')}>Médico</button>
+                        <button className="Boton-AccesoRapido" onClick={() => simularAcceso('recepcionista', '/home-page-recepcionista')}>Recepcionista</button>
+                        <button className="Boton-AccesoRapido" onClick={() => simularAcceso('administrador', '/home-page-administrador')}>Administrador</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

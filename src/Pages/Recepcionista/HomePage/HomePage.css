@@ -1,0 +1,124 @@
+.ContenedorPrincipal-HomeRecepcionista {
+    width: 100%;
+    height: 100dvh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.ContenedorNombre-HomeRecepcionista {
+    width: 100%;
+    height: 20dvh;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    color: #1E9CF1;
+}
+
+.Contenedor-DashboardRecepcionista {
+    width: 100%;
+    height: 80dvh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 30px;
+}
+
+.Contenedor-CitasDelDia {
+    width: 65%;
+    height: 80dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 25px;
+}
+
+.Titulo-CitasDelDia {
+    width: 100%;
+    height: 12dvh;
+    border-radius: 25px 25px 0px 0px;
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    font-size: 20px;
+    color: #1E9CF1;
+    border-bottom: 1px solid #E1EAEF;
+}
+
+.ContenedorListado-CitasDelDia {
+    width: 90%;
+    height: 62dvh;
+    margin: auto;
+    margin-top: 20px;
+    border-radius: 15px;
+    border: 1px solid #E1EAEF;
+    background-color: #FFFFFF;
+    padding: 20px;
+}
+
+.ContenedorDashboardDerecha-Recepcionista {
+    width: 30%;
+    height: 80dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.Contenedor-PacientesHoy {
+    width: 100%;
+    height: 39dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.Titulo-PacientesHoy {
+    width: 100%;
+    height: 10dvh;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1E9CF1;
+    font-size: 20px;
+}
+
+.ContenedorListado-PacientesHoy {
+    width: 80%;
+    height: 25dvh;
+    background-color: #FFFFFF;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+}
+
+.Contenedor-NuevaReserva {
+    width: 100%;
+    height: 39dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.Titulo-NuevaReserva {
+    width: 100%;
+    height: 10dvh;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1E9CF1;
+    font-size: 20px;
+}
+
+.ContenedorListado-NuevaReserva {
+    width: 80%;
+    height: 25dvh;
+    background-color: #FFFFFF;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+}
