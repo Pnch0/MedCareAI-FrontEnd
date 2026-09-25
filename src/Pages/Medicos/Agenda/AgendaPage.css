@@ -1,0 +1,182 @@
+
+.ContenedorPrincipal-AgendaMedico{
+    width: 100%;
+    height: 100dvh;
+    display: flex;
+    flex-direction: row;
+    box-sizing: border-box;
+}
+
+
+.ContenedorIzquierda-AgendaMedico{
+    width: 25%;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+.ContenedorCalendario-AgendaMedico{
+    width: 100%;
+    height: auto; 
+    min-height: 38dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.ContenedorListado-AgendaMedico{
+    width: 100%;
+    height: 62dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    display: flex;
+    flex-direction: column;
+}
+
+.Listado-AgendaMedico{
+    width: 100%;
+    height: 90px;
+    border-bottom: 1px solid #E1EAEF;
+}
+
+.ContenedorDerecha-AgendaMedico{
+    width: 75%;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ContenedorCitas-AgendaMedico{
+    width: 80%;
+    height: 80dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: row;
+}
+
+.Citas-AgendaMedico, .Citas-AgendaMedico-1, .Citas-AgendaMedico-7{
+    width: 20%;
+    height: 80dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+}
+
+.Citas-AgendaMedico-1{
+    border-radius: 15px 0px 0px 15px;
+}
+
+.Citas-AgendaMedico-7{
+    border-radius: 0px 15px 15px 0px;
+}
+
+.EncabezadoCitas-AgendaMedico{
+    width: 100%;
+    height: 12dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2F9BFF;
+}
+
+.Bloque-CitaMedica{
+    width: 100%;
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    border-top: 1px solid #E1EAEF;
+    border-bottom: 1px solid #E1EAEF;
+}
+
+.Bloque-CitaMedica p{
+    color: #979797
+}
+
+/* DISEÑO CALENDARIOS */
+
+.ContenedorCalendario-AgendaMedico {
+    --fc-classic-background: #F7F8F8;
+    --fc-classic-foreground: #000000;
+    --fc-classic-faint-foreground: #C5C5C5;
+    --fc-classic-border: #E1EAEF;
+    --fc-classic-primary: #2F9BFF;
+    --fc-classic-primary-foreground: #FFFFFF;
+    --fc-classic-button: transparent;
+    --fc-classic-button-border: transparent;
+    --fc-classic-button-strong: transparent;
+    --fc-classic-button-strong-border: transparent;
+    --fc-classic-button-foreground: #2F9BFF;
+    --fc-classic-button-outline: #2F9BFF;
+    --fc-classic-today: transparent;
+}
+
+.ContenedorCalendario-AgendaMedico .agenda-calendar-toolbar {
+    margin-bottom: 15px;
+    padding: 0 10px;
+}
+
+.ContenedorCalendario-AgendaMedico .agenda-calendar-title {
+    color: #2F9BFF;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.ContenedorCalendario-AgendaMedico .agenda-calendar-button {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    color: #2F9BFF;
+    font-size: 1.2rem;
+    padding: 0;
+}
+
+.ContenedorCalendario-AgendaMedico .agenda-calendar-button:hover {
+    background-color: transparent;
+    color: #1A7FE5;
+}
+
+.ContenedorCalendario-AgendaMedico .agenda-calendar-day-header {
+    color: #2F9BFF;
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 10px 0;
+    text-align: center;
+}
+
+.ContenedorCalendario-AgendaMedico .agenda-calendar-day-top {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+}
+
+.ContenedorCalendario-AgendaMedico .agenda-calendar-day-number {
+    color: #000000;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 8px;
+}
+
+.ContenedorCalendario-AgendaMedico .agenda-calendar-day-other .agenda-calendar-day-number {
+    color: #C0C0C0;
+    font-weight: 400;
+}
+
+.ContenedorCalendario-AgendaMedico .agenda-calendar-day-today {
+    background-color: transparent;
+}
+
+.ContenedorCalendario-AgendaMedico .agenda-calendar-day-today .agenda-calendar-day-number {
+    color: #2F9BFF;
+    font-weight: 700;
+}
+
+.ContenedorCalendario-AgendaMedico .agenda-calendar-day-content {
+    display: none;
+}

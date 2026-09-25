@@ -13,12 +13,12 @@ function Navbar(){
                 <div className="Contenedor-PaginasNavbar">
                     <ul>
                         <li>
-                            <NavLink to="/" className = "nav-item">
+                            <NavLink to="/home-page-medico" className = "nav-item">
                                 <FaHome className='Icono-NavbarPrincipal'/> Home
                             </NavLink>
                         </li>
                         <li>
-                            <NavLink to="/" className = "nav-item">
+                            <NavLink to="/agenda-page-medico" className = "nav-item">
                                 <FaCalendar  className='Icono-NavbarPrincipal'/> Agenda
                             </NavLink>
                         </li>
