@@ -28,7 +28,7 @@ function Navbar(){
                             </NavLink>
                         </li>
                         <li>
-                            <NavLink to="/" className = "nav-item">
+                            <NavLink to="/gestion-citas-page-medico" className = "nav-item">
                                 <FaBook  className='Icono-NavbarPrincipal'/> Gestion Citas
                             </NavLink>
                         </li>

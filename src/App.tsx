@@ -10,6 +10,7 @@ import MainPage from './Pages/Pacientes/MainPage.tsx';
 import HomePageMedico from './Pages/Medicos/HomePage/HomePage.tsx';
 import AgendaPageMedico from './Pages/Medicos/Agenda/AgendaPage.tsx';
 import ResumenPageMedico from './Pages/Medicos/Resumen/ResumenPage.tsx';
+import GestionCitasMedico from './Pages/Medicos/Gestion Citas/GestionCitas.tsx';
 
 import HomePageRecepcionista from './Pages/Recepcionista/HomePage/HomePage.tsx';
 import HomePageAdministrador from './Pages/Administrador/HomePage/HomePage.tsx';
@@ -39,6 +40,7 @@ function App() {
             <Route path="/home-page-medico" element={<HomePageMedico />} />
             <Route path="/agenda-page-medico" element={<AgendaPageMedico />} />
             <Route path="/resumen-page-medico" element={<ResumenPageMedico />} />
+            <Route path="/gestion-citas-page-medico" element={<GestionCitasMedico />} />
 
             {/* VISTAS RECEPCIONISTA */}
             <Route path="/home-page-recepcionista" element={<HomePageRecepcionista />} />
