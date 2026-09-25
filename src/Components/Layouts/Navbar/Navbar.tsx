@@ -23,7 +23,7 @@ function Navbar(){
                             </NavLink>
                         </li>
                         <li>
-                            <NavLink to="/" className = "nav-item">
+                            <NavLink to="/resumen-page-medico" className = "nav-item">
                                 <FaClipboardList  className='Icono-NavbarPrincipal'/> Resumen
                             </NavLink>
                         </li>

@@ -5,8 +5,11 @@ import MainLayout from './Components/Layouts/MainLayout/MainLayout.tsx';
 import LoginPage from './Pages/LoginPage/LoginPage.tsx';
 import RegisterPage from './Pages/RegisterPage/RegisterPage.tsx';
 import MainPage from './Pages/Pacientes/MainPage.tsx';
+
+{/* IMPORTACION VISTA MEDICO */}
 import HomePageMedico from './Pages/Medicos/HomePage/HomePage.tsx';
 import AgendaPageMedico from './Pages/Medicos/Agenda/AgendaPage.tsx';
+import ResumenPageMedico from './Pages/Medicos/Resumen/ResumenPage.tsx';
 
 import HomePageRecepcionista from './Pages/Recepcionista/HomePage/HomePage.tsx';
 import HomePageAdministrador from './Pages/Administrador/HomePage/HomePage.tsx';
@@ -35,6 +38,7 @@ function App() {
             {/* VISTAS MEDICO */}
             <Route path="/home-page-medico" element={<HomePageMedico />} />
             <Route path="/agenda-page-medico" element={<AgendaPageMedico />} />
+            <Route path="/resumen-page-medico" element={<ResumenPageMedico />} />
 
             {/* VISTAS RECEPCIONISTA */}
             <Route path="/home-page-recepcionista" element={<HomePageRecepcionista />} />
