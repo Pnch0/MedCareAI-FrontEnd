@@ -1,5 +1,5 @@
 .Contenedor-NavbarPrincipal{
-    width: 18%;
+    width: 14%;
     height: 100dvh;
     background-color: #1E9CF1;
     display: flex;
@@ -33,15 +33,20 @@
     align-items: center;
 }
 
-.nav-item{
+.nav-item {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    padding-left: 20px;
+    width: 85%;
+    margin: 0 auto;
+    line-height: 1.1;
     border-radius: 12px;
     transition: transform 0.3s ease, background-color 0.3s ease;
     text-decoration: none;
     color: #FFFFFF;
-    font-size: 20px;
+    font-size: 22px;
+    font-weight: bold;
     gap: 15px;
 }
 
