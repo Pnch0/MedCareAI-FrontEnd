@@ -1,0 +1,100 @@
+.ContenedorPrincipal-GestionCitas{
+    width: 100%;
+    height: 100dvh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.ContenedorTitulo-GestionCitas{
+    width: 100%;
+    height: 15dvh;
+    display: flex;
+    align-items: center;
+    padding-left: 40px;
+    color: #1E9CF1;
+}
+
+
+.ContenedorListado-GestionCitas{
+    width: 100%;
+    height: 85dvh;
+    padding: 20px 50px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+
+.Tarjetas-GestionCitas{
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+
+.Tarjeta-GestionCitas{
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+.Tarjeta-GestionCitas h3{
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.Tarjeta-GestionCitas .Edad-Cita{
+    font-weight: bold;
+    color: #9F9F9F;
+}
+
+.Tarjeta-GestionCitas .Hora-Cita{
+    margin: 0;
+    color: #6B7280;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+
+.Tarjeta-GestionCitas .Btn-Accion-Cita{
+    margin-top: auto;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    color: #FFFFFF;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.Tarjeta-GestionCitas .Btn-Accion-Cita.Iniciar{
+    background-color: #16A34A;
+}
+
+.Tarjeta-GestionCitas .Btn-Accion-Cita.Iniciar:hover{
+    background-color: #15803D;
+}
+
+.Tarjeta-GestionCitas .Btn-Accion-Cita.Finalizar{
+    background-color: #DC2626;
+}
+
+.Tarjeta-GestionCitas .Btn-Accion-Cita.Finalizar:hover{
+    background-color: #B91C1C;
+}
+
+
+.ListadoVacio-GestionCitas{
+    padding: 20px 10px;
+    color: #979797;
+    font-size: 0.85rem;
+    text-align: center;
+}
