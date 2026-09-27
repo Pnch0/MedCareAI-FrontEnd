@@ -213,7 +213,9 @@ function AgendaPageMedico(){
             <div className="ContenedorDerecha-AgendaMedico">
                 <div className="ContenedorCitas-AgendaMedico">
                     {DIAS_SEMANA.map((dia, indice) => {
-                        const citasDelDia = mockCitas.filter((cita) => cita.dia === indice);
+                        const citasDelDia = mockCitas
+                            .filter((cita) => cita.dia === indice)
+                            .sort((a, b) => obtenerMinutosInicio(a.hora) - obtenerMinutosInicio(b.hora));
                         const claseColumna = indice === 0
                             ? 'Citas-AgendaMedico-1'
                             : indice === 6
