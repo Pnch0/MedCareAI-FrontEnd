@@ -1,124 +1,206 @@
-.ContenedorPrincipal-HomeAdministrador {
+.ContenedorPrincipal-HomeAdministrador{
     width: 100%;
     height: 100dvh;
-    padding: 20px;
     display: flex;
     flex-direction: column;
+    gap: 20px;
 }
 
-.ContenedorNombre-HomeAdministrador {
+.EncabezadoNombre-HomeAdministrador{
+    width: 100%;
+    height: 15dvh;
+    display: flex;
+    align-items: center;
+    padding-left: 50px;
+}
+
+.EncabezadoNombre-HomeAdministrador h1{
+    color: #1E9CF1;
+    font-size: 35px;
+}
+
+.ContenenedorSuperior-HomeAdministrador{
+    width: 100%;
+    height: 30dvh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+    padding: 0px 20px 0px 20px;
+}
+
+.ContenedorSuperior-IzquierdaHome, .ContenendorSuperior-DerechaHome{
+    width: 50%;
+    height: 30dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 10px;
+}
+
+.TituloContenedorSuperior-HomeAdministrador{
+    width: 100%;
+    height: 10dvh;
+    display: flex;
+    align-items: center;
+    color: #1E9CF1;
+    padding-left: 20px;
+    font-size: 20px;
+}
+
+.ListadoContenedorSuperior-HomeAdministrador{
     width: 100%;
     height: 20dvh;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    justify-content: space-evenly;
+    font-size: 26px;
+    font-weight: bold;
     padding-left: 20px;
+
+}
+
+
+.ContenedorInferior-HomeAdministrador{
+    width: 100%;
+    height: 55dvh;
+    display: flex;
+    flex-direction: row;
+    padding: 0px 20px 0px 20px;
+    gap: 20px;
+}
+
+
+.ContenedorInferior-IzquierdaHome{
+    width: 70%;
+    height: 50dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 10px;
+}
+
+.ContenedorEncabezado-IzquierdaHome{
+    width: 100%;
+    height: 10dvh;
+    display: flex;
+    align-items: center;
+    color: #1E9CF1;
+    padding-left: 20px;
+}
+
+.ContenedorListado-IzquierdaHome{
+    width: 100%;
+    height: 40dvh;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+
+.Card-ListadoOMRO{
+    width: 100%;
+    height: 10dvh;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 10px;
+    border: 1px solid #E1EAEF;
+    gap: 15px;
+}
+
+.ContenedorIcono-CardOMRO{
+    width: 6%;
+    height: 8dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1e9df169;
+    border-radius: 100%;
+    border: 1px solid #1E9CF1;
+}
+
+.Icono-OMRO{
+    font-size: 38px;
     color: #1E9CF1;
 }
 
-.Contenedor-DashboardAdministrador {
-    width: 100%;
-    height: 80dvh;
+.ContenedorDatos-CardOMRO{
+    width: 84%;
+    height: 10dvh;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+}
+
+.ContenedorDatos-CardOMRO p{
+    color: #989898;
+    font-weight: bold;
+}
+
+.ContenedorEstado-CardOMRO{
+    width: 10%;
+    height: 10dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ContenedorLetra-CardOMRO{
+    width: 60%;
+    height: 8dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background-color: #17bf638c;
+    color: #17BF63;
+    border: 1px solid #FFFFFF;
+    font-size: 22px;
+}
+
+.ContenedorDerecha-DerechaHome{
+    width: 30%;
+    height: 50dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ContenedorTitulo-DerechaHome{
+    width: 100%;
+    height: 25dvh;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    color: #1E9CF1;
+    font-size: 20px;
+}
+
+.ContenedorBotones-DerechaHome{
+    width: 100%;
+    height: 25dvh;
+    display: flex;
+    align-items: flex-start;
     justify-content: center;
     gap: 30px;
 }
 
-.Contenedor-Indicadores {
-    width: 65%;
-    height: 80dvh;
-    background-color: #F7F8F8;
-    border: 1px solid #E1EAEF;
-    border-radius: 25px;
+.ContenedorBotones-DerechaHome button{
+    background-color: #1E9CF1;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    padding: 15px 30px;
+    color: #FFFFFF;
+    font-size: 18px;
+    font-weight: 500;
+    border-radius: 10px;
 }
 
-.Titulo-Indicadores {
-    width: 100%;
-    height: 12dvh;
-    border-radius: 25px 25px 0px 0px;
-    display: flex;
-    align-items: center;
-    padding: 15px;
-    font-size: 20px;
-    color: #1E9CF1;
-    border-bottom: 1px solid #E1EAEF;
-}
 
-.ContenedorListado-Indicadores {
-    width: 90%;
-    height: 62dvh;
-    margin: auto;
-    margin-top: 20px;
-    border-radius: 15px;
-    border: 1px solid #E1EAEF;
-    background-color: #FFFFFF;
-    padding: 20px;
-}
-
-.ContenedorDashboardDerecha-Administrador {
-    width: 30%;
-    height: 80dvh;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.Contenedor-GestionUsuarios {
-    width: 100%;
-    height: 39dvh;
-    background-color: #F7F8F8;
-    border: 1px solid #E1EAEF;
-    border-radius: 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.Titulo-GestionUsuarios {
-    width: 100%;
-    height: 10dvh;
-    border-radius: 15px 15px 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #1E9CF1;
-    font-size: 20px;
-}
-
-.ContenedorListado-GestionUsuarios {
-    width: 80%;
-    height: 25dvh;
-    background-color: #FFFFFF;
-    border: 1px solid #E1EAEF;
-    border-radius: 15px;
-}
-
-.Contenedor-Reportes {
-    width: 100%;
-    height: 39dvh;
-    background-color: #F7F8F8;
-    border: 1px solid #E1EAEF;
-    border-radius: 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.Titulo-Reportes {
-    width: 100%;
-    height: 10dvh;
-    border-radius: 15px 15px 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #1E9CF1;
-    font-size: 20px;
-}
-
-.ContenedorListado-Reportes {
-    width: 80%;
-    height: 25dvh;
-    background-color: #FFFFFF;
-    border: 1px solid #E1EAEF;
-    border-radius: 15px;
+.ContenedorBotones-DerechaHome button:hover{
+    background-color: #1e9df1e3;
 }

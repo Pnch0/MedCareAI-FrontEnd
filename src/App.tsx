@@ -14,6 +14,7 @@ import GestionCitasMedico from './Pages/Medicos/GestionCitas/GestionCitas.tsx';
 
 import HomePageRecepcionista from './Pages/Recepcionista/HomePage/HomePage.tsx';
 
+{/* IMPORTACION VISTA AMDINISTRADOR */}
 import HomePageAdministrador from './Pages/Administrador/HomePage/HomePage.tsx';
 
 
