@@ -1,9 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import './Navbar.css';
-import { FaHome, FaCalendar, FaBook, FaSignOutAlt  } from "react-icons/fa";
-import { FaClipboardList } from "react-icons/fa6";
+import { FaSignOutAlt  } from "react-icons/fa";
 import { NavLink, useNavigate } from 'react-router-dom';
 import { supabase } from '../../../Services/supabaseClient.ts';
+import { getUserRole } from '../../Routes/roles.ts';
+import { NAV_CONFIG } from './navConfig.tsx';
+
+const NOMBRE_POR_DEFECTO = 'Wilson Flores';
+
+const obtenerIniciales = (nombre: string) =>
+    nombre
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((parte) => parte[0]?.toUpperCase() ?? '')
+        .join('');
 
 
 function Navbar(){
@@ -35,6 +46,12 @@ function Navbar(){
         };
     }, []);
 
+    const userRole = getUserRole();
+    const enlaces = NAV_CONFIG[userRole];
+
+    const nombreUsuario = localStorage.getItem('userName') || NOMBRE_POR_DEFECTO;
+    const iniciales = obtenerIniciales(nombreUsuario);
+
     const abrirMenu = () => {
         clearTimeout(timerRef.current);
         setMenuAbierto(true);
@@ -48,6 +65,7 @@ function Navbar(){
         await supabase.auth.signOut();
         localStorage.removeItem('token');
         localStorage.removeItem('userRole');
+        localStorage.removeItem('userName');
         setMenuAbierto(false);
         navigate('/', { replace: true });
     };
@@ -57,26 +75,13 @@ function Navbar(){
             <div className="Contenedor-NavbarPrincipal">
                 <div className="Contenedor-PaginasNavbar">
                     <ul>
-                        <li>
-                            <NavLink to="/home-page-medico" className = "nav-item">
-                                <FaHome className='Icono-NavbarPrincipal'/> Home
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink to="/agenda-page-medico" className = "nav-item">
-                                <FaCalendar  className='Icono-NavbarPrincipal'/> Agenda
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink to="/resumen-page-medico" className = "nav-item">
-                                <FaClipboardList  className='Icono-NavbarPrincipal'/> Resumen
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink to="/gestion-citas-page-medico" className = "nav-item">
-                                <FaBook  className='Icono-NavbarPrincipal'/> Gestion Citas
-                            </NavLink>
-                        </li>
+                        {enlaces.map(({ to, label, icon: Icono }) => (
+                            <li key={to}>
+                                <NavLink to={to} className = "nav-item" onClick={() => setMenuAbierto(false)}>
+                                    <Icono className='Icono-NavbarPrincipal'/> {label}
+                                </NavLink>
+                            </li>
+                        ))}
                     </ul>
                 </div>
                 <div
@@ -86,10 +91,10 @@ function Navbar(){
                     onMouseLeave={cerrarMenu}
                 >
                     <div className="Contenedor-InicialesNombre">
-                        WF
+                        {iniciales}
                     </div>
                     <div className="Contenedor-Nombre">
-                        Wilson Flores
+                        {nombreUsuario}
                     </div>
 
                     {menuAbierto && (
