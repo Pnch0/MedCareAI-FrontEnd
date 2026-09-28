@@ -1,0 +1,126 @@
+.ContenendorPrincipal-GestionUsuarios{
+    width: 100%;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.ContenedorSuperior-GestionUsuarios{
+    width: 100%;
+    height: 18dvh;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 80px;
+}
+
+.ContenedorSuperior-GestionUsuarios button{
+    background-color: #1E9CF1;
+    color: #FFFFFF;
+    font-size: 18px;
+    outline: none;
+    border: none;
+    padding: 20px 40px;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+
+.ContenedorSuperior-GestionUsuarios button:hover{
+    background-color: #1e9df1d5;
+}
+
+
+.ContenedorInferior-GestionUsuarios{
+    width: 100%;
+    height: 82dvh;
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+
+.ContenedorListado-GestionUsuarios{
+    width: 90%;
+    height: 75dvh;
+    display: flex;
+    flex-direction: column;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+}
+
+.EncabezadoListado-GestionUsuarios{
+    width: 100%;
+    height: 14dvh;
+    background-color: #1E9CF1;
+    border-radius: 15px 15px 0px 0px;
+    display: flex;
+    align-items: center;
+    color: #FFFFFF;
+}
+
+
+.TituloEncabezado-GestionUsuarios{
+    width: 50%;
+    height: 14dvh;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+
+}
+
+
+.FiltroBuscador-GestionUsuarios{
+    width: 50%;
+    height: 14dvh;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 40px;
+    padding-right: 50px;
+}
+
+.ContenedorFiltro-GestionUsuarios, .ContenedorBuscador-GestionUsuarios{
+    width: 225px;
+    height: 50px;
+    background-color: #FFFFFF;
+    border-radius: 10px;
+    border: 1px solid #E1EAEF;
+
+}
+
+
+.ContenedorFiltro-GestionUsuarios select{
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: transparent;
+    padding: 0 15px;
+    outline: none;
+    font-size: 16px;
+    color: #333;
+    cursor: pointer;
+    box-sizing: border-box; 
+}
+
+
+.ContenedorBuscador-GestionUsuarios input{
+    flex-grow: 1;
+    height: 100%;
+    border: none;
+    background-color: transparent;
+    outline: none;
+    font-size: 16px;
+    color: #333;
+    padding: 0;
+}
+
+
+.ContenedorBuscador-GestionUsuarios .Icono-Buscador{
+    color: #1E9CF1;
+    margin-right: 10px;
+    font-size: 18px;
+    flex-shrink: 0;
+}
