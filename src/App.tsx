@@ -16,6 +16,7 @@ import HomePageRecepcionista from './Pages/Recepcionista/HomePage/HomePage.tsx';
 
 {/* IMPORTACION VISTA AMDINISTRADOR */}
 import HomePageAdministrador from './Pages/Administrador/HomePage/HomePage.tsx';
+import GestionUsuariosAdministrador from './Pages/Administrador/GestionUsuarios/GestionUsuarios.tsx';
 
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
             {/* VISTAS ADMINISTRADOR */}
             <Route element={<RoleRoute role="administrador" />}>
               <Route path="/home-page-administrador" element={<HomePageAdministrador />} />
+              <Route path="/gestion-usuarios-page-administrador" element={<GestionUsuariosAdministrador />} />
             </Route>
             </Route>
           </Route>

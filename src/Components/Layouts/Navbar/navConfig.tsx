@@ -18,7 +18,7 @@ export const NAV_CONFIG: Record<UserRole, NavLinkConfig[]> = {
     ],
     administrador: [
         { to: '/home-page-administrador', label: 'Home', icon: FaHome },
-        { to: '/gestion-usuarios-page-administrador', label: 'Usuarios', icon: FaUsers },
+        { to: '/gestion-usuarios-page-administrador', label: 'Gestion Usuarios', icon: FaUsers },
         { to: '/gestion-boxes-page-administrador', label: 'Boxes', icon: FaBoxesStacked },
         { to: '/gestion-horarios-page-administrador', label: 'Horarios', icon: FaClock },
     ],
