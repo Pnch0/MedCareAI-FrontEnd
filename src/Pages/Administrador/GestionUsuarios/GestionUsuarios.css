@@ -267,36 +267,17 @@
 
 
 .Btn-Editar-GestionUsuarios, .Btn-Eliminar-GestionUsuarios{
-    width: 34px;
-    height: 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background-color: transparent;
+    outline: none;
     border: none;
-    border-radius: 8px;
     cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s ease;
 }
 
 
-.Btn-Editar-GestionUsuarios{
-    background-color: #1E9CF1;
-    color: #FFFFFF;
+.Icono-Acciones{
+    font-size: 30px;
+    color: #1E9CF1;
 }
 
 
-.Btn-Editar-GestionUsuarios:hover{
-    background-color: #1e9df1d5;
-}
 
-
-.Btn-Eliminar-GestionUsuarios{
-    background-color: #DC2626;
-    color: #FFFFFF;
-}
-
-
-.Btn-Eliminar-GestionUsuarios:hover{
-    background-color: #dc2626d5;
-}

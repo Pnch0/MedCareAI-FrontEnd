@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./GestionUsuarios.css";
-import { FaSearch, FaPen, FaTrash } from "react-icons/fa";
+import { FaSearch, FaEdit , FaTrash } from "react-icons/fa";
 
 type EstadoUsuario = 'activo' | 'inactivo'
 
@@ -208,7 +208,7 @@ function GestionUsuariosAdministrador(){
                                                 className="Btn-Editar-GestionUsuarios"
                                                 title="Editar usuario"
                                             >
-                                                <FaPen />
+                                                <FaEdit className="Icono-Acciones"/>
                                             </button>
                                             <button
                                                 type="button"
@@ -216,7 +216,7 @@ function GestionUsuariosAdministrador(){
                                                 title="Eliminar usuario"
                                                 onClick={() => eliminarUsuario(usuario.id)}
                                             >
-                                                <FaTrash />
+                                                <FaTrash className="Icono-Acciones"/>
                                             </button>
                                         </li>
                                     </ul>
