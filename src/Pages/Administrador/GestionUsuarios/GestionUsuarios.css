@@ -49,6 +49,33 @@
     background-color: #F7F8F8;
     border: 1px solid #E1EAEF;
     border-radius: 15px;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+
+/* SCROLL SOLO EN EL LISTADO DE DATOS DE LOS USUARIOS */
+
+.ContenedorListado-DatosUsuario{
+    width: 100%;
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-sizing: border-box;
+}
+
+
+.ContenedorListado-DatosUsuario::-webkit-scrollbar{
+    width: 8px;
+}
+
+.ContenedorListado-DatosUsuario::-webkit-scrollbar-thumb{
+    background-color: #E1EAEF;
+    border-radius: 10px;
+}
+
+.ContenedorListado-DatosUsuario::-webkit-scrollbar-track{
+    background-color: transparent;
 }
 
 .EncabezadoListado-GestionUsuarios{
@@ -59,6 +86,8 @@
     display: flex;
     align-items: center;
     color: #FFFFFF;
+    flex-shrink: 0;
+    z-index: 3;
 }
 
 
@@ -106,6 +135,14 @@
 }
 
 
+.ContenedorBuscador-GestionUsuarios{
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+
 .ContenedorBuscador-GestionUsuarios input{
     flex-grow: 1;
     height: 100%;
@@ -123,4 +160,143 @@
     margin-right: 10px;
     font-size: 18px;
     flex-shrink: 0;
+}
+
+
+.ContenedorEncabezado-DatosListados{
+    width: 100%;
+    height: 14dvh;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    background-color: #F7F8F8;
+    border-bottom: 1px solid #E1EAEF;
+    flex-shrink: 0;
+    z-index: 2;
+}
+
+
+.ContenedorEncabezado-DatosListados ul{
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    align-items: center;
+    list-style: none;
+}
+
+
+.ContenedorEncabezado-DatosListados li{
+    text-align: center;
+    color: #1E9CF1;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px 0;
+}
+
+
+.ContenedorListado-DatosUsuario{
+    width: 100%;
+    height: 47dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* DISEÑO CARD POR USUARIO */
+
+.Card-ListadoUsuarios{
+    width: 100%;
+    height: 12dvh;
+    background-color: #F7F8F8;
+    border-bottom: 1px solid #E1EAEF;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+
+/* DISEÑO FILA DE DATOS */
+
+.Fila-GestionUsuarios{
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    align-items: center;
+    list-style: none;
+    box-sizing: border-box;
+}
+
+
+.Fila-GestionUsuarios li{
+    text-align: center;
+    color: #333;
+    font-size: 16px;
+    padding: 0 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.Fila-GestionUsuarios .Estado-GestionUsuarios{
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.Estado-GestionUsuarios.activo{
+    color: #16A34A;
+}
+
+.Estado-GestionUsuarios.inactivo{
+    color: #DC2626;
+}
+
+
+/* DISEÑO BOTONES DE ACCIONES */
+
+.Fila-GestionUsuarios .Acciones-GestionUsuarios{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    overflow: visible;
+}
+
+
+.Btn-Editar-GestionUsuarios, .Btn-Eliminar-GestionUsuarios{
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+
+.Btn-Editar-GestionUsuarios{
+    background-color: #1E9CF1;
+    color: #FFFFFF;
+}
+
+
+.Btn-Editar-GestionUsuarios:hover{
+    background-color: #1e9df1d5;
+}
+
+
+.Btn-Eliminar-GestionUsuarios{
+    background-color: #DC2626;
+    color: #FFFFFF;
+}
+
+
+.Btn-Eliminar-GestionUsuarios:hover{
+    background-color: #dc2626d5;
 }
