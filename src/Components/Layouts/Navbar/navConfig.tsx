@@ -1,5 +1,5 @@
 import { FaHome, FaCalendar, FaBook } from 'react-icons/fa';
-import { FaClipboardList, FaUsers, FaBoxesStacked, FaClock } from 'react-icons/fa6';
+import { FaClipboardList, FaUsersGear , FaBoxArchive , FaClock } from 'react-icons/fa6';
 import type { IconType } from 'react-icons';
 import type { UserRole } from '../../Routes/roles.ts';
 
@@ -18,9 +18,9 @@ export const NAV_CONFIG: Record<UserRole, NavLinkConfig[]> = {
     ],
     administrador: [
         { to: '/home-page-administrador', label: 'Home', icon: FaHome },
-        { to: '/gestion-usuarios-page-administrador', label: 'Gestion Usuarios', icon: FaUsers },
-        { to: '/gestion-boxes-page-administrador', label: 'Boxes', icon: FaBoxesStacked },
-        { to: '/gestion-horarios-page-administrador', label: 'Horarios', icon: FaClock },
+        { to: '/gestion-usuarios-page-administrador', label: 'Gestión Usuarios', icon: FaUsersGear  },
+        { to: '/gestion-boxes-page-administrador', label: 'Gestión Boxes', icon: FaBoxArchive },
+        { to: '/gestion-horarios-page-administrador', label: 'Gestión Horarios', icon: FaClock },
     ],
     recepcionista: [
         { to: '/home-page-recepcionista', label: 'Home', icon: FaHome },
