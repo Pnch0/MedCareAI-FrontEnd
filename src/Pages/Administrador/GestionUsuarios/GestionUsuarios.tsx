@@ -10,7 +10,7 @@ const MOCK_USUARIOS: Usuario[] = [
         rol: 'administrador',
         nombre: 'Alejandra',
         apellido: 'Muñoz Vergara',
-        rut: '12.345.678-9',
+        rut: '12.345.678-5',
         especialidad: null,
         cargo: 'Directora de la Clinica',
         telefono: '+56 9 6123 4567',
@@ -22,7 +22,7 @@ const MOCK_USUARIOS: Usuario[] = [
         rol: 'administrador',
         nombre: 'Rodrigo',
         apellido: 'Salas Pinto',
-        rut: '15.432.187-3',
+        rut: '15.432.187-K',
         especialidad: null,
         cargo: 'Coordinador Administrativo',
         telefono: '+56 9 7234 5678',
@@ -34,7 +34,7 @@ const MOCK_USUARIOS: Usuario[] = [
         rol: 'medico',
         nombre: 'Camila',
         apellido: 'Fernández Reyes',
-        rut: '18.765.432-0',
+        rut: '18.765.432-7',
         especialidad: 'Cardiología',
         cargo: 'Médico Cardiólogo',
         telefono: '+56 9 8345 6789',
@@ -46,7 +46,7 @@ const MOCK_USUARIOS: Usuario[] = [
         rol: 'medico',
         nombre: 'Sebastián',
         apellido: 'Maldonado Cruz',
-        rut: '20.123.456-9',
+        rut: '20.123.456-5',
         especialidad: 'Pediatría',
         cargo: 'Médico Pediatra',
         telefono: '+56 9 9456 7890',
@@ -58,7 +58,7 @@ const MOCK_USUARIOS: Usuario[] = [
         rol: 'medico',
         nombre: 'Isabel',
         apellido: 'Contreras Rivas',
-        rut: '22.456.789-1',
+        rut: '22.456.789-8',
         especialidad: 'Dermatología',
         cargo: 'Médico Dermatóloga',
         telefono: '+56 9 5567 8901',
@@ -70,7 +70,7 @@ const MOCK_USUARIOS: Usuario[] = [
         rol: 'recepcionista',
         nombre: 'Nicole',
         apellido: 'Bravo Espinoza',
-        rut: '24.135.678-0',
+        rut: '24.135.678-7',
         especialidad: null,
         cargo: 'Recepcionista',
         telefono: '+56 9 6678 9012',
@@ -82,7 +82,7 @@ const MOCK_USUARIOS: Usuario[] = [
         rol: 'recepcionista',
         nombre: 'Matías',
         apellido: 'Villalobos Tapia',
-        rut: '16.273.849-K',
+        rut: '16.273.849-6',
         especialidad: null,
         cargo: 'Recepcionista Turno AM',
         telefono: '+56 9 7789 0123',
@@ -94,7 +94,7 @@ const MOCK_USUARIOS: Usuario[] = [
         rol: 'paciente',
         nombre: 'Juan',
         apellido: 'Pérez Soto',
-        rut: '19.827.364-7',
+        rut: '19.827.364-3',
         especialidad: null,
         cargo: null,
         telefono: '+56 9 8890 1234',
@@ -106,7 +106,7 @@ const MOCK_USUARIOS: Usuario[] = [
         rol: 'paciente',
         nombre: 'María',
         apellido: 'Gómez Lara',
-        rut: '10.928.374-K',
+        rut: '10.928.374-6',
         especialidad: null,
         cargo: null,
         telefono: '+56 9 9901 2345',
@@ -118,7 +118,7 @@ const MOCK_USUARIOS: Usuario[] = [
         rol: 'paciente',
         nombre: 'Diego',
         apellido: 'Ríos Palma',
-        rut: '17.263.549-4',
+        rut: '17.263.549-0',
         especialidad: null,
         cargo: null,
         telefono: '+56 9 4012 3456',
@@ -130,6 +130,7 @@ function GestionUsuariosAdministrador(){
 
     const [usuarios, setUsuarios] = useState<Usuario[]>(MOCK_USUARIOS);
     const [modalAbierto, setModalAbierto] = useState<boolean>(false);
+    const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
 
     const eliminarUsuario = (id: string) => {
         const confirmar = window.confirm('¿Estas seguro de eliminar este usuario?');
@@ -138,15 +139,38 @@ function GestionUsuariosAdministrador(){
         }
     };
 
-    const agregarUsuario = (usuario: Usuario) => {
-        setUsuarios(prev => [usuario, ...prev]);
+    const abrirModalAñadir = () => {
+        setUsuarioEditando(null);
+        setModalAbierto(true);
+    };
+
+    const abrirModalEditar = (usuario: Usuario) => {
+        setUsuarioEditando(usuario);
+        setModalAbierto(true);
+    };
+
+    const manejarGuardarUsuario = (usuarioGuardado: Usuario) => {
+        if (usuarioEditando) {
+            setUsuarios(prev => 
+                prev.map(u => (u.id === usuarioGuardado.id ? usuarioGuardado : u))
+            );
+        } else {
+            setUsuarios(prev => [usuarioGuardado, ...prev]);
+        }
+        
+        cerrarModal();
+    };
+
+    const cerrarModal = () => {
+        setModalAbierto(false);
+        setUsuarioEditando(null);
     };
 
     return(
         <>
            <div className="ContenendorPrincipal-GestionUsuarios">
                 <div className="ContenedorSuperior-GestionUsuarios">
-                    <button type="button" onClick={() => setModalAbierto(true)}>Añadir Usuario</button>
+                    <button type="button" onClick={abrirModalAñadir}>Añadir Usuario</button>
                 </div>
 
                 <div className="ContenedorInferior-GestionUsuarios">
@@ -196,6 +220,7 @@ function GestionUsuariosAdministrador(){
                                                 type="button"
                                                 className="Btn-Editar-GestionUsuarios"
                                                 title="Editar usuario"
+                                                onClick={() => abrirModalEditar(usuario)}
                                             >
                                                 <FaEdit className="Icono-Acciones"/>
                                             </button>
@@ -218,8 +243,9 @@ function GestionUsuariosAdministrador(){
 
            <ModalUsuario
                isOpen={modalAbierto}
-               onClose={() => setModalAbierto(false)}
-               onGuardar={agregarUsuario}
+               onClose={cerrarModal}
+               onGuardar={manejarGuardarUsuario}
+               usuarioAEditar={usuarioEditando} 
            />
         </>
     )

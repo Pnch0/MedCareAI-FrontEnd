@@ -23,6 +23,8 @@ interface ModalUsuarioProps {
     isOpen: boolean;
     onClose: () => void;
     onGuardar: (usuario: Usuario) => void;
+    // NUEVO: Recibe el usuario que queremos editar (opcional)
+    usuarioAEditar?: Usuario | null; 
 }
 
 const ROLES: { valor: RolUsuario; etiqueta: string }[] = [
@@ -32,14 +34,7 @@ const ROLES: { valor: RolUsuario; etiqueta: string }[] = [
     { valor: 'administrador', etiqueta: 'Administrador' }
 ];
 
-const validarRut = (valor: string): boolean => {
-    const limpio = valor.replace(/[.-]/g, '').toUpperCase();
-
-    if (!/^\d{7,8}[0-9K]$/.test(limpio)) return false;
-
-    const cuerpo = limpio.slice(0, -1);
-    const digito = limpio.slice(-1);
-
+const calcularDv = (cuerpo: string): string => {
     let suma = 0;
     let factor = 2;
 
@@ -49,23 +44,33 @@ const validarRut = (valor: string): boolean => {
     }
 
     const resto = suma % 11;
-    const esperado = resto === 0 ? '0' : resto === 1 ? 'K' : String(11 - resto);
-
-    return digito === esperado;
+    return resto === 0 ? '0' : resto === 1 ? 'K' : String(11 - resto);
 };
+
+const validarRut = (valor: string): boolean => {
+    const limpio = valor.replace(/[.-]/g, '').toUpperCase();
+    if (!/^\d{7,8}[0-9K]$/.test(limpio)) return false;
+
+    const cuerpo = limpio.slice(0, -1);
+    const digito = limpio.slice(-1);
+
+    return digito === calcularDv(cuerpo);
+};
+
+const formatearCuerpo = (cuerpo: string): string =>
+    cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
 const formatearRut = (valor: string): string => {
     const limpio = valor.replace(/[.-]/g, '').toUpperCase().replace(/^0+(\d)/, '$1');
-
     if (limpio.length === 0) return '';
 
     const cuerpo = limpio.slice(0, -1);
     const digito = limpio.slice(-1);
 
-    return `${cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}-${digito}`;
+    return `${formatearCuerpo(cuerpo)}-${digito}`;
 };
 
-export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onGuardar }) => {
+export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onGuardar, usuarioAEditar }) => {
     const [nombre, setNombre] = useState('');
     const [apellido, setApellido] = useState('');
     const [rut, setRut] = useState('');
@@ -95,6 +100,36 @@ export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onG
     }, [onClose]);
 
     useEffect(() => {
+        if (isOpen) {
+            if (usuarioAEditar) {
+                setNombre(usuarioAEditar.nombre);
+                setApellido(usuarioAEditar.apellido);
+                setRut(usuarioAEditar.rut.replace(/[^0-9Kk]/g, '').toUpperCase());
+                setEmail(usuarioAEditar.email);
+                setPassword('');
+                setTelefono(usuarioAEditar.telefono);
+                setRol(usuarioAEditar.rol);
+                setEstado(usuarioAEditar.estado);
+                setEspecialidad(usuarioAEditar.especialidad || '');
+                setCargo(usuarioAEditar.cargo || '');
+                setErrorRut('');
+            } else {
+                setNombre('');
+                setApellido('');
+                setRut('');
+                setEmail('');
+                setPassword('');
+                setTelefono('');
+                setRol('');
+                setEstado('activo');
+                setEspecialidad('');
+                setCargo('');
+                setErrorRut('');
+            }
+        }
+    }, [isOpen, usuarioAEditar]);
+
+    useEffect(() => {
         if (!isOpen) return;
 
         const manejarTecla = (e: KeyboardEvent) => {
@@ -121,18 +156,34 @@ export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onG
         }
     };
 
+    const manejarCambioRut = (valor: string) => {
+        const entrada = valor.replace(/[^0-9Kk]/g, '').toUpperCase().slice(0, 9);
+        setRut(
+            entrada.length === 9
+                ? entrada.slice(0, 8) + calcularDv(entrada.slice(0, 8))
+                : entrada
+        );
+        setErrorRut('');
+    };
+
     const handleGuardar = (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!validarRut(rut)) {
-            setErrorRut('RUT inválido, revisa el número y el dígito verificador');
+            const cuerpo = rut.replace(/[^0-9Kk]/g, '').toUpperCase().slice(0, -1);
+            const detalle = cuerpo.length === 7 || cuerpo.length === 8
+                ? ` El dígito verificador para ${formatearCuerpo(cuerpo)} es ${calcularDv(cuerpo)}.`
+                : '';
+
+            setErrorRut(`RUT inválido, revisa el número y el dígito verificador.${detalle}`);
             return;
         }
 
         const rolSeleccionado = rol as RolUsuario;
 
         onGuardar({
-            id: `usuario-${Date.now()}`,
+            // MODIFICADO: Si estamos editando mantenemos el ID original, si no, creamos uno nuevo
+            id: usuarioAEditar ? usuarioAEditar.id : `usuario-${Date.now()}`,
             email: email,
             rol: rolSeleccionado,
             nombre: nombre,
@@ -149,6 +200,11 @@ export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onG
 
     if (!isOpen) return null;
 
+    const esEdicion = Boolean(usuarioAEditar);
+
+    const digitosRut = rut.replace(/[^0-9Kk]/g, '').toUpperCase();
+    const dvSugerido = digitosRut.length === 8 ? calcularDv(digitosRut) : null;
+
     return (
         <div className="Modal-FondoOscuro-ModalUsuario" onClick={cerrarModal}>
             <div
@@ -159,7 +215,8 @@ export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onG
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="Modal-Cabecera-ModalUsuario">
-                    <h2 id="titulo-modal-usuario">Añadir Usuario</h2>
+                    {/* MODIFICADO: Título dinámico */}
+                    <h2 id="titulo-modal-usuario">{esEdicion ? 'Editar Usuario' : 'Añadir Usuario'}</h2>
                     <button
                         type="button"
                         className="Btn-CerrarModal-ModalUsuario"
@@ -206,13 +263,17 @@ export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onG
                                     id="Usuario_RUT"
                                     placeholder="12.345.678-9"
                                     value={rut}
-                                    onChange={(e) => {
-                                        setRut(e.target.value);
-                                        setErrorRut('');
-                                    }}
+                                    onChange={(e) => manejarCambioRut(e.target.value)}
                                     required
                                 />
-                                {errorRut && <span className="Error-ModalUsuario">{errorRut}</span>}
+                                {errorRut
+                                    ? <span className="Error-ModalUsuario">{errorRut}</span>
+                                    : dvSugerido && (
+                                        <span className="Ayuda-ModalUsuario">
+                                            Dígito verificador: {dvSugerido}
+                                        </span>
+                                    )
+                                }
                             </div>
 
                             <div className="Campo-Grupo-ModalUsuario">
@@ -246,11 +307,13 @@ export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onG
                                 <input
                                     type="password"
                                     id="Usuario_Password"
-                                    placeholder="Mínimo 6 caracteres"
+                                    // MODIFICADO: El placeholder cambia en edición
+                                    placeholder={esEdicion ? "Deja en blanco para mantener" : "Mínimo 6 caracteres"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     minLength={6}
-                                    required
+                                    // MODIFICADO: No es obligatoria si estamos editando
+                                    required={!esEdicion}
                                 />
                             </div>
                         </div>
@@ -329,7 +392,7 @@ export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onG
                             Cancelar
                         </button>
                         <button type="submit" className="Btn-Accion-ModalUsuario">
-                            Añadir Usuario
+                            {esEdicion ? 'Guardar Cambios' : 'Añadir Usuario'}
                         </button>
                     </div>
                 </form>
