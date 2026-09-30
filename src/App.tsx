@@ -12,11 +12,13 @@ import AgendaPageMedico from './Pages/Medicos/Agenda/AgendaPage.tsx';
 import ResumenPageMedico from './Pages/Medicos/Resumen/ResumenPage.tsx';
 import GestionCitasMedico from './Pages/Medicos/GestionCitas/GestionCitas.tsx';
 
+{/* IMPORTACION VISTA RECEPCIONISTA */}
 import HomePageRecepcionista from './Pages/Recepcionista/HomePage/HomePage.tsx';
 
 {/* IMPORTACION VISTA AMDINISTRADOR */}
 import HomePageAdministrador from './Pages/Administrador/HomePage/HomePage.tsx';
 import GestionUsuariosAdministrador from './Pages/Administrador/GestionUsuarios/GestionUsuarios.tsx';
+import GestionBoxesAdminitrador from './Pages/Administrador/GestionBoxes/GestionBoxes.tsx';
 
 
 function App() {
@@ -57,6 +59,7 @@ function App() {
             <Route element={<RoleRoute role="administrador" />}>
               <Route path="/home-page-administrador" element={<HomePageAdministrador />} />
               <Route path="/gestion-usuarios-page-administrador" element={<GestionUsuariosAdministrador />} />
+              <Route path="/gestion-boxes-page-administrador" element={<GestionBoxesAdminitrador />} />
             </Route>
             </Route>
           </Route>
