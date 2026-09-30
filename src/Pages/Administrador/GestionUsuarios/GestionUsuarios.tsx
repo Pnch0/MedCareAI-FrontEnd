@@ -1,23 +1,7 @@
 import { useState } from "react";
 import "./GestionUsuarios.css";
 import { FaSearch, FaEdit , FaTrash } from "react-icons/fa";
-
-type EstadoUsuario = 'activo' | 'inactivo'
-
-type RolUsuario = 'paciente' | 'medico' | 'recepcionista' | 'administrador'
-
-type Usuario = {
-    id: string
-    email: string
-    rol: RolUsuario
-    nombre: string
-    apellido: string
-    rut: string
-    especialidad: string | null
-    cargo: string | null
-    telefono: string
-    estado: EstadoUsuario
-}
+import { ModalUsuario, type Usuario } from "../../../Components/ModalUsuario/ModalUsuario.tsx";
 
 const MOCK_USUARIOS: Usuario[] = [
     {
@@ -42,7 +26,7 @@ const MOCK_USUARIOS: Usuario[] = [
         especialidad: null,
         cargo: 'Coordinador Administrativo',
         telefono: '+56 9 7234 5678',
-        estado: 'activo'
+        estado: 'inactivo'
     },
     {
         id: 'usuario-3',
@@ -145,6 +129,7 @@ const MOCK_USUARIOS: Usuario[] = [
 function GestionUsuariosAdministrador(){
 
     const [usuarios, setUsuarios] = useState<Usuario[]>(MOCK_USUARIOS);
+    const [modalAbierto, setModalAbierto] = useState<boolean>(false);
 
     const eliminarUsuario = (id: string) => {
         const confirmar = window.confirm('¿Estas seguro de eliminar este usuario?');
@@ -153,11 +138,15 @@ function GestionUsuariosAdministrador(){
         }
     };
 
+    const agregarUsuario = (usuario: Usuario) => {
+        setUsuarios(prev => [usuario, ...prev]);
+    };
+
     return(
         <>
            <div className="ContenendorPrincipal-GestionUsuarios">
                 <div className="ContenedorSuperior-GestionUsuarios">
-                    <button>Añadir Usuarios</button>
+                    <button type="button" onClick={() => setModalAbierto(true)}>Añadir Usuario</button>
                 </div>
 
                 <div className="ContenedorInferior-GestionUsuarios">
@@ -226,6 +215,12 @@ function GestionUsuariosAdministrador(){
                     </div>
                 </div>
            </div>
+
+           <ModalUsuario
+               isOpen={modalAbierto}
+               onClose={() => setModalAbierto(false)}
+               onGuardar={agregarUsuario}
+           />
         </>
     )
 }
