@@ -41,8 +41,7 @@
     outline: none;
     cursor: pointer;
     color: #FFFFFF;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 18px;
     border-radius: 10px;
 }
 
@@ -89,13 +88,6 @@
     color: #1E9CF1;
 }
 
-.CardBox h3{
-    color: #17BF63;
-    background-color: #FFFFFF;
-    padding: 5px 12px;
-    border: 1px solid #17BF63;
-    border-radius: 11px;
-}
 
 .CardBox-Inferior{
     width: 100%;
@@ -121,11 +113,3 @@
     background-color: #1e9df1e1;
 }
 
-
-/* ESTADO INACTIVO */
-
-.CardBox.inactivo h3{
-    color: #9399a5;
-    background-color: #FFFFFF;
-    border-color: #9CA3AF;
-}

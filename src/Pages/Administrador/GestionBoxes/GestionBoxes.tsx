@@ -4,16 +4,15 @@ import "./GestionBoxes.css";
 type Box = {
     id: number;
     nombre: string;
-    estado: string;
 }
 
 const MOCK_BOXES: Box[] = [
-    { id: 1, nombre: "Box 1", estado: "Activo" },
-    { id: 2, nombre: "Box 2", estado: "Activo" },
-    { id: 3, nombre: "Box 3", estado: "Inactivo" },
-    { id: 4, nombre: "Box 4", estado: "Activo" },
-    { id: 5, nombre: "Box 5", estado: "Activo" },
-    { id: 6, nombre: "Box 6", estado: "Inactivo" },
+    { id: 1, nombre: "Box 1"},
+    { id: 2, nombre: "Box 2"},
+    { id: 3, nombre: "Box 3" },
+    { id: 4, nombre: "Box 4"},
+    { id: 5, nombre: "Box 5"},
+    { id: 6, nombre: "Box 6" },
 ];
 
 function GestionBoxesAdminitrador(){
@@ -32,10 +31,9 @@ function GestionBoxesAdminitrador(){
             </div>
             <div className="ContenedorInferior-GestionBoxes">
                 {boxes.map((box) => (
-                    <div className={`CardBox ${box.estado.toLowerCase()}`} key={box.id}>
+                    <div className="CardBox" key={box.id}>
                         <div className="CardBox-Superior">
                             <h2>{box.nombre}</h2>
-                            <h3>{box.estado}</h3>
                         </div>
                         <div className="CardBox-Inferior">
                             <button>Editar</button>
