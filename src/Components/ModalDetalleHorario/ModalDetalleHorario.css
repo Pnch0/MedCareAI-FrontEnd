@@ -1,0 +1,313 @@
+.Modal-FondoOscuro-DetalleHorario {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+    animation: fadeInModalDetalle 0.2s ease-out;
+}
+
+@keyframes fadeInModalDetalle {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.Modal-Caja-DetalleHorario {
+    background-color: #FFFFFF;
+    width: 540px;
+    max-width: 92%;
+    max-height: 90dvh;
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUpModalDetalle 0.25s ease-out;
+}
+
+@keyframes slideUpModalDetalle {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* CABECERA */
+.Modal-Cabecera-DetalleHorario {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #E1EAEF;
+    background-color: #FFFFFF;
+}
+
+.Cabecera-Titulo-DetalleHorario {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.Icono-Titulo-DetalleHorario {
+    font-size: 24px;
+    color: #1E9CF1;
+}
+
+.Modal-Cabecera-DetalleHorario h2 {
+    margin: 0;
+    color: #1E9CF1;
+    font-size: 1.45rem;
+    font-weight: 700;
+}
+
+.Btn-CerrarModal-DetalleHorario {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.Btn-CerrarModal-DetalleHorario:hover {
+    background-color: #F7F8F8;
+}
+
+.Icono-Cerrar-DetalleHorario {
+    font-size: 22px;
+    color: #1E9CF1;
+    transition: color 0.2s;
+}
+
+.Btn-CerrarModal-DetalleHorario:hover .Icono-Cerrar-DetalleHorario {
+    color: #1A7FE5;
+}
+
+
+.Modal-Cuerpo-DetalleHorario {
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.Modal-Cuerpo-DetalleHorario::-webkit-scrollbar {
+    width: 6px;
+}
+
+.Modal-Cuerpo-DetalleHorario::-webkit-scrollbar-thumb {
+    background-color: #E1EAEF;
+    border-radius: 8px;
+}
+
+.Modal-Cuerpo-DetalleHorario::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+/* SECCIONES DENTRO DEL MODAL */
+.Seccion-DetalleHorario {
+    background-color: #FFFFFF;
+    border: 1px solid #E1EAEF;
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.Seccion-Titulo-DetalleHorario {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #1E9CF1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.Icono-Seccion-DetalleHorario {
+    font-size: 16px;
+}
+
+/* FILAS Y GRIDS DE INFORMACIÓN */
+.Grid-Info-DetalleHorario {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.Item-Info-DetalleHorario {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.Item-Info-DetalleHorario.Completo {
+    grid-column: 1 / -1;
+}
+
+.Etiqueta-Info-DetalleHorario {
+    font-size: 0.8rem;
+    color: #6B7280;
+    font-weight: 600;
+}
+
+.Valor-Info-DetalleHorario {
+    font-size: 0.96rem;
+    color: #1F2937;
+    font-weight: 600;
+    margin: 0;
+}
+
+.Badge-Horario-DetalleHorario {
+    display: inline-block;
+    background-color: #EBF5FF;
+    color: #1E9CF1;
+    border: 1px solid #BAE0FD;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    width: fit-content;
+}
+
+/* DÍAS DE LA SEMANA */
+.Contenedor-Dias-DetalleHorario {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.Chip-Dia-DetalleHorario {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid #E1EAEF;
+    background-color: #FFFFFF;
+    color: #9CA3AF;
+    transition: all 0.2s;
+}
+
+.Chip-Dia-DetalleHorario.Activo {
+    background-color: #1E9CF1;
+    color: #FFFFFF;
+    border-color: #1E9CF1;
+}
+
+/* TARJETA PROFESIONAL ASIGNADO */
+.Card-Profesional-DetalleHorario {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background-color: #FFFFFF;
+    border: 1px solid #E1EAEF;
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+.Avatar-Profesional-DetalleHorario {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #EBF5FF;
+    color: #1E9CF1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.Datos-Profesional-DetalleHorario {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+}
+
+.Nombre-Profesional-DetalleHorario {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0;
+}
+
+.Especialidad-Profesional-DetalleHorario {
+    font-size: 0.88rem;
+    color: #1E9CF1;
+    font-weight: 600;
+    margin: 0;
+}
+
+.Cargo-Profesional-DetalleHorario {
+    font-size: 0.8rem;
+    color: #6B7280;
+    margin: 0;
+}
+
+/* PIE DEL MODAL */
+.Modal-Pie-DetalleHorario {
+    padding: 14px 24px;
+    border-top: 1px solid #E1EAEF;
+    display: flex;
+    justify-content: flex-end;
+    background-color: #FFFFFF;
+}
+
+.Btn-Cerrar-DetalleHorario {
+    background-color: #1E9CF1;
+    color: #FFFFFF;
+    border: none;
+    outline: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.Btn-Cerrar-DetalleHorario:hover {
+    background-color: #1A7FE5;
+}
+
+.Btn-Cerrar-DetalleHorario:active {
+    transform: scale(0.98);
+}
+
+@media (max-width: 600px) {
+    .Modal-Caja-DetalleHorario {
+        width: 95%;
+    }
+    .Grid-Info-DetalleHorario {
+        grid-template-columns: 1fr;
+    }
+    .Card-Profesional-DetalleHorario {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+

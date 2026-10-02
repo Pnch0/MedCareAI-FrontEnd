@@ -1,0 +1,135 @@
+
+.ContenedorPrincipal-GestionHorarios{
+    width: 100%;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+
+.ContenedorSuperior-GestionHorarios{
+    width: 100%;
+    height: 16dvh;
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid #E1EAEF;
+}
+
+
+.ContenedorTitulo-GestionHorarios{
+    width: 50%;
+    height: 16dvh;
+    display: flex;
+    align-items: center;
+    padding-left: 50px;
+    color: #1E9CF1;
+}
+
+
+.ContenedorBoton-GestionHorarios{
+    width: 50%;
+    height: 16dvh;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 80px;
+}
+
+.ContenedorBoton-GestionHorarios button{
+    background-color: #1E9CF1;
+    color: #FFFFFF;
+    padding: 20px 40px;
+    font-size: 18px;
+    border-radius: 10px;
+    outline: none;
+    border: none;
+    cursor: pointer;
+}
+
+.ContenedorBoton-GestionHorarios button:hover{
+    background-color: #1e9df1dc;
+}
+
+
+.ContenedorInferior-GestionHorarios{
+    width: 100%;
+    height: 84dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ContenedorListado-GestionHorarios{
+    width: 80%;
+    height: 75dvh;
+    display: flex;
+    flex-direction: row;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+}
+
+.Listado-GestionHorarios{
+    width: 15%;
+    height: 75dvh;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    border: 1px solid #E1EAEF;
+    gap: 10px;
+}
+
+
+.Listado-GestionHorarios-1{
+    width: 15%;
+    height: 75dvh;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px 0px 0px 15px;
+    gap: 10px;
+}
+
+
+.Listado-GestionHorarios-7{
+    width: 15%;
+    height: 75dvh;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    border: 1px solid #E1EAEF;
+    border-radius: 0px 15px 15px 0px;
+    gap: 10px;
+}
+
+
+.EncabezadoListado-GestionHorarios{
+    width: 100%;
+    height: 15dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1E9CF1;
+    font-size: 22px;
+}
+
+
+.BloqueHorario-GestionHorarios{
+    width: 98%;
+    height: 12dvh;
+    background-color: #FFFFFF;
+    border: 1px solid #E1EAEF;
+    border-radius: 10px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.BloqueHorario-GestionHorarios:hover{
+    border-color: #1E9CF1;
+}
