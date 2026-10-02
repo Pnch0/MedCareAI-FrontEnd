@@ -19,6 +19,7 @@ import HomePageRecepcionista from './Pages/Recepcionista/HomePage/HomePage.tsx';
 import HomePageAdministrador from './Pages/Administrador/HomePage/HomePage.tsx';
 import GestionUsuariosAdministrador from './Pages/Administrador/GestionUsuarios/GestionUsuarios.tsx';
 import GestionBoxesAdminitrador from './Pages/Administrador/GestionBoxes/GestionBoxes.tsx';
+import GestionHorariosAdministrador from './Pages/Administrador/GestionHorarios/GestionHorarios.tsx';
 
 
 function App() {
@@ -60,6 +61,7 @@ function App() {
               <Route path="/home-page-administrador" element={<HomePageAdministrador />} />
               <Route path="/gestion-usuarios-page-administrador" element={<GestionUsuariosAdministrador />} />
               <Route path="/gestion-boxes-page-administrador" element={<GestionBoxesAdminitrador />} />
+              <Route path="/gestion-horarios-page-administrador" element={<GestionHorariosAdministrador />} />
             </Route>
             </Route>
           </Route>
