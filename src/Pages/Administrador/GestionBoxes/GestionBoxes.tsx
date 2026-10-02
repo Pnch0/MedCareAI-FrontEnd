@@ -1,10 +1,6 @@
 import { useState } from "react";
 import "./GestionBoxes.css";
-
-type Box = {
-    id: number;
-    nombre: string;
-}
+import { ModalBox, type Box } from "../../../Components/ModalBox/ModalBox.tsx";
 
 const MOCK_BOXES: Box[] = [
     { id: 1, nombre: "Box 1"},
@@ -16,7 +12,43 @@ const MOCK_BOXES: Box[] = [
 ];
 
 function GestionBoxesAdminitrador(){
-    const [boxes] = useState<Box[]>(MOCK_BOXES);
+    const [boxes, setBoxes] = useState<Box[]>(MOCK_BOXES);
+    const [modalAbierto, setModalAbierto] = useState<boolean>(false);
+    const [boxEditando, setBoxEditando] = useState<Box | null>(null);
+
+    const abrirModalAñadir = () => {
+        setBoxEditando(null);
+        setModalAbierto(true);
+    };
+
+    const abrirModalEditar = (box: Box) => {
+        setBoxEditando(box);
+        setModalAbierto(true);
+    };
+
+    const cerrarModal = () => {
+        setModalAbierto(false);
+        setBoxEditando(null);
+    };
+
+    const manejarGuardarBox = (boxGuardado: Box) => {
+        if (boxEditando) {
+            setBoxes(prev =>
+                prev.map(b => (b.id === boxGuardado.id ? boxGuardado : b))
+            );
+        } else {
+            setBoxes(prev => [...prev, boxGuardado]);
+        }
+
+        cerrarModal();
+    };
+
+    const eliminarBox = (id: number) => {
+        const confirmar = window.confirm('¿Estas seguro de eliminar este box?');
+        if (confirmar) {
+            setBoxes(prev => prev.filter(box => box.id !== id));
+        }
+    };
 
     return(
         <>
@@ -26,7 +58,7 @@ function GestionBoxesAdminitrador(){
                     <h1>Gestión de Boxes</h1>
                 </div>
                 <div className="ContenedorBoton-GestionBoxes">
-                    <button>Añadir Box</button>
+                    <button type="button" onClick={abrirModalAñadir}>Añadir Box</button>
                 </div>
             </div>
             <div className="ContenedorInferior-GestionBoxes">
@@ -36,13 +68,20 @@ function GestionBoxesAdminitrador(){
                             <h2>{box.nombre}</h2>
                         </div>
                         <div className="CardBox-Inferior">
-                            <button>Editar</button>
-                            <button>Eliminar</button>
+                            <button type="button" onClick={() => abrirModalEditar(box)}>Editar</button>
+                            <button type="button" onClick={() => eliminarBox(box.id)}>Eliminar</button>
                         </div>
                     </div>
                 ))}
             </div>
         </div>
+
+        <ModalBox
+            isOpen={modalAbierto}
+            onClose={cerrarModal}
+            onGuardar={manejarGuardarBox}
+            boxAEditar={boxEditando}
+        />
         </>
     )
 

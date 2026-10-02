@@ -1,0 +1,191 @@
+/* DISEÑO VENTANA MODAL */
+
+.Modal-FondoOscuro-ModalBox{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.Modal-Caja-ModalBox{
+    background-color: #FFFFFF;
+    width: 450px;
+    max-width: 90%;
+    max-height: 90dvh;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+
+/* SCROLL SOLO EN EL CUERPO DEL FORMULARIO */
+
+.Modal-Caja-ModalBox form{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.Modal-Cuerpo-ModalBox{
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.Modal-Cuerpo-ModalBox::-webkit-scrollbar{
+    width: 8px;
+}
+
+.Modal-Cuerpo-ModalBox::-webkit-scrollbar-thumb{
+    background-color: #E1EAEF;
+    border-radius: 10px;
+}
+
+.Modal-Cuerpo-ModalBox::-webkit-scrollbar-track{
+    background-color: transparent;
+}
+
+
+.Modal-Cabecera-ModalBox{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #E1EAEF;
+    flex-shrink: 0;
+}
+
+.Modal-Cabecera-ModalBox h2{
+    margin: 0;
+    color: #1E9CF1;
+    font-size: 1.4rem;
+}
+
+.Btn-CerrarModal-ModalBox{
+    background-color: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.Icono-Cerrar-ModalBox{
+    font-size: 26px;
+    color: #1E9CF1;
+}
+
+.Btn-CerrarModal-ModalBox:hover .Icono-Cerrar-ModalBox{
+    color: #1A7FE5;
+}
+
+
+/* DISEÑO CAMPOS DEL FORMULARIO */
+
+.Campo-Largo-ModalBox{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.Campo-Largo-ModalBox label{
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    color: #333;
+}
+
+.Campo-Largo-ModalBox input{
+    width: 100%;
+    height: 45px;
+    border-radius: 8px;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    outline: none;
+    padding: 0 12px;
+    font-size: 16px;
+    color: #333;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.Campo-Largo-ModalBox input:focus{
+    border: 1px solid #1E9CF1;
+}
+
+.Error-ModalBox{
+    margin-top: 6px;
+    font-size: 13px;
+    color: #DC2626;
+}
+
+
+/* DISEÑO BOTONES DEL PIE */
+
+.Modal-Pie-ModalBox{
+    padding: 15px 25px;
+    border-top: 1px solid #E1EAEF;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.Btn-Cancelar-ModalBox{
+    background-color: #F7F8F8;
+    color: #4B5563;
+    border: 1px solid #E1EAEF;
+    outline: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.Btn-Cancelar-ModalBox:hover{
+    background-color: #E1EAEF;
+}
+
+.Btn-Accion-ModalBox{
+    background-color: #1E9CF1;
+    color: #FFFFFF;
+    border: none;
+    outline: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.Btn-Accion-ModalBox:hover{
+    background-color: #4DABE9;
+}
+
+
+/* MEDIA QUERIES */
+
+@media (max-width: 600px) {
+    .Modal-Caja-ModalBox{
+        width: 100%;
+        max-width: 95%;
+    }
+}
