@@ -1,5 +1,5 @@
-import { FaHome, FaCalendar, FaBook } from 'react-icons/fa';
-import { FaClipboardList, FaUsersGear , FaBoxArchive , FaClock } from 'react-icons/fa6';
+import { FaHome, FaCalendar, FaBook  } from 'react-icons/fa';
+import { FaClipboardList, FaUsersGear , FaBoxArchive , FaClock, FaUsers  } from 'react-icons/fa6';
 import type { IconType } from 'react-icons';
 import type { UserRole } from '../../Routes/roles.ts';
 
@@ -24,6 +24,8 @@ export const NAV_CONFIG: Record<UserRole, NavLinkConfig[]> = {
     ],
     recepcionista: [
         { to: '/home-page-recepcionista', label: 'Home', icon: FaHome },
+        { to: '/home-page-recepcionista', label: 'Registro Pacientes', icon: FaUsers  },
+        { to: '/home-page-recepcionista', label: 'Asignar Horarios', icon: FaClock },
     ],
     paciente: [],
 };
