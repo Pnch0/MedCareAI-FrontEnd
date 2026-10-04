@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./GestionHorarios.css";
 import { ModalDetalleHorario } from "../../../Components/ModalDetalleHorario/ModalDetalleHorario.tsx";
+import { ModalAsignarHorario } from "../../../Components/ModalAsignarHorario/ModalAsignarHorario.tsx";
 import { MOCK_BLOQUE_DEFAULT, type BloqueHorario } from "../../../Services/mockHorarios.ts";
 
 const DIAS_COLUMNAS = [
@@ -15,6 +16,7 @@ const DIAS_COLUMNAS = [
 
 function GestionHorariosAdministrador(){
     const [modalDetalleAbierto, setModalDetalleAbierto] = useState<boolean>(false);
+    const [modalAsignarAbierto, setModalAsignarAbierto] = useState<boolean>(false);
     const [bloqueSeleccionado, setBloqueSeleccionado] = useState<BloqueHorario | null>(null);
     const [bloques] = useState<BloqueHorario[]>([MOCK_BLOQUE_DEFAULT]);
 
@@ -28,6 +30,14 @@ function GestionHorariosAdministrador(){
         setBloqueSeleccionado(null);
     };
 
+    const abrirModalAsignar = () => {
+        setModalAsignarAbierto(true);
+    };
+
+    const cerrarModalAsignar = () => {
+        setModalAsignarAbierto(false);
+    };
+
     return(
         <>
         <div className="ContenedorPrincipal-GestionHorarios">
@@ -36,7 +46,7 @@ function GestionHorariosAdministrador(){
                     <h1>Gestión Horarios</h1>
                 </div>
                 <div className="ContenedorBoton-GestionHorarios">
-                    <button>Asignar Horario</button>
+                    <button onClick={abrirModalAsignar}>Asignar Horario</button>
                 </div>
             </div>
             <div className="ContenedorInferior-GestionHorarios">
@@ -80,6 +90,11 @@ function GestionHorariosAdministrador(){
             isOpen={modalDetalleAbierto}
             onClose={cerrarDetalleBloque}
             bloque={bloqueSeleccionado}
+        />
+        
+        <ModalAsignarHorario 
+            isOpen={modalAsignarAbierto} 
+            onClose={cerrarModalAsignar} 
         />
         </>
     )

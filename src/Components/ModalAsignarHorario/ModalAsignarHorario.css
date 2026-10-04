@@ -1,0 +1,142 @@
+.ModalAsignarHorario-Overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.ModalAsignarHorario-Content {
+    background-color: white;
+    padding: 24px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.ModalAsignarHorario-Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.ModalAsignarHorario-Header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #1E9CF1;
+}
+
+.ModalAsignarHorario-CloseBtn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.ModalAsignarHorario-CloseBtn:hover {
+    color: #000;
+}
+
+.ModalAsignarHorario-FormGroup {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.ModalAsignarHorario-FormGroupRow {
+    display: flex;
+    gap: 16px;
+}
+
+.ModalAsignarHorario-FormGroupRow .ModalAsignarHorario-FormGroup {
+    flex: 1;
+}
+
+.ModalAsignarHorario-FormGroup label {
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #6B7280;
+}
+
+.ModalAsignarHorario-FormGroup input[type="time"],
+.ModalAsignarHorario-FormGroup input[type="text"],
+.ModalAsignarHorario-FormGroup input[type="date"],
+.ModalAsignarHorario-FormGroup select {
+    padding: 8px 12px;
+    border: 1px solid #E1EAEF;
+    border-radius: 4px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ModalAsignarHorario-FormGroup input[type="time"]:focus,
+.ModalAsignarHorario-FormGroup input[type="text"]:focus,
+.ModalAsignarHorario-FormGroup input[type="date"]:focus,
+.ModalAsignarHorario-FormGroup select:focus,
+.ModalAsignarHorario-FormGroup input[type="time"]:active,
+.ModalAsignarHorario-FormGroup input[type="text"]:active,
+.ModalAsignarHorario-FormGroup input[type="date"]:active,
+.ModalAsignarHorario-FormGroup select:active {
+    border-color: #1E9CF1;
+}
+
+
+.ModalAsignarHorario-Dias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.ModalAsignarHorario-DiaCheckbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.ModalAsignarHorario-Footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.ModalAsignarHorario-BtnCancel,
+.ModalAsignarHorario-BtnSubmit {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.ModalAsignarHorario-BtnCancel {
+    background-color: #f1f1f1;
+    color: #333;
+}
+
+.ModalAsignarHorario-BtnCancel:hover {
+    background-color: #e4e4e4;
+}
+
+.ModalAsignarHorario-BtnSubmit {
+    background-color: #007bff;
+    color: white;
+}
+
+.ModalAsignarHorario-BtnSubmit:hover {
+    background-color: #0056b3;
+}
