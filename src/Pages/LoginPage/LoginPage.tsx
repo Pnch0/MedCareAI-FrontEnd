@@ -27,9 +27,33 @@ function LoginPage() {
             return;
         }
 
-        console.log('Datos de la sesión del paciente:', data);
+        const userId = data.user.id;
 
-        navigate('/main-page-paciente');
+        // Obtener el rol del usuario desde la tabla 'usuarios'
+        const { data: userData, error: roleError } = await supabase
+            .from('usuarios')
+            .select('rol')
+            .eq('id', userId)
+            .single();
+
+        if (roleError || !userData) {
+            setErrorMsg('Error al obtener el rol del usuario.');
+            setLoading(false);
+            return;
+        }
+
+        const userRole = userData.rol;
+
+        // Guardar la sesión y el rol para proteger las rutas
+        localStorage.setItem('token', data.session.access_token);
+        localStorage.setItem('userRole', userRole);
+
+        // Redirigir según el rol
+        if (userRole === 'paciente') navigate('/main-page-paciente');
+        else if (userRole === 'medico') navigate('/home-page-medico');
+        else if (userRole === 'recepcionista') navigate('/home-page-recepcionista');
+        else if (userRole === 'administrador') navigate('/home-page-administrador');
+        else navigate('/');
     };
 
     const simularAcceso = (role: string, path: string) => {

@@ -5,7 +5,7 @@ import type { UserRole } from './roles.ts';
 const haySesionActiva = () => {
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
-  return (token && token !== 'null' && token !== 'undefined') || userRole;
+  return (token && token !== 'null' && token !== 'undefined') && userRole;
 };
 
 export const ProtectedRoute = () => {

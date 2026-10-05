@@ -37,23 +37,51 @@ function RegisterPage() {
         const userId = authData.user?.id;
 
         if (userId) {
+            // 1. Crear el registro en la tabla general 'usuarios'
+            const { error: userError } = await supabase
+                .from('usuarios')
+                .insert([
+                    {
+                        id: userId,
+                        email: email,
+                        rol: 'paciente'
+                    }
+                ]);
+
+            if (userError) {
+                setErrorMsg(`Error al crear usuario general: ${userError.message}`);
+                setLoading(false);
+                return;
+            }
+
+            // 2. Crear el registro en la tabla 'pacientes'
             const { error: dbError } = await supabase
                 .from('pacientes') 
                 .insert([
                     {
-                        id: userId, 
+                        usuario_id: userId, 
                         nombre: nombre,
                         apellido: apellido,
                         rut: rut,
-                        numero: numero,
+                        telefono: numero, // Asumimos que 'numero' es 'telefono'
                         fecha_nacimiento: fechaNacimiento,
                         genero: genero,
+                        email: email
                     }
                 ]);
 
             if (dbError) {
-                setErrorMsg(`Error al guardar perfil: ${dbError.message}`);
+                setErrorMsg(`Error al guardar perfil de paciente: ${dbError.message}`);
                 setLoading(false);
+                return;
+            }
+
+            // Opcional: Iniciar sesión automáticamente después de registrar
+            if (authData.session) {
+                localStorage.setItem('token', authData.session.access_token);
+                localStorage.setItem('userRole', 'paciente');
+                console.log('Usuario y perfil creados exitosamente');
+                navigate('/main-page-paciente');
                 return;
             }
 
