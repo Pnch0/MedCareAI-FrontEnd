@@ -37,14 +37,15 @@ function RegisterPage() {
         const userId = authData.user?.id;
 
         if (userId) {
-            // 1. Crear el registro en la tabla general 'usuarios'
+            const currentDate = new Date().toISOString();
             const { error: userError } = await supabase
                 .from('usuarios')
                 .insert([
                     {
                         id: userId,
                         email: email,
-                        rol: 'paciente'
+                        rol: 'paciente',
+                        CreatedAt: currentDate
                     }
                 ]);
 
@@ -54,19 +55,22 @@ function RegisterPage() {
                 return;
             }
 
-            // 2. Crear el registro en la tabla 'pacientes'
+            const pacienteId = crypto.randomUUID();
+
             const { error: dbError } = await supabase
                 .from('pacientes') 
                 .insert([
                     {
+                        id: pacienteId,
                         usuario_id: userId, 
                         nombre: nombre,
                         apellido: apellido,
                         rut: rut,
-                        telefono: numero, // Asumimos que 'numero' es 'telefono'
+                        telefono: numero,
                         fecha_nacimiento: fechaNacimiento,
                         genero: genero,
-                        email: email
+                        email: email,
+                        CreatedAt: currentDate
                     }
                 ]);
 
@@ -76,7 +80,6 @@ function RegisterPage() {
                 return;
             }
 
-            // Opcional: Iniciar sesión automáticamente después de registrar
             if (authData.session) {
                 localStorage.setItem('token', authData.session.access_token);
                 localStorage.setItem('userRole', 'paciente');
