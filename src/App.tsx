@@ -14,6 +14,8 @@ import GestionCitasMedico from './Pages/Medicos/GestionCitas/GestionCitas.tsx';
 
 {/* IMPORTACION VISTA RECEPCIONISTA */}
 import HomePageRecepcionista from './Pages/Recepcionista/HomePage/HomePage.tsx';
+import RegistroPacientesRecepcionista from './Pages/Recepcionista/RegistroPacientes/RegistroPacientes.tsx';
+import AsignarHorariosRecepcionista from './Pages/Recepcionista/AsginarHorarios/AsignarHorarios.tsx';
 
 {/* IMPORTACION VISTA AMDINISTRADOR */}
 import HomePageAdministrador from './Pages/Administrador/HomePage/HomePage.tsx';
@@ -54,6 +56,8 @@ function App() {
             {/* VISTAS RECEPCIONISTA */}
             <Route element={<RoleRoute role="recepcionista" />}>
               <Route path="/home-page-recepcionista" element={<HomePageRecepcionista />} />
+              <Route path="/registrar-pacientes-recepcionista" element={<RegistroPacientesRecepcionista />} />
+              <Route path="/asignar-horarios-recepcionista" element={<AsignarHorariosRecepcionista />} />
             </Route>
 
             {/* VISTAS ADMINISTRADOR */}
