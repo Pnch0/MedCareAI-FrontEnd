@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { toast } from 'sonner';
 import { supabase } from '../../Services/supabaseClient.ts';
 import './RegisterPage.css';
 
@@ -18,12 +19,10 @@ function RegisterPage() {
     const [showPassword, setShowPassword] = useState(false);
     
     const [loading, setLoading] = useState(false);
-    const [errorMsg, setErrorMsg] = useState('');
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setErrorMsg('');
 
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: email,
@@ -31,7 +30,7 @@ function RegisterPage() {
         });
 
         if (authError) {
-            setErrorMsg(`Error al registrar credenciales: ${authError.message}`);
+            toast.error(`Error al registrar credenciales: ${authError.message}`);
             setLoading(false);
             return;
         }
@@ -52,7 +51,7 @@ function RegisterPage() {
                 ]);
 
             if (userError) {
-                setErrorMsg(`Error al crear usuario general: ${userError.message}`);
+                toast.error(`Error al crear usuario general: ${userError.message}`);
                 setLoading(false);
                 return;
             }
@@ -77,7 +76,7 @@ function RegisterPage() {
                 ]);
 
             if (dbError) {
-                setErrorMsg(`Error al guardar perfil de paciente: ${dbError.message}`);
+                toast.error(`Error al guardar perfil de paciente: ${dbError.message}`);
                 setLoading(false);
                 return;
             }
@@ -85,12 +84,12 @@ function RegisterPage() {
             if (authData.session) {
                 localStorage.setItem('token', authData.session.access_token);
                 localStorage.setItem('userRole', 'paciente');
-                console.log('Usuario y perfil creados exitosamente');
+                toast.success('Cuenta creada e inicio de sesión exitoso');
                 navigate('/main-page-paciente');
                 return;
             }
 
-            console.log('Usuario y perfil creados exitosamente');
+            toast.success('Registro exitoso. Inicia sesión para continuar.');
             navigate('/');
         }
     };
@@ -104,8 +103,6 @@ function RegisterPage() {
                 </div>
                 <div className="ContenedorFormulario-RegisterPage">
                     <form onSubmit={handleRegister}>
-                        {errorMsg && <p style={{ color: 'red', gridColumn: '1 / -1' }}>{errorMsg}</p>}
-
                         <div className="Campo-Largo">
                             <label htmlFor="Email">Correo Electrónico:</label>
                             <input 
