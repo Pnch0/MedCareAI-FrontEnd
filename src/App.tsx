@@ -27,9 +27,9 @@ function App() {
   return (
     <>
       <Toaster 
-        position="top-right" 
+        position="top-center" 
         richColors 
-        theme="dark" 
+        theme="light" 
         closeButton 
       />
 

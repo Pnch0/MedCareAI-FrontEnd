@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { toast } from 'sonner';
 import { supabase } from '../../Services/supabaseClient.ts';
 import './LoginPage.css';
 
@@ -11,13 +12,11 @@ function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [errorMsg, setErrorMsg] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setErrorMsg(''); 
 
         const { data, error } = await supabase.auth.signInWithPassword({
             email: email,
@@ -25,7 +24,7 @@ function LoginPage() {
         });
 
         if (error) {
-            setErrorMsg('Credenciales incorrectas. Inténtalo de nuevo.');
+            toast.error('Credenciales incorrectas. Inténtalo de nuevo.');
             setLoading(false);
             return;
         }
@@ -39,7 +38,7 @@ function LoginPage() {
             .single();
 
         if (roleError || !userData) {
-            setErrorMsg('Error al obtener el rol del usuario.');
+            toast.error('Error al obtener el rol del usuario.');
             setLoading(false);
             return;
         }
@@ -47,6 +46,8 @@ function LoginPage() {
         const userRole = userData.rol;
         localStorage.setItem('token', data.session.access_token);
         localStorage.setItem('userRole', userRole);
+
+        toast.success('Inicio de sesión exitoso');
 
         if (userRole === 'paciente') navigate('/main-page-paciente');
         else if (userRole === 'medico') navigate('/home-page-medico');
@@ -58,6 +59,7 @@ function LoginPage() {
     const simularAcceso = (role: string, path: string) => {
         localStorage.setItem('token', 'dev-token');
         localStorage.setItem('userRole', role);
+        toast.success(`Inicio de sesión exitoso (Simulado: ${role})`);
         navigate(path);
     };
 
@@ -70,8 +72,6 @@ function LoginPage() {
                 </div>
                 <div className="ContenedorFormulario-LoginPage">
                     <form onSubmit={handleLogin}>
-                        {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
-
                         <label htmlFor="Email">Correo Electrónico:</label>
                         <input 
                             type="email" 
