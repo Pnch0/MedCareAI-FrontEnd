@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { supabase } from '../../Services/supabaseClient.ts';
 import './MainPage.css';
 import { FaUserCircle } from "react-icons/fa";
 import { Contador } from '../../Components/Contador/Contador.tsx'
@@ -6,10 +9,33 @@ import { ModalReserva } from '../../Components/ModalReserva/ModalReserva.tsx';
 
 
 function MainPage(){
+    const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
+        toast.success('Sesión cerrada exitosamente');
+        navigate('/');
+    };
 
     return(
         <>
@@ -17,9 +43,18 @@ function MainPage(){
             <button className='Boton-Reserva' onClick={openModal}>
                 Reservar Hora
             </button>
-            <button className='Boton-Usuario'>
-                <FaUserCircle className='Icono-Usuario'/>
-            </button>
+            <div className="Contenedor-Usuario-Dropdown" ref={dropdownRef}>
+                <button className='Boton-Usuario' onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+                    <FaUserCircle className='Icono-Usuario'/>
+                </button>
+                {isDropdownOpen && (
+                    <div className="Dropdown-Menu">
+                        <button className="Dropdown-Item-Logout" onClick={handleLogout}>
+                            Cerrar Sesión
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
 
         <div className="Contenedor-ImagenPrincipal">

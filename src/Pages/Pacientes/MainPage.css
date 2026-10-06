@@ -54,6 +54,43 @@ body {
     color: #FFFFFF;
 }
 
+.Contenedor-Usuario-Dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.Dropdown-Menu {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    background-color: #FFFFFF;
+    border: 1px solid #E1EAEF;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 150px;
+    z-index: 1000;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.Dropdown-Item-Logout {
+    background-color: transparent;
+    border: none;
+    padding: 12px 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 16px;
+    color: #ff4d4f;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.Dropdown-Item-Logout:hover {
+    background-color: #fff1f0;
+}
+
 .Contenedor-ImagenPrincipal {
     width: 80%;
     height: 60vh;
