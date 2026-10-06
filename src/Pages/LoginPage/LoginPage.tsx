@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { supabase } from '../../Services/supabaseClient.ts';
 import './LoginPage.css';
+
 
 function LoginPage() {
     const navigate = useNavigate();
     
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -29,7 +32,6 @@ function LoginPage() {
 
         const userId = data.user.id;
 
-        // Obtener el rol del usuario desde la tabla 'usuarios'
         const { data: userData, error: roleError } = await supabase
             .from('usuarios')
             .select('rol')
@@ -43,12 +45,9 @@ function LoginPage() {
         }
 
         const userRole = userData.rol;
-
-        // Guardar la sesión y el rol para proteger las rutas
         localStorage.setItem('token', data.session.access_token);
         localStorage.setItem('userRole', userRole);
 
-        // Redirigir según el rol
         if (userRole === 'paciente') navigate('/main-page-paciente');
         else if (userRole === 'medico') navigate('/home-page-medico');
         else if (userRole === 'recepcionista') navigate('/home-page-recepcionista');
@@ -84,14 +83,23 @@ function LoginPage() {
                         />
 
                         <label htmlFor="Contraseña">Contraseña:</label>
-                        <input 
-                            type="password" 
-                            id="Contraseña"
-                            placeholder="**********"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                        <div className="ContenedorInput-Password">
+                            <input 
+                                type={showPassword ? "text" : "password"} 
+                                id="Contraseña"
+                                placeholder="**********"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="Boton-VerPassword"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+                            </button>
+                        </div>
 
                         <p className="Texto-Registro">
                             ¿No tienes cuenta? <Link to="/register-page">Haz clic aquí para crearla</Link>
