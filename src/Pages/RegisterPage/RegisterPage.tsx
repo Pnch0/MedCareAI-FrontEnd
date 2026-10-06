@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { supabase } from '../../Services/supabaseClient.ts';
 import './RegisterPage.css';
 
@@ -14,6 +15,7 @@ function RegisterPage() {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
@@ -118,14 +120,23 @@ function RegisterPage() {
 
                         <div className="Campo-Largo">
                             <label htmlFor="Password">Contraseña:</label>
-                            <input 
-                                type="password" 
-                                id="Password"
-                                placeholder="Crea una contraseña"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
+                            <div className="ContenedorInput-Password">
+                                <input 
+                                    type={showPassword ? "text" : "password"} 
+                                    id="Password"
+                                    placeholder="Crea una contraseña"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    className="Boton-VerPassword"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="Fila-Doble">

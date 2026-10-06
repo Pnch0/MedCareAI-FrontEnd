@@ -158,6 +158,35 @@ body {
     background-color: #4dabe9;
 }
 
+.ContenedorFormulario-RegisterPage .ContenedorInput-Password {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.ContenedorFormulario-RegisterPage .ContenedorInput-Password input {
+    width: 100%;
+    padding-right: 45px;
+}
+
+.Boton-VerPassword {
+    position: absolute;
+    right: 15px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #A2A2A2;
+    padding: 0;
+    transition: color 0.3s ease;
+}
+
+.Boton-VerPassword:hover {
+    color: #1E9CF1;
+}
 
 /* MEDIA QUERIES */
 

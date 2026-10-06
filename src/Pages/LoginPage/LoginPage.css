@@ -174,7 +174,7 @@ body {
     background-color: #4dabe9;
 }
 
-.ContenedorInput-Password {
+.ContenedorFormulario-LoginPage .ContenedorInput-Password {
     position: relative;
     width: 75%;
     display: flex;
@@ -220,7 +220,7 @@ body {
 
     .ContenedorFormulario-LoginPage label,
     .ContenedorFormulario-LoginPage input,
-    .ContenedorInput-Password,
+    .ContenedorFormulario-LoginPage .ContenedorInput-Password,
     .Boton-LoginPage,
     .Texto-Registro {
         width: 90%; 
