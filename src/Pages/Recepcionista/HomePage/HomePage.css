@@ -1,124 +1,317 @@
-.ContenedorPrincipal-HomeRecepcionista {
+.ContenendorPrincipal-HomePage{
     width: 100%;
     height: 100dvh;
-    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.ContenedorSuperior-HomePage{
+    width: 100%;
+    height: 15dvh;
+    display: flex;
+    flex-direction: row;
+}
+
+.ContenedorSuperior-Izquierda{
+    width: 50%;
+    height: 15dvh;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.ContenedorSuperior-Derecha{
+    width: 50%;
+    height: 15dvh;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.ContenedorSuperior-Derecha button{
+    padding: 20px 35px;
+    background-color: #1E9CF1;
+    color: #FFFFFF;
+    font-size: 18px;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 12px;
+}
+
+
+.ContenedorSuperior-Derecha button:hover{
+    background-color: #1e9df1e1;
+}
+
+
+.ContenedorInferior-HomePageRecepcionista{
+    width: 100%;
+    height: 85dvh;
     display: flex;
     flex-direction: column;
 }
 
-.ContenedorNombre-HomeRecepcionista {
-    width: 100%;
-    height: 20dvh;
-    display: flex;
-    align-items: center;
-    padding-left: 20px;
-    color: #1E9CF1;
-}
 
-.Contenedor-DashboardRecepcionista {
+.ContenedorInferiorSuperior-HomePageRecepcionista{
     width: 100%;
-    height: 80dvh;
+    height: 35dvh;
     display: flex;
     flex-direction: row;
     justify-content: center;
-    gap: 30px;
+    padding: 0px 25px 0px 25px;
+    gap: 20px;
 }
 
-.Contenedor-CitasDelDia {
-    width: 65%;
-    height: 80dvh;
+
+.ContenedorIzquierda-HomePageRecepcionista{
+    width: 50%;
+    height: 32dvh;
     background-color: #F7F8F8;
     border: 1px solid #E1EAEF;
-    border-radius: 25px;
+    border-radius: 15px;
 }
 
-.Titulo-CitasDelDia {
+.EncabezadoListado-CitasRecepcionista, .EncabezadoListado-InformacionBoxes{
     width: 100%;
-    height: 12dvh;
-    border-radius: 25px 25px 0px 0px;
+    height: 8dvh;
     display: flex;
-    align-items: center;
-    padding: 15px;
-    font-size: 20px;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 20px;
     color: #1E9CF1;
+    font-size: 22px;
     border-bottom: 1px solid #E1EAEF;
 }
 
-.ContenedorListado-CitasDelDia {
-    width: 90%;
-    height: 62dvh;
-    margin: auto;
-    margin-top: 20px;
-    border-radius: 15px;
-    border: 1px solid #E1EAEF;
-    background-color: #FFFFFF;
-    padding: 20px;
+.Listado-CitasRecepcionista{
+    width: 100%;
+    height: 24dvh;
+    display: flex;
+    flex-direction: column;
 }
 
-.ContenedorDashboardDerecha-Recepcionista {
+.Listado-InformacionBoxes{
+    width: 100%;
+    height: 24dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding-left: 25px;
+    font-size: 25px;
+}
+
+.Card-CitasRecepcionista{
+    width: 100%;
+    height: 8dvh;
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid #E1EAEF;
+}
+
+.Card-CitasRecepcionista-Izquierda{
+    width: 50%;
+    height: 8dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 20px;
+}
+
+.Card-CitasRecepcionista-Izquierda p{
+    color: #A1A1A1;
+}
+
+.Card-CitasRecepcionista-Derecha{
+    width: 50%;
+    height: 8dvh;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 20px;
+    gap: 20px;
+}
+
+.Card-CitasRecepcionista-Derecha .Btn-Asistio{
+    padding: 10px 25px;
+    background-color: #17BF63;
+    color: #FFFFFF;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.Card-CitasRecepcionista-Derecha .Btn-Asistio:hover{
+    background-color: #17bf63ce;
+}
+
+.Card-CitasRecepcionista-Derecha .Btn-NoAsistio{
+    padding: 10px 25px;
+    background-color: #F4212E;
+    color: #FFFFFF;
+    border-radius: 10px;
+    font-size: 16px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.Card-CitasRecepcionista-Derecha .Btn-NoAsistio:hover{
+    background-color: #f4212fd2;
+}
+
+.ContenedorDerecha-HomePageRecepcionista{
+    width: 50%;
+    height: 32dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+}
+
+.ContenedorInferiorInferior-HomePageRecepcionista{
+    width: 100%;
+    height: 50dvh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding: 0px 25px 0px 25px;
+    gap: 20px;
+}
+
+.ContenedorInferiorInferior-Izquierda{
+    width: 70%;
+    height: 48dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+
+}
+
+.ContenedorInferiorInferior-Derecha{
     width: 30%;
-    height: 80dvh;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.Contenedor-PacientesHoy {
-    width: 100%;
-    height: 39dvh;
+    height: 48dvh;
     background-color: #F7F8F8;
     border: 1px solid #E1EAEF;
     border-radius: 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
-.Titulo-PacientesHoy {
+
+.ContenedorEncabezado-IzquierdaHome{
     width: 100%;
     height: 10dvh;
-    border-radius: 15px 15px 0 0;
+    display: flex;
+    align-items: center;
+    color: #1E9CF1;
+    padding-left: 20px;
+}
+
+.ContenedorListado-IzquierdaHome{
+    width: 100%;
+    height: 38dvh;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.Card-ListadoOMRO{
+    width: 100%;
+    height: 10dvh;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 10px;
+    border: 1px solid #E1EAEF;
+    gap: 15px;
+}
+
+.ContenedorIcono-CardOMRO{
+    width: 6%;
+    height: 8dvh;
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: #1e9df169;
+    border-radius: 100%;
+    border: 1px solid #1E9CF1;
+}
+
+.Icono-OMRO{
+    font-size: 38px;
     color: #1E9CF1;
-    font-size: 20px;
 }
 
-.ContenedorListado-PacientesHoy {
-    width: 80%;
-    height: 25dvh;
-    background-color: #FFFFFF;
-    border: 1px solid #E1EAEF;
-    border-radius: 15px;
-}
-
-.Contenedor-NuevaReserva {
-    width: 100%;
-    height: 39dvh;
-    background-color: #F7F8F8;
-    border: 1px solid #E1EAEF;
-    border-radius: 15px;
+.ContenedorDatos-CardOMRO{
+    width: 84%;
+    height: 10dvh;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    justify-content: center;
+    gap: 5px;
 }
 
-.Titulo-NuevaReserva {
-    width: 100%;
+.ContenedorDatos-CardOMRO p{
+    color: #989898;
+    font-weight: bold;
+}
+
+.ContenedorEstado-CardOMRO{
+    width: 10%;
     height: 10dvh;
-    border-radius: 15px 15px 0 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #1E9CF1;
-    font-size: 20px;
 }
 
-.ContenedorListado-NuevaReserva {
-    width: 80%;
-    height: 25dvh;
-    background-color: #FFFFFF;
-    border: 1px solid #E1EAEF;
-    border-radius: 15px;
+.ContenedorLetra-CardOMRO{
+    width: 60%;
+    height: 8dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background-color: #17bf638c;
+    color: #17BF63;
+    border: 1px solid #FFFFFF;
+    font-size: 22px;
+}
+
+
+.ContenedorTitulo-DerechaHome{
+    width: 100%;
+    height: 24dvh;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    color: #1E9CF1;
+    font-size: 20px;
+    padding-bottom: 20px;
+}
+
+.ContenedorBotones-DerechaHome{
+    width: 100%;
+    height: 24dvh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 30px;
+    padding-top: 20px;
+}
+
+.ContenedorBotones-DerechaHome button{
+    background-color: #1E9CF1;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    padding: 15px 30px;
+    color: #FFFFFF;
+    font-size: 18px;
+    font-weight: 500;
+    border-radius: 10px;
+}
+
+.ContenedorBotones-DerechaHome button:hover{
+    background-color: #1e9df1e3;
 }
