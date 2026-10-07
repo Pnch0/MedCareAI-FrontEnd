@@ -10,6 +10,12 @@ import {
 interface ReservaModalProps {
     isOpen: boolean;
     onClose: () => void;
+    paciente?: {
+        id: string;
+        nombre: string;
+        apellido: string;
+        rut: string;
+    };
 }
 
 interface DayInfo {
@@ -20,7 +26,7 @@ interface DayInfo {
 
 const HORAS_POR_DEFECTO = '12:00';
 
-export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose }) => {
+export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose, paciente }) => {
     const [baseDate, setBaseDate] = useState<Date>(new Date());
     const [days, setDays] = useState<DayInfo[]>([]); 
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
@@ -162,6 +168,7 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose }) =
 
     const handleReservar = () => {
         console.log("Reserva confirmada:", {
+            paciente: paciente ? `${paciente.nombre} ${paciente.apellido} (${paciente.rut})` : 'Paciente Actual',
             especialidad: especialidadNombre,
             medico: medicoSeleccionado
                 ? `${medicoSeleccionado.nombre} ${medicoSeleccionado.apellido}`
@@ -176,7 +183,9 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose }) =
     return (
         <div className="Modal-Overlay" onClick={cerrarModal}>
             <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
-                <h2 className="Modal-Title">Reservar Hora</h2>
+                <h2 className="Modal-Title">
+                    Reservar Hora {paciente && <span style={{ fontSize: '0.7em', color: '#666', marginLeft: '10px' }}>para: {paciente.nombre} {paciente.apellido}</span>}
+                </h2>
                 
                 <div className="Modal-Body">
                     <div className="Modal-Panel Izquierdo">

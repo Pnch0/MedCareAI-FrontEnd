@@ -1,0 +1,110 @@
+.ContenedorPrincipal-AsignarHorarios{
+    width: 100%;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.AsignarHorarios-Container {
+    width: 60%;
+    height: auto;
+    max-height: 80dvh;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 0 auto;
+    
+    
+}
+
+.AsignarHorarios-Title {
+    color: #1E9CF1;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.AsignarHorarios-SearchContainer {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.AsignarHorarios-SearchWrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.AsignarHorarios-SearchIcon {
+    position: absolute;
+    left: 1.2rem;
+    color: #1E9CF1;
+    font-size: 1.2rem;
+    pointer-events: none;
+}
+
+.AsignarHorarios-SearchInput {
+    width: 100%;
+    padding: 0.85rem 1.2rem 0.85rem 3.2rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.AsignarHorarios-SearchInput:focus {
+    border-color: #1E9CF1;
+    box-shadow: 0 0 5px rgba(30, 156, 241, 0.25);
+}
+
+.AsignarHorarios-TableContainer {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.AsignarHorarios-Table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.AsignarHorarios-Table th,
+.AsignarHorarios-Table td {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.AsignarHorarios-Table th {
+    background-color: #1E9CF1;
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+
+.AsignarHorarios-BtnReserva {
+    background-color: #1E9CF1;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.AsignarHorarios-BtnReserva:hover {
+    background-color: #1e9df1e3;
+}
+
+.AsignarHorarios-NoResults {
+    text-align: center;
+    color: #777;
+    padding: 2rem !important;
+}
