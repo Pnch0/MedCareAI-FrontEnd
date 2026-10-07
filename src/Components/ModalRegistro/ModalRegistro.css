@@ -1,0 +1,50 @@
+.ModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.ModalContent {
+    position: relative;
+    background: transparent;
+    border-radius: 8px;
+    max-height: 95vh;
+    overflow-y: auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.CloseButton {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: #F7F8F8;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #1E9CF1;
+    z-index: 1001;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+
+.Modal-RegisterPage {
+    position: relative;
+    margin: 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+

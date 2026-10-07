@@ -1,7 +1,11 @@
+import { useState } from "react";
 import "./HomePage.css"
 import { FaClipboardList } from "react-icons/fa";
+import RegisterPatientModal from "../../../Components/ModalRegistro/ModalRegistro";
 
 function HomePageRecepcionista() {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     return (
         <>
         <div className="ContenendorPrincipal-HomePage">
@@ -10,7 +14,7 @@ function HomePageRecepcionista() {
                     <h1>Bienvenido Wilson Flores</h1>
                 </div>
                 <div className="ContenedorSuperior-Derecha">
-                    <button>
+                    <button onClick={() => setIsModalOpen(true)}>
                         Registrar Paciente
                     </button>
                 </div>
@@ -78,6 +82,9 @@ function HomePageRecepcionista() {
                 </div>
             </div>
         </div>
+        {isModalOpen && (
+            <RegisterPatientModal onClose={() => setIsModalOpen(false)} />
+        )}
         </>
     )
 }
