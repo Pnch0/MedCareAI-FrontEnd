@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from 'sonner';
 import { supabase } from '../../Services/supabaseClient.ts';
+import { apiClient } from '../../Services/apiClient.ts';
 import './RegisterPage.css';
 
 function RegisterPage() {
@@ -38,45 +39,26 @@ function RegisterPage() {
         const userId = authData.user?.id;
 
         if (userId) {
-            const currentDate = new Date().toISOString();
-            const { error: userError } = await supabase
-                .from('usuarios')
-                .insert([
-                    {
-                        id: userId,
+
+
+            try {
+                await apiClient('/api/Patients', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        userId: userId,
                         email: email,
-                        rol: 'paciente',
-                        CreatedAt: currentDate
-                    }
-                ]);
-
-            if (userError) {
-                toast.error(`Error al crear usuario general: ${userError.message}`);
-                setLoading(false);
-                return;
-            }
-
-            const pacienteId = crypto.randomUUID();
-
-            const { error: dbError } = await supabase
-                .from('pacientes') 
-                .insert([
-                    {
-                        id: pacienteId,
-                        usuario_id: userId, 
-                        nombre: nombre,
-                        apellido: apellido,
+                        firstName: nombre,
+                        lastName: apellido,
                         rut: rut,
-                        telefono: numero,
-                        fecha_nacimiento: fechaNacimiento,
-                        genero: genero,
-                        email: email,
-                        CreatedAt: currentDate
-                    }
-                ]);
-
-            if (dbError) {
-                toast.error(`Error al guardar perfil de paciente: ${dbError.message}`);
+                        birthDate: fechaNacimiento,
+                        gender: genero,
+                        phone: numero,
+                        address: "",
+                        neighbourhood: ""
+                    })
+                });
+            } catch (error: any) {
+                toast.error(`Error al registrar paciente en el servidor: ${error.message}`);
                 setLoading(false);
                 return;
             }

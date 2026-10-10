@@ -6,5 +6,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     open: true,
+    proxy: {
+      '/api': {
+        target: 'https://vfnpp611-7044.brs.devtunnels.ms',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
 })
