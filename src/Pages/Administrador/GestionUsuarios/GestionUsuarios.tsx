@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./GestionUsuarios.css";
 import { FaSearch, FaEdit , FaTrash } from "react-icons/fa";
 import { toast } from "sonner";
@@ -24,134 +24,61 @@ const USER_ROLE_MAP: Record<RolUsuario, number> = {
     administrador: 3
 };
 
-const MOCK_USUARIOS: Usuario[] = [
-    {
-        id: 'usuario-1',
-        email: 'alejandra.munoz@medcare.cl',
-        rol: 'administrador',
-        nombre: 'Alejandra',
-        apellido: 'Muñoz Vergara',
-        rut: '12.345.678-5',
-        especialidad: null,
-        cargo: 'Directora de la Clinica',
-        telefono: '+56 9 6123 4567',
-        estado: 'activo'
-    },
-    {
-        id: 'usuario-2',
-        email: 'rodrigo.salas@medcare.cl',
-        rol: 'administrador',
-        nombre: 'Rodrigo',
-        apellido: 'Salas Pinto',
-        rut: '15.432.187-K',
-        especialidad: null,
-        cargo: 'Coordinador Administrativo',
-        telefono: '+56 9 7234 5678',
-        estado: 'inactivo'
-    },
-    {
-        id: 'usuario-3',
-        email: 'camila.fernandez@medcare.cl',
-        rol: 'medico',
-        nombre: 'Camila',
-        apellido: 'Fernández Reyes',
-        rut: '18.765.432-7',
-        especialidad: 'Cardiología',
-        cargo: 'Médico Cardiólogo',
-        telefono: '+56 9 8345 6789',
-        estado: 'activo'
-    },
-    {
-        id: 'usuario-4',
-        email: 'sebastian.maldonado@medcare.cl',
-        rol: 'medico',
-        nombre: 'Sebastián',
-        apellido: 'Maldonado Cruz',
-        rut: '20.123.456-5',
-        especialidad: 'Pediatría',
-        cargo: 'Médico Pediatra',
-        telefono: '+56 9 9456 7890',
-        estado: 'activo'
-    },
-    {
-        id: 'usuario-5',
-        email: 'isabel.contreras@medcare.cl',
-        rol: 'medico',
-        nombre: 'Isabel',
-        apellido: 'Contreras Rivas',
-        rut: '22.456.789-8',
-        especialidad: 'Dermatología',
-        cargo: 'Médico Dermatóloga',
-        telefono: '+56 9 5567 8901',
-        estado: 'inactivo'
-    },
-    {
-        id: 'usuario-6',
-        email: 'nicole.bravo@medcare.cl',
-        rol: 'recepcionista',
-        nombre: 'Nicole',
-        apellido: 'Bravo Espinoza',
-        rut: '24.135.678-7',
-        especialidad: null,
-        cargo: 'Recepcionista',
-        telefono: '+56 9 6678 9012',
-        estado: 'activo'
-    },
-    {
-        id: 'usuario-7',
-        email: 'matias.villalobos@medcare.cl',
-        rol: 'recepcionista',
-        nombre: 'Matías',
-        apellido: 'Villalobos Tapia',
-        rut: '16.273.849-6',
-        especialidad: null,
-        cargo: 'Recepcionista Turno AM',
-        telefono: '+56 9 7789 0123',
-        estado: 'activo'
-    },
-    {
-        id: 'usuario-8',
-        email: 'juan.perez@medcare.cl',
-        rol: 'paciente',
-        nombre: 'Juan',
-        apellido: 'Pérez Soto',
-        rut: '19.827.364-3',
-        especialidad: null,
-        cargo: null,
-        telefono: '+56 9 8890 1234',
-        estado: 'activo'
-    },
-    {
-        id: 'usuario-9',
-        email: 'maria.gomez@medcare.cl',
-        rol: 'paciente',
-        nombre: 'María',
-        apellido: 'Gómez Lara',
-        rut: '10.928.374-6',
-        especialidad: null,
-        cargo: null,
-        telefono: '+56 9 9901 2345',
-        estado: 'activo'
-    },
-    {
-        id: 'usuario-10',
-        email: 'diego.rios@medcare.cl',
-        rol: 'paciente',
-        nombre: 'Diego',
-        apellido: 'Ríos Palma',
-        rut: '17.263.549-0',
-        especialidad: null,
-        cargo: null,
-        telefono: '+56 9 4012 3456',
-        estado: 'inactivo'
+const ROL_REVERSO_MAP: Record<number, RolUsuario> = {
+    0: 'paciente',
+    1: 'recepcionista',
+    2: 'medico',
+    3: 'administrador'
+};
+
+const mapearRol = (role: number | string): RolUsuario => {
+    if (typeof role === 'number') {
+        return ROL_REVERSO_MAP[role] || 'recepcionista';
     }
-]
+    const r = String(role).toLowerCase();
+    if (r === 'administrador' || r === 'admin') return 'administrador';
+    if (r === 'medico') return 'medico';
+    if (r === 'recepcionista') return 'recepcionista';
+    if (r === 'paciente') return 'paciente';
+    return 'recepcionista';
+};
 
 function GestionUsuariosAdministrador(){
 
-    const [usuarios, setUsuarios] = useState<Usuario[]>(MOCK_USUARIOS);
+    const [usuarios, setUsuarios] = useState<Usuario[]>([]);
     const [modalAbierto, setModalAbierto] = useState<boolean>(false);
     const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
+    const [cargando, setCargando] = useState<boolean>(true);
+
+    const cargarUsuarios = async () => {
+        try {
+            setCargando(true);
+            const data = await apiClient('/api/Staff', { method: 'GET' });
+            if (Array.isArray(data)) {
+                const listado: Usuario[] = data.map((item: any) => ({
+                    id: String(item.id || item.staffId || crypto.randomUUID()),
+                    rut: item.rut || '',
+                    nombre: item.firstName || '',
+                    apellido: item.lastName || '',
+                    email: item.email || '',
+                    rol: mapearRol(item.role),
+                    especialidad: null,
+                    cargo: null,
+                    telefono: '',
+                    estado: 'activo'
+                }));
+                setUsuarios(listado);
+            }
+        } catch (error: any) {
+            toast.error(`Error al cargar usuarios: ${error.message}`);
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    useEffect(() => {
+        cargarUsuarios();
+    }, []);
 
     const eliminarUsuario = (id: string) => {
         const confirmar = window.confirm('¿Estas seguro de eliminar este usuario?');
@@ -220,7 +147,7 @@ function GestionUsuariosAdministrador(){
             });
 
             toast.success('Usuario creado exitosamente');
-            setUsuarios(prev => [{ ...usuarioGuardado, id: userId }, ...prev]);
+            await cargarUsuarios();
             cerrarModal();
         } catch (error: any) {
             toast.error(`Error al registrar en el servidor: ${error.message}`);
@@ -273,36 +200,46 @@ function GestionUsuariosAdministrador(){
                             </ul>
                         </div>
                         <div className="ContenedorListado-DatosUsuario">
-                            {usuarios.map((usuario) => (
-                                <div className="Card-ListadoUsuarios" key={usuario.id}>
-                                    <ul className="Fila-GestionUsuarios">
-                                        <li>{usuario.rut}</li>
-                                        <li>{usuario.nombre}</li>
-                                        <li>{usuario.apellido}</li>
-                                        <li>{usuario.email}</li>
-                                        <li>{usuario.rol}</li>
-                                        <li className={`Estado-GestionUsuarios ${usuario.estado}`}>{usuario.estado}</li>
-                                        <li className="Acciones-GestionUsuarios">
-                                            <button
-                                                type="button"
-                                                className="Btn-Editar-GestionUsuarios"
-                                                title="Editar usuario"
-                                                onClick={() => abrirModalEditar(usuario)}
-                                            >
-                                                <FaEdit className="Icono-Acciones"/>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="Btn-Eliminar-GestionUsuarios"
-                                                title="Eliminar usuario"
-                                                onClick={() => eliminarUsuario(usuario.id)}
-                                            >
-                                                <FaTrash className="Icono-Acciones"/>
-                                            </button>
-                                        </li>
-                                    </ul>
+                            {cargando ? (
+                                <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+                                    Cargando usuarios...
                                 </div>
-                            ))}
+                            ) : usuarios.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+                                    No hay usuarios registrados.
+                                </div>
+                            ) : (
+                                usuarios.map((usuario) => (
+                                    <div className="Card-ListadoUsuarios" key={usuario.id}>
+                                        <ul className="Fila-GestionUsuarios">
+                                            <li>{usuario.rut}</li>
+                                            <li>{usuario.nombre}</li>
+                                            <li>{usuario.apellido}</li>
+                                            <li>{usuario.email}</li>
+                                            <li>{usuario.rol}</li>
+                                            <li className={`Estado-GestionUsuarios ${usuario.estado}`}>{usuario.estado}</li>
+                                            <li className="Acciones-GestionUsuarios">
+                                                <button
+                                                    type="button"
+                                                    className="Btn-Editar-GestionUsuarios"
+                                                    title="Editar usuario"
+                                                    onClick={() => abrirModalEditar(usuario)}
+                                                >
+                                                    <FaEdit className="Icono-Acciones"/>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="Btn-Eliminar-GestionUsuarios"
+                                                    title="Eliminar usuario"
+                                                    onClick={() => eliminarUsuario(usuario.id)}
+                                                >
+                                                    <FaTrash className="Icono-Acciones"/>
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>

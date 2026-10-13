@@ -1,9 +1,11 @@
 export const BASE_URL = '';
 
 export const apiClient = async (endpoint: string, options: RequestInit = {}) => {
-    const defaultHeaders = {
+    const token = localStorage.getItem('token');
+    const defaultHeaders: Record<string, string> = {
         'Content-Type': 'application/json',
         'X-Tunnel-Skip-AntiPhishing-Page': 'True',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     };
 
     const config: RequestInit = {
