@@ -1,7 +1,28 @@
 import { useState } from "react";
 import "./GestionUsuarios.css";
 import { FaSearch, FaEdit , FaTrash } from "react-icons/fa";
-import { ModalUsuario, type Usuario } from "../../../Components/ModalUsuario/ModalUsuario.tsx";
+import { toast } from "sonner";
+import { createClient } from "@supabase/supabase-js";
+import { ModalUsuario, type Usuario, type RolUsuario } from "../../../Components/ModalUsuario/ModalUsuario.tsx";
+import { apiClient } from "../../../Services/apiClient.ts";
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+const authAdminClient = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+    }
+});
+
+const USER_ROLE_MAP: Record<RolUsuario, number> = {
+    paciente: 0,
+    recepcionista: 1,
+    medico: 2,
+    administrador: 3
+};
 
 const MOCK_USUARIOS: Usuario[] = [
     {
@@ -149,16 +170,62 @@ function GestionUsuariosAdministrador(){
         setModalAbierto(true);
     };
 
-    const manejarGuardarUsuario = (usuarioGuardado: Usuario) => {
+    const manejarGuardarUsuario = async (usuarioGuardado: Usuario) => {
         if (usuarioEditando) {
             setUsuarios(prev => 
                 prev.map(u => (u.id === usuarioGuardado.id ? usuarioGuardado : u))
             );
-        } else {
-            setUsuarios(prev => [usuarioGuardado, ...prev]);
+            toast.success('Usuario actualizado localmente');
+            cerrarModal();
+            return;
         }
-        
-        cerrarModal();
+
+        if (!usuarioGuardado.password) {
+            toast.error('Debe ingresar una contraseña para el nuevo usuario');
+            throw new Error('Falta contraseña');
+        }
+
+        const { data: authData, error: authError } = await authAdminClient.auth.signUp({
+            email: usuarioGuardado.email,
+            password: usuarioGuardado.password,
+        });
+
+        if (authError) {
+            toast.error(`Error al registrar en Supabase Auth: ${authError.message}`);
+            throw authError;
+        }
+
+        const userId = authData.user?.id;
+        if (!userId) {
+            toast.error('No se pudo obtener el ID del usuario en Supabase Auth');
+            throw new Error('Sin userId');
+        }
+
+        try {
+            const payload = {
+                userId: userId,
+                firstName: usuarioGuardado.nombre,
+                lastName: usuarioGuardado.apellido,
+                email: usuarioGuardado.email,
+                role: USER_ROLE_MAP[usuarioGuardado.rol],
+                rut: usuarioGuardado.rut,
+                specialty: usuarioGuardado.especialidad || "",
+                roleName: usuarioGuardado.cargo || "",
+                phone: usuarioGuardado.telefono
+            };
+
+            await apiClient('/api/Staff', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            toast.success('Usuario creado exitosamente');
+            setUsuarios(prev => [{ ...usuarioGuardado, id: userId }, ...prev]);
+            cerrarModal();
+        } catch (error: any) {
+            toast.error(`Error al registrar en el servidor: ${error.message}`);
+            throw error;
+        }
     };
 
     const cerrarModal = () => {

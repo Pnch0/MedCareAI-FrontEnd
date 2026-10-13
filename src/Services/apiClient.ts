@@ -17,9 +17,22 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}) => 
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
 
     if (!response.ok) {
-        throw new Error(`Error en la petición: ${response.statusText}`);
+        let errorMsg = response.statusText;
+        try {
+            const errText = await response.text();
+            if (errText) {
+                try {
+                    const errJson = JSON.parse(errText);
+                    errorMsg = errJson.message || errJson.title || errJson.detail || errText;
+                } catch {
+                    errorMsg = errText;
+                }
+            }
+        } catch {
+            
+        }
+        throw new Error(errorMsg || `Error en la petición: ${response.status}`);
     }
-
 
     const text = await response.text();
     return text ? JSON.parse(text) : {};

@@ -17,13 +17,13 @@ export type Usuario = {
     cargo: string | null
     telefono: string
     estado: EstadoUsuario
+    password?: string
 }
 
 interface ModalUsuarioProps {
     isOpen: boolean;
     onClose: () => void;
-    onGuardar: (usuario: Usuario) => void;
-    // NUEVO: Recibe el usuario que queremos editar (opcional)
+    onGuardar: (usuario: Usuario) => void | Promise<void>;
     usuarioAEditar?: Usuario | null; 
 }
 
@@ -81,6 +81,7 @@ export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onG
     const [estado, setEstado] = useState<EstadoUsuario>('activo');
     const [especialidad, setEspecialidad] = useState('');
     const [cargo, setCargo] = useState('');
+    const [cargando, setCargando] = useState(false);
 
     const [errorRut, setErrorRut] = useState('');
 
@@ -166,7 +167,7 @@ export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onG
         setErrorRut('');
     };
 
-    const handleGuardar = (e: React.FormEvent) => {
+    const handleGuardar = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!validarRut(rut)) {
@@ -181,21 +182,28 @@ export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onG
 
         const rolSeleccionado = rol as RolUsuario;
 
-        onGuardar({
-            // MODIFICADO: Si estamos editando mantenemos el ID original, si no, creamos uno nuevo
-            id: usuarioAEditar ? usuarioAEditar.id : `usuario-${Date.now()}`,
-            email: email,
-            rol: rolSeleccionado,
-            nombre: nombre,
-            apellido: apellido,
-            rut: formatearRut(rut),
-            especialidad: rolSeleccionado === 'medico' ? especialidad || null : null,
-            cargo: rolSeleccionado === 'paciente' ? null : cargo || null,
-            telefono: telefono,
-            estado: estado
-        });
+        setCargando(true);
+        try {
+            await onGuardar({
+                id: usuarioAEditar ? usuarioAEditar.id : `usuario-${Date.now()}`,
+                email: email,
+                rol: rolSeleccionado,
+                nombre: nombre,
+                apellido: apellido,
+                rut: formatearRut(rut),
+                especialidad: rolSeleccionado === 'medico' ? especialidad || null : null,
+                cargo: rolSeleccionado === 'paciente' ? null : cargo || null,
+                telefono: telefono,
+                estado: estado,
+                password: password || undefined
+            });
 
-        cerrarModal();
+            cerrarModal();
+        } catch {
+            
+        } finally {
+            setCargando(false);
+        }
     };
 
     if (!isOpen) return null;
@@ -307,12 +315,10 @@ export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onG
                                 <input
                                     type="password"
                                     id="Usuario_Password"
-                                    // MODIFICADO: El placeholder cambia en edición
                                     placeholder={esEdicion ? "Deja en blanco para mantener" : "Mínimo 6 caracteres"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     minLength={6}
-                                    // MODIFICADO: No es obligatoria si estamos editando
                                     required={!esEdicion}
                                 />
                             </div>
@@ -391,8 +397,8 @@ export const ModalUsuario: React.FC<ModalUsuarioProps> = ({ isOpen, onClose, onG
                         <button type="button" className="Btn-Cancelar-ModalUsuario" onClick={cerrarModal}>
                             Cancelar
                         </button>
-                        <button type="submit" className="Btn-Accion-ModalUsuario">
-                            {esEdicion ? 'Guardar Cambios' : 'Añadir Usuario'}
+                        <button type="submit" className="Btn-Accion-ModalUsuario" disabled={cargando}>
+                            {cargando ? 'Guardando...' : esEdicion ? 'Guardar Cambios' : 'Añadir Usuario'}
                         </button>
                     </div>
                 </form>
