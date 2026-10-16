@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { createClient } from "@supabase/supabase-js";
 import { ModalUsuario, type Usuario, type RolUsuario } from "../../../Components/ModalUsuario/ModalUsuario.tsx";
 import { apiClient } from "../../../Services/apiClient.ts";
+import { supabase } from "../../../Services/supabaseClient.ts";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -117,6 +118,16 @@ function GestionUsuariosAdministrador(){
                     body: JSON.stringify(payload)
                 });
 
+                // Actualizar también en la tabla 'usuarios' de Supabase
+                try {
+                    await supabase
+                        .from('usuarios')
+                        .update({ rol: usuarioGuardado.rol })
+                        .eq('id', usuarioGuardado.id);
+                } catch (supaErr) {
+                    console.warn('Error al actualizar rol en Supabase:', supaErr);
+                }
+
                 toast.success('Usuario actualizado exitosamente');
                 await cargarUsuarios();
                 cerrarModal();
@@ -165,6 +176,27 @@ function GestionUsuariosAdministrador(){
                 method: 'POST',
                 body: JSON.stringify(payload)
             });
+
+            // Guardar/actualizar en la tabla 'usuarios' de Supabase con el rol seleccionado
+            try {
+                const { error: userTableError } = await supabase
+                    .from('usuarios')
+                    .upsert({
+                        id: userId,
+                        email: usuarioGuardado.email,
+                        rol: usuarioGuardado.rol,
+                        CreatedAt: new Date().toISOString()
+                    });
+
+                if (userTableError) {
+                    await supabase
+                        .from('usuarios')
+                        .update({ rol: usuarioGuardado.rol })
+                        .eq('id', userId);
+                }
+            } catch (supaErr) {
+                console.warn('Error al guardar rol en tabla usuarios:', supaErr);
+            }
 
             toast.success('Usuario creado exitosamente');
             await cargarUsuarios();

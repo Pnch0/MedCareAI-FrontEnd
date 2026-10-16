@@ -3,8 +3,26 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from 'sonner';
 import { supabase } from '../../Services/supabaseClient.ts';
+import { apiClient } from '../../Services/apiClient.ts';
 import './LoginPage.css';
 
+const mapearRolStaff = (role: number | string): string => {
+    if (typeof role === 'number') {
+        const numMap: Record<number, string> = {
+            0: 'paciente',
+            1: 'recepcionista',
+            2: 'medico',
+            3: 'administrador'
+        };
+        return numMap[role] || 'recepcionista';
+    }
+    const r = String(role).toLowerCase();
+    if (r === 'administrador' || r === 'admin') return 'administrador';
+    if (r === 'medico' || r === 'doctor') return 'medico';
+    if (r === 'recepcionista' || r === 'receptionist') return 'recepcionista';
+    if (r === 'paciente' || r === 'patient') return 'paciente';
+    return r;
+};
 
 function LoginPage() {
     const navigate = useNavigate();
@@ -30,21 +48,51 @@ function LoginPage() {
         }
 
         const userId = data.user.id;
+        const userEmail = data.user.email || email;
+        const accessToken = data.session.access_token;
+        localStorage.setItem('token', accessToken);
 
-        const { data: userData, error: roleError } = await supabase
+        let userRole = 'paciente';
+
+        const { data: userData } = await supabase
             .from('usuarios')
             .select('rol')
             .eq('id', userId)
             .single();
 
-        if (roleError || !userData) {
-            toast.error('Error al obtener el rol del usuario.');
-            setLoading(false);
-            return;
+        if (userData?.rol) {
+            userRole = userData.rol;
         }
 
-        const userRole = userData.rol;
-        localStorage.setItem('token', data.session.access_token);
+        try {
+            const staffList = await apiClient('/api/Staff', { method: 'GET' });
+            if (Array.isArray(staffList)) {
+                const staffMember = staffList.find((s: any) =>
+                    (s.userId && s.userId === userId) ||
+                    (s.email && s.email.toLowerCase() === userEmail.toLowerCase())
+                );
+
+                if (staffMember && staffMember.role !== undefined) {
+                    const mappedRole = mapearRolStaff(staffMember.role);
+                    if (mappedRole) {
+                        userRole = mappedRole;
+                        if (userData?.rol !== mappedRole) {
+                            await supabase
+                                .from('usuarios')
+                                .upsert({
+                                    id: userId,
+                                    email: userEmail,
+                                    rol: mappedRole,
+                                    CreatedAt: new Date().toISOString()
+                                });
+                        }
+                    }
+                }
+            }
+        } catch (staffErr) {
+            console.warn('No se pudo verificar staff en backend, usando rol de Supabase:', staffErr);
+        }
+
         localStorage.setItem('userRole', userRole);
 
         toast.success('Inicio de sesión exitoso');
