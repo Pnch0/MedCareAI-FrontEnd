@@ -5,11 +5,11 @@ import { FaSearch } from "react-icons/fa";
 
 // Mock data para los usuarios
 const MOCK_USUARIOS = [
-    { id: "1", rut: "11.111.111-1", nombre: "Juan", apellido: "Pérez", email: "juan.perez@email.com" },
-    { id: "2", rut: "22.222.222-2", nombre: "María", apellido: "González", email: "maria.gonzalez@email.com" },
-    { id: "3", rut: "33.333.333-3", nombre: "Pedro", apellido: "Soto", email: "pedro.soto@email.com" },
-    { id: "4", rut: "44.444.444-4", nombre: "Ana", apellido: "Martínez", email: "ana.martinez@email.com" },
-    { id: "5", rut: "55.555.555-5", nombre: "Luis", apellido: "Rodríguez", email: "luis.rodriguez@email.com" },
+    { id: "11111111-1111-1111-1111-111111111111", rut: "11.111.111-1", nombre: "Juan", apellido: "Pérez", email: "juan.perez@email.com" },
+    { id: "22222222-2222-2222-2222-222222222222", rut: "22.222.222-2", nombre: "María", apellido: "González", email: "maria.gonzalez@email.com" },
+    { id: "33333333-3333-3333-3333-333333333333", rut: "33.333.333-3", nombre: "Pedro", apellido: "Soto", email: "pedro.soto@email.com" },
+    { id: "44444444-4444-4444-4444-444444444444", rut: "44.444.444-4", nombre: "Ana", apellido: "Martínez", email: "ana.martinez@email.com" },
+    { id: "55555555-5555-5555-5555-555555555555", rut: "55.555.555-5", nombre: "Luis", apellido: "Rodríguez", email: "luis.rodriguez@email.com" },
 ];
 
 function AsignarHorariosRecepcionista() {

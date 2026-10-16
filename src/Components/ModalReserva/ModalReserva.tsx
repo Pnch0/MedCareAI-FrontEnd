@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './ModalReserva.css';
+import { toast } from 'sonner';
+import { supabase } from '../../Services/supabaseClient.ts';
+import { apiClient } from '../../Services/apiClient.ts';
 import {
     obtenerEspecialidades,
     obtenerMedicosPorEspecialidad,
@@ -16,6 +19,8 @@ interface ReservaModalProps {
         apellido: string;
         rut: string;
     };
+    scheduleBlockId?: string;
+    schedulingSource?: string;
 }
 
 interface DayInfo {
@@ -26,12 +31,19 @@ interface DayInfo {
 
 const HORAS_POR_DEFECTO = '12:00';
 
-export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose, paciente }) => {
+export const ModalReserva: React.FC<ReservaModalProps> = ({
+    isOpen,
+    onClose,
+    paciente,
+    scheduleBlockId,
+    schedulingSource
+}) => {
     const [baseDate, setBaseDate] = useState<Date>(new Date());
     const [days, setDays] = useState<DayInfo[]>([]); 
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [selectedTime, setSelectedTime] = useState<string>(HORAS_POR_DEFECTO);
     const [sintomas, setSintomas] = useState<string>('');
+    const [guardando, setGuardando] = useState<boolean>(false);
 
     const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
     const [cargandoEspecialidades, setCargandoEspecialidades] = useState<boolean>(true);
@@ -109,6 +121,7 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose, pac
         setMedicos([]);
         setCargandoMedicos(false);
         setCargandoEspecialidades(true);
+        setGuardando(false);
     };
 
     const cerrarModal = () => {
@@ -166,18 +179,47 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose, pac
     const medicoSeleccionado = medicos.find((medico) => medico.id === medicoId) ?? null;
     const puedeReservar = Boolean(especialidad && medicoSeleccionado && selectedDay);
 
-    const handleReservar = () => {
-        console.log("Reserva confirmada:", {
-            paciente: paciente ? `${paciente.nombre} ${paciente.apellido} (${paciente.rut})` : 'Paciente Actual',
-            especialidad: especialidadNombre,
-            medico: medicoSeleccionado
-                ? `${medicoSeleccionado.nombre} ${medicoSeleccionado.apellido}`
-                : null,
-            fecha: selectedDay,
-            hora: selectedTime,
-            sintomas: sintomas
-        });
-        cerrarModal();
+    const handleReservar = async () => {
+        try {
+            setGuardando(true);
+
+            // 1. Obtener PatientId (desde el prop de recepcionista o desde la sesión de Supabase Auth)
+            let resolvedPatientId = paciente?.id;
+            if (!resolvedPatientId) {
+                const { data: authData, error: authError } = await supabase.auth.getUser();
+                if (authError || !authData.user) {
+                    toast.error('No se pudo identificar la sesión del paciente. Por favor inicia sesión nuevamente.');
+                    return;
+                }
+                resolvedPatientId = authData.user.id;
+            }
+
+            // 2. ScheduleBlockId (Placeholder temporal hasta que el controlador esté listo en el backend)
+            const resolvedBlockId = scheduleBlockId || "00000000-0000-0000-0000-000000000001";
+
+            // 3. SchedulingSource ("Recepcion" si viene paciente como prop, o "Web" por defecto)
+            const source = schedulingSource || (paciente ? "Recepcion" : "Web");
+
+            // 4. Payload exacto de CreateAppointmentCommand para el backend
+            const payload = {
+                scheduleBlockId: resolvedBlockId,
+                patientId: resolvedPatientId,
+                symptomsRaw: sintomas.trim(),
+                schedulingSource: source
+            };
+
+            await apiClient('/api/Appointments', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            toast.success('¡Cita reservada con éxito!');
+            cerrarModal();
+        } catch (error: any) {
+            toast.error(`Error al agendar cita: ${error.message}`);
+        } finally {
+            setGuardando(false);
+        }
     };
 
     return (
@@ -320,9 +362,9 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({ isOpen, onClose, pac
                         <button
                             className="Boton-Reservar-Final"
                             onClick={handleReservar}
-                            disabled={!puedeReservar}
+                            disabled={!puedeReservar || guardando}
                         >
-                            Reservar
+                            {guardando ? 'Reservando...' : 'Reservar'}
                         </button>
                     </div>
                 </div>
