@@ -62,10 +62,10 @@ function GestionUsuariosAdministrador(){
                     apellido: item.lastName || '',
                     email: item.email || '',
                     rol: mapearRol(item.role),
-                    especialidad: null,
-                    cargo: null,
-                    telefono: '',
-                    estado: 'activo'
+                    especialidad: item.specialty || null,
+                    cargo: item.roleName || null,
+                    telefono: item.phone || '',
+                    estado: item.isActive !== undefined ? (item.isActive ? 'activo' : 'inactivo') : 'activo'
                 }));
                 setUsuarios(listado);
             }
@@ -99,12 +99,32 @@ function GestionUsuariosAdministrador(){
 
     const manejarGuardarUsuario = async (usuarioGuardado: Usuario) => {
         if (usuarioEditando) {
-            setUsuarios(prev => 
-                prev.map(u => (u.id === usuarioGuardado.id ? usuarioGuardado : u))
-            );
-            toast.success('Usuario actualizado localmente');
-            cerrarModal();
-            return;
+            try {
+                const payload = {
+                    staffId: usuarioGuardado.id,
+                    firstName: usuarioGuardado.nombre,
+                    lastName: usuarioGuardado.apellido,
+                    rut: usuarioGuardado.rut,
+                    phone: usuarioGuardado.telefono || "",
+                    roleName: usuarioGuardado.cargo || "",
+                    isActive: usuarioGuardado.estado === 'activo',
+                    specialty: usuarioGuardado.especialidad || "",
+                    role: USER_ROLE_MAP[usuarioGuardado.rol]
+                };
+
+                await apiClient(`/api/Staff/${usuarioGuardado.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
+
+                toast.success('Usuario actualizado exitosamente');
+                await cargarUsuarios();
+                cerrarModal();
+                return;
+            } catch (error: any) {
+                toast.error(`Error al actualizar usuario: ${error.message}`);
+                throw error;
+            }
         }
 
         if (!usuarioGuardado.password) {
