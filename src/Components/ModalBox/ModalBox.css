@@ -111,7 +111,8 @@
     color: #333;
 }
 
-.Campo-Largo-ModalBox input{
+.Campo-Largo-ModalBox input,
+.Campo-Largo-ModalBox select{
     width: 100%;
     height: 45px;
     border-radius: 8px;
@@ -125,7 +126,8 @@
     cursor: pointer;
 }
 
-.Campo-Largo-ModalBox input:focus{
+.Campo-Largo-ModalBox input:focus,
+.Campo-Largo-ModalBox select:focus{
     border: 1px solid #1E9CF1;
 }
 

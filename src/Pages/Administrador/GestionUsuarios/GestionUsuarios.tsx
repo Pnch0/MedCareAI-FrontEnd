@@ -118,7 +118,6 @@ function GestionUsuariosAdministrador(){
                     body: JSON.stringify(payload)
                 });
 
-                // Actualizar también en la tabla 'usuarios' de Supabase
                 try {
                     await supabase
                         .from('usuarios')
@@ -177,7 +176,6 @@ function GestionUsuariosAdministrador(){
                 body: JSON.stringify(payload)
             });
 
-            // Guardar/actualizar en la tabla 'usuarios' de Supabase con el rol seleccionado
             try {
                 const { error: userTableError } = await supabase
                     .from('usuarios')
