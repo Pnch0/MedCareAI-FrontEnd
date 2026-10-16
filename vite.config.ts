@@ -8,7 +8,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'https://vfnpp611-7044.brs.devtunnels.ms',
+        target: 'https://medcare-cqrs-clinical-api.onrender.com',
         changeOrigin: true,
         secure: false,
       }
