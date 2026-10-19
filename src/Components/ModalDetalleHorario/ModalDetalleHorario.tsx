@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { FaTimes, FaClock, FaMapMarkerAlt, FaCalendarAlt, FaUserMd } from 'react-icons/fa';
-import type { BloqueHorario } from '../../Services/mockHorarios.ts';
+import type { BloqueHorario } from '../../Services/horarios.ts';
 import './ModalDetalleHorario.css';
 
 interface ModalDetalleHorarioProps {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import "./GestionUsuarios.css";
 import { FaSearch, FaEdit , FaTrash } from "react-icons/fa";
 import { toast } from "sonner";
@@ -45,16 +46,40 @@ const mapearRol = (role: number | string): RolUsuario => {
 };
 
 function GestionUsuariosAdministrador(){
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const getInitialRole = (): string => {
+        const r = searchParams.get('role');
+        if (!r) return 'todos';
+        const rLower = r.toLowerCase();
+        if (rLower === '2' || rLower === 'medico') return 'medico';
+        if (rLower === '1' || rLower === 'recepcionista') return 'recepcionista';
+        if (rLower === '3' || rLower === 'admin' || rLower === 'administrador') return 'admin';
+        if (rLower === '0' || rLower === 'paciente') return 'paciente';
+        return 'todos';
+    };
 
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+    const [rolSeleccionado, setRolSeleccionado] = useState<string>(getInitialRole);
+    const [busqueda, setBusqueda] = useState<string>('');
     const [modalAbierto, setModalAbierto] = useState<boolean>(false);
     const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
     const [cargando, setCargando] = useState<boolean>(true);
 
-    const cargarUsuarios = async () => {
+    const cargarUsuarios = async (rolFiltro: string = rolSeleccionado) => {
         try {
             setCargando(true);
-            const data = await apiClient('/api/Staff', { method: 'GET' });
+            let endpoint = '/api/Staff';
+
+            if (rolFiltro !== 'todos') {
+                const rolKey = rolFiltro === 'admin' ? 'administrador' : (rolFiltro as RolUsuario);
+                const roleNumber = USER_ROLE_MAP[rolKey];
+                if (roleNumber !== undefined) {
+                    endpoint = `/api/Staff?role=${roleNumber}`;
+                }
+            }
+
+            const data = await apiClient(endpoint, { method: 'GET' });
             if (Array.isArray(data)) {
                 const listado: Usuario[] = data.map((item: any) => ({
                     id: String(item.id || item.staffId || crypto.randomUUID()),
@@ -78,8 +103,22 @@ function GestionUsuariosAdministrador(){
     };
 
     useEffect(() => {
-        cargarUsuarios();
-    }, []);
+        const rolActual = getInitialRole();
+        setRolSeleccionado(rolActual);
+        cargarUsuarios(rolActual);
+    }, [searchParams]);
+
+    const manejarCambioRol = (nuevoRol: string) => {
+        setRolSeleccionado(nuevoRol);
+        const nuevosParams = new URLSearchParams(searchParams);
+        if (nuevoRol === 'todos') {
+            nuevosParams.delete('role');
+        } else {
+            nuevosParams.set('role', nuevoRol);
+        }
+        setSearchParams(nuevosParams, { replace: true });
+        cargarUsuarios(nuevoRol);
+    };
 
     const eliminarUsuario = (id: string) => {
         const confirmar = window.confirm('¿Estas seguro de eliminar este usuario?');
@@ -128,7 +167,7 @@ function GestionUsuariosAdministrador(){
                 }
 
                 toast.success('Usuario actualizado exitosamente');
-                await cargarUsuarios();
+                await cargarUsuarios(rolSeleccionado);
                 cerrarModal();
                 return;
             } catch (error: any) {
@@ -197,7 +236,7 @@ function GestionUsuariosAdministrador(){
             }
 
             toast.success('Usuario creado exitosamente');
-            await cargarUsuarios();
+            await cargarUsuarios(rolSeleccionado);
             cerrarModal();
         } catch (error: any) {
             toast.error(`Error al registrar en el servidor: ${error.message}`);
@@ -209,6 +248,19 @@ function GestionUsuariosAdministrador(){
         setModalAbierto(false);
         setUsuarioEditando(null);
     };
+
+    const usuariosFiltrados = usuarios.filter((usuario) => {
+        if (!busqueda.trim()) return true;
+        const termino = busqueda.toLowerCase().trim();
+        return (
+            usuario.nombre.toLowerCase().includes(termino) ||
+            usuario.apellido.toLowerCase().includes(termino) ||
+            usuario.rut.toLowerCase().includes(termino) ||
+            usuario.email.toLowerCase().includes(termino) ||
+            usuario.rol.toLowerCase().includes(termino) ||
+            (usuario.especialidad && usuario.especialidad.toLowerCase().includes(termino))
+        );
+    });
 
     return(
         <>
@@ -225,7 +277,11 @@ function GestionUsuariosAdministrador(){
                             </div>
                             <div className="FiltroBuscador-GestionUsuarios">
                                 <div className="ContenedorFiltro-GestionUsuarios">
-                                    <select id="filtro-rol">
+                                    <select 
+                                        id="filtro-rol"
+                                        value={rolSeleccionado}
+                                        onChange={(e) => manejarCambioRol(e.target.value)}
+                                    >
                                         <option value="todos">Todos</option>
                                         <option value="paciente">Paciente</option>
                                         <option value="admin">Administrador</option>
@@ -234,7 +290,14 @@ function GestionUsuariosAdministrador(){
                                     </select>
                                 </div>
                                 <div className="ContenedorBuscador-GestionUsuarios">
-                                    <FaSearch className="Icono-Buscador"/><input type="text" placeholder="Buscar persona..." id="buscador" />
+                                    <FaSearch className="Icono-Buscador"/>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Buscar persona..." 
+                                        id="buscador"
+                                        value={busqueda}
+                                        onChange={(e) => setBusqueda(e.target.value)}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -254,12 +317,12 @@ function GestionUsuariosAdministrador(){
                                 <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
                                     Cargando usuarios...
                                 </div>
-                            ) : usuarios.length === 0 ? (
+                            ) : usuariosFiltrados.length === 0 ? (
                                 <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
                                     No hay usuarios registrados.
                                 </div>
                             ) : (
-                                usuarios.map((usuario) => (
+                                usuariosFiltrados.map((usuario) => (
                                     <div className="Card-ListadoUsuarios" key={usuario.id}>
                                         <ul className="Fila-GestionUsuarios">
                                             <li>{usuario.rut}</li>

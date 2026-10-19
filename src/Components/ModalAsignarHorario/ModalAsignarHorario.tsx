@@ -1,22 +1,113 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ModalAsignarHorario.css';
-import { MEDICOS } from '../../Services/catalogoMedico';
+import { toast } from 'sonner';
+import { apiClient } from '../../Services/apiClient';
 
 interface ModalAsignarHorarioProps {
     isOpen: boolean;
     onClose: () => void;
+    onHorarioCreado?: (nuevoBloque?: any) => void;
+}
+
+interface MedicoItem {
+    id: string;
+    nombre: string;
+    apellido: string;
+    especialidad: string;
+    cargo: string;
+}
+
+interface BoxItem {
+    id: string;
+    nombre: string;
+    tipo: string;
+    piso: string;
 }
 
 const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
-export const ModalAsignarHorario: React.FC<ModalAsignarHorarioProps> = ({ isOpen, onClose }) => {
+const DIAS_MAP: Record<string, number> = {
+    'Domingo': 0,
+    'Lunes': 1,
+    'Martes': 2,
+    'Miércoles': 3,
+    'Jueves': 4,
+    'Viernes': 5,
+    'Sábado': 6
+};
+
+export const ModalAsignarHorario: React.FC<ModalAsignarHorarioProps> = ({ isOpen, onClose, onHorarioCreado }) => {
     const [horaInicio, setHoraInicio] = useState('');
     const [horaFin, setHoraFin] = useState('');
-    const [box, setBox] = useState('');
+    const [boxSeleccionado, setBoxSeleccionado] = useState('');
     const [diasSeleccionados, setDiasSeleccionados] = useState<string[]>([]);
     const [fechaInicio, setFechaInicio] = useState('');
     const [fechaFin, setFechaFin] = useState('');
     const [medicoSeleccionado, setMedicoSeleccionado] = useState('');
+    
+    const [medicos, setMedicos] = useState<MedicoItem[]>([]);
+    const [boxes, setBoxes] = useState<BoxItem[]>([]);
+    const [guardando, setGuardando] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        let cancelado = false;
+
+        const cargarOpciones = async () => {
+            try {
+                const staffData = await apiClient('/api/Staff', { method: 'GET' });
+                if (!cancelado && Array.isArray(staffData)) {
+                    const docs = staffData
+                        .filter((item: any) =>
+                            item.role === 2 ||
+                            String(item.role).toLowerCase() === 'medico' ||
+                            String(item.roleName || '').toLowerCase().includes('médico') ||
+                            String(item.roleName || '').toLowerCase().includes('medico') ||
+                            String(item.specialty || '').trim().length > 0
+                        )
+                        .map((item: any) => ({
+                            id: String(item.id || item.staffId),
+                            nombre: String(item.firstName || '').trim(),
+                            apellido: String(item.lastName || '').trim(),
+                            especialidad: String(item.specialty || ''),
+                            cargo: String(item.roleName || 'Médico')
+                        }));
+
+                    setMedicos(docs.length > 0 ? docs : staffData.map((item: any) => ({
+                        id: String(item.id || item.staffId),
+                        nombre: String(item.firstName || '').trim(),
+                        apellido: String(item.lastName || '').trim(),
+                        especialidad: String(item.specialty || ''),
+                        cargo: String(item.roleName || 'Personal')
+                    })));
+                }
+            } catch (error) {
+                console.error('Error al cargar médicos:', error);
+            }
+
+            try {
+                const boxData = await apiClient('/api/Boxes', { method: 'GET' });
+                if (!cancelado && Array.isArray(boxData)) {
+                    const boxesList = boxData.map((item: any) => ({
+                        id: String(item.id || item.boxId),
+                        nombre: item.name || item.nombre || 'Box',
+                        tipo: item.type || item.tipo || 'Consulta General',
+                        piso: item.floor || item.piso || 'Piso 1'
+                    }));
+                    setBoxes(boxesList);
+                }
+            } catch (error) {
+                console.error('Error al cargar boxes:', error);
+            }
+        };
+
+        cargarOpciones();
+
+        return () => {
+            cancelado = true;
+        };
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -26,18 +117,88 @@ export const ModalAsignarHorario: React.FC<ModalAsignarHorarioProps> = ({ isOpen
         );
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Here we could handle saving the schedule block
-        console.log({
-            horaInicio,
-            horaFin,
-            box,
-            diasSeleccionados,
-            vigencia: { inicio: fechaInicio, fin: fechaFin },
-            medico: medicoSeleccionado
-        });
-        onClose();
+
+        if (diasSeleccionados.length === 0) {
+            toast.warning('Debe seleccionar al menos un día de funcionamiento');
+            return;
+        }
+
+        if (!medicoSeleccionado) {
+            toast.warning('Debe seleccionar un médico');
+            return;
+        }
+
+        if (!boxSeleccionado) {
+            toast.warning('Debe seleccionar un box');
+            return;
+        }
+
+        setGuardando(true);
+
+        try {
+            const diasNumeros = diasSeleccionados.map(d => DIAS_MAP[d]);
+
+            const payload = {
+                staffId: medicoSeleccionado,
+                boxId: boxSeleccionado,
+                startDate: fechaInicio,
+                endDate: fechaFin,
+                startTime: horaInicio.length === 5 ? `${horaInicio}:00` : horaInicio,
+                endTime: horaFin.length === 5 ? `${horaFin}:00` : horaFin,
+                daysOfWeek: diasNumeros
+            };
+
+            const res = await apiClient('/api/ScheduleBlocks', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            toast.success('Horario asignado exitosamente');
+
+            const medObj = medicos.find(m => m.id === medicoSeleccionado);
+            const boxObj = boxes.find(b => b.id === boxSeleccionado);
+
+            const nuevoBloque = {
+                id: res?.id ? String(res.id) : crypto.randomUUID(),
+                horaInicio,
+                horaFin,
+                box: {
+                    id: boxSeleccionado,
+                    nombre: boxObj ? boxObj.nombre : 'Box Asignado',
+                    ubicacion: boxObj ? `${boxObj.piso} - ${boxObj.tipo}` : 'Consultas'
+                },
+                diasSemana: diasSeleccionados,
+                rangoFechas: {
+                    fechaInicio,
+                    fechaFin
+                },
+                profesional: {
+                    id: medicoSeleccionado,
+                    nombre: medObj ? medObj.nombre : 'Médico',
+                    apellido: medObj ? medObj.apellido : '',
+                    especialidad: medObj?.especialidad || 'Medicina General',
+                    cargo: medObj?.cargo || 'Médico'
+                }
+            };
+
+            onHorarioCreado?.(nuevoBloque);
+
+            // Limpiar formulario y cerrar
+            setHoraInicio('');
+            setHoraFin('');
+            setBoxSeleccionado('');
+            setDiasSeleccionados([]);
+            setFechaInicio('');
+            setFechaFin('');
+            setMedicoSeleccionado('');
+            onClose();
+        } catch (error: any) {
+            toast.error(`Error al asignar horario: ${error.message}`);
+        } finally {
+            setGuardando(false);
+        }
     };
 
     return (
@@ -58,7 +219,14 @@ export const ModalAsignarHorario: React.FC<ModalAsignarHorarioProps> = ({ isOpen
                     </div>
                     <div className="ModalAsignarHorario-FormGroup">
                         <label>Ubicación (Box)</label>
-                        <input type="text" placeholder="Ej: Box 1, Box 2" required value={box} onChange={e => setBox(e.target.value)} />
+                        <select required value={boxSeleccionado} onChange={e => setBoxSeleccionado(e.target.value)}>
+                            <option value="">Seleccione un box</option>
+                            {boxes.map(box => (
+                                <option key={box.id} value={box.id}>
+                                    {box.nombre} - {box.tipo} ({box.piso})
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div className="ModalAsignarHorario-FormGroup">
                         <label>Días de Funcionamiento</label>
@@ -89,16 +257,18 @@ export const ModalAsignarHorario: React.FC<ModalAsignarHorarioProps> = ({ isOpen
                         <label>Personal Asignado (Médico)</label>
                         <select required value={medicoSeleccionado} onChange={e => setMedicoSeleccionado(e.target.value)}>
                             <option value="">Seleccione un médico</option>
-                            {MEDICOS.map(medico => (
+                            {medicos.map(medico => (
                                 <option key={medico.id} value={medico.id}>
-                                    {medico.nombre} {medico.apellido} - {medico.cargo}
+                                    {medico.nombre} {medico.apellido} {medico.especialidad ? `- ${medico.especialidad}` : (medico.cargo ? `- ${medico.cargo}` : '')}
                                 </option>
                             ))}
                         </select>
                     </div>
                     <div className="ModalAsignarHorario-Footer">
-                        <button type="button" className="ModalAsignarHorario-BtnCancel" onClick={onClose}>Cancelar</button>
-                        <button type="submit" className="ModalAsignarHorario-BtnSubmit">Guardar Horario</button>
+                        <button type="button" className="ModalAsignarHorario-BtnCancel" onClick={onClose} disabled={guardando}>Cancelar</button>
+                        <button type="submit" className="ModalAsignarHorario-BtnSubmit" disabled={guardando}>
+                            {guardando ? 'Guardando...' : 'Guardar Horario'}
+                        </button>
                     </div>
                 </form>
             </div>

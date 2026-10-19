@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./GestionHorarios.css";
 import { ModalDetalleHorario } from "../../../Components/ModalDetalleHorario/ModalDetalleHorario.tsx";
 import { ModalAsignarHorario } from "../../../Components/ModalAsignarHorario/ModalAsignarHorario.tsx";
-import { MOCK_BLOQUE_DEFAULT, type BloqueHorario } from "../../../Services/mockHorarios.ts";
+import type { BloqueHorario } from "../../../Services/horarios.ts";
+import { apiClient } from "../../../Services/apiClient.ts";
 
 const DIAS_COLUMNAS = [
     { id: 'Lunes', letra: 'L', className: 'Listado-GestionHorarios-1' },
@@ -14,11 +15,69 @@ const DIAS_COLUMNAS = [
     { id: 'Domingo', letra: 'D', className: 'Listado-GestionHorarios-7' },
 ];
 
+const NUMERO_A_DIA: Record<number, string> = {
+    0: 'Domingo',
+    1: 'Lunes',
+    2: 'Martes',
+    3: 'Miércoles',
+    4: 'Jueves',
+    5: 'Viernes',
+    6: 'Sábado'
+};
+
 function GestionHorariosAdministrador(){
     const [modalDetalleAbierto, setModalDetalleAbierto] = useState<boolean>(false);
     const [modalAsignarAbierto, setModalAsignarAbierto] = useState<boolean>(false);
     const [bloqueSeleccionado, setBloqueSeleccionado] = useState<BloqueHorario | null>(null);
-    const [bloques] = useState<BloqueHorario[]>([MOCK_BLOQUE_DEFAULT]);
+    const [bloques, setBloques] = useState<BloqueHorario[]>([]);
+
+    const cargarBloquesHorarios = async () => {
+        try {
+            const data = await apiClient('/api/ScheduleBlocks', { method: 'GET' });
+            if (Array.isArray(data)) {
+                const lista: BloqueHorario[] = data.map((item: any) => {
+                    const dias = Array.isArray(item.daysOfWeek)
+                        ? item.daysOfWeek.map((d: number | string) => typeof d === 'number' ? (NUMERO_A_DIA[d] || 'Lunes') : String(d))
+                        : [];
+                    return {
+                        id: String(item.id || item.ruleGroupId || crypto.randomUUID()),
+                        horaInicio: item.startTime ? String(item.startTime).substring(0, 5) : '08:00',
+                        horaFin: item.endTime ? String(item.endTime).substring(0, 5) : '17:00',
+                        box: {
+                            id: item.boxId || item.box?.id || '',
+                            nombre: item.boxName || item.box?.name || 'Box Asignado',
+                            ubicacion: item.boxLocation || item.box?.location || 'Consultas'
+                        },
+                        diasSemana: dias,
+                        rangoFechas: {
+                            fechaInicio: item.startDate || '',
+                            fechaFin: item.endDate || ''
+                        },
+                        profesional: {
+                            id: item.staffId || item.staff?.id || '',
+                            nombre: item.staffFirstName || item.staff?.firstName || 'Médico',
+                            apellido: item.staffLastName || item.staff?.lastName || '',
+                            especialidad: item.specialty || item.staff?.specialty || 'Medicina General',
+                            cargo: item.roleName || item.staff?.roleName || 'Médico'
+                        }
+                    };
+                });
+                setBloques(lista);
+            }
+        } catch {
+        }
+    };
+
+    useEffect(() => {
+        cargarBloquesHorarios();
+    }, []);
+
+    const manejarHorarioCreado = (nuevoBloque?: BloqueHorario) => {
+        if (nuevoBloque) {
+            setBloques(prev => [...prev, nuevoBloque]);
+        }
+        cargarBloquesHorarios();
+    };
 
     const abrirDetalleBloque = (bloque: BloqueHorario) => {
         setBloqueSeleccionado(bloque);
@@ -94,7 +153,8 @@ function GestionHorariosAdministrador(){
         
         <ModalAsignarHorario 
             isOpen={modalAsignarAbierto} 
-            onClose={cerrarModalAsignar} 
+            onClose={cerrarModalAsignar}
+            onHorarioCreado={manejarHorarioCreado}
         />
         </>
     )
