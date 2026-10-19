@@ -56,15 +56,15 @@ export const ModalAsignarHorario: React.FC<ModalAsignarHorarioProps> = ({ isOpen
 
         const cargarOpciones = async () => {
             try {
-                const staffData = await apiClient('/api/Staff', { method: 'GET' });
+                // Consultar exclusivamente médicos al backend usando el query param role=2
+                const staffData = await apiClient('/api/Staff?role=2', { method: 'GET' });
                 if (!cancelado && Array.isArray(staffData)) {
+                    // Filtrar estrictamente profesionales médicos
                     const docs = staffData
                         .filter((item: any) =>
                             item.role === 2 ||
                             String(item.role).toLowerCase() === 'medico' ||
-                            String(item.roleName || '').toLowerCase().includes('médico') ||
-                            String(item.roleName || '').toLowerCase().includes('medico') ||
-                            String(item.specialty || '').trim().length > 0
+                            (item.role === undefined && String(item.roleName || '').toLowerCase().includes('medico'))
                         )
                         .map((item: any) => ({
                             id: String(item.id || item.staffId),
@@ -74,13 +74,7 @@ export const ModalAsignarHorario: React.FC<ModalAsignarHorarioProps> = ({ isOpen
                             cargo: String(item.roleName || 'Médico')
                         }));
 
-                    setMedicos(docs.length > 0 ? docs : staffData.map((item: any) => ({
-                        id: String(item.id || item.staffId),
-                        nombre: String(item.firstName || '').trim(),
-                        apellido: String(item.lastName || '').trim(),
-                        especialidad: String(item.specialty || ''),
-                        cargo: String(item.roleName || 'Personal')
-                    })));
+                    setMedicos(docs);
                 }
             } catch (error) {
                 console.error('Error al cargar médicos:', error);
@@ -256,7 +250,7 @@ export const ModalAsignarHorario: React.FC<ModalAsignarHorarioProps> = ({ isOpen
                     <div className="ModalAsignarHorario-FormGroup">
                         <label>Personal Asignado (Médico)</label>
                         <select required value={medicoSeleccionado} onChange={e => setMedicoSeleccionado(e.target.value)}>
-                            <option value="">Seleccione un médico</option>
+                            <option value="">{medicos.length === 0 ? "No hay médicos disponibles" : "Seleccione un médico"}</option>
                             {medicos.map(medico => (
                                 <option key={medico.id} value={medico.id}>
                                     {medico.nombre} {medico.apellido} {medico.especialidad ? `- ${medico.especialidad}` : (medico.cargo ? `- ${medico.cargo}` : '')}

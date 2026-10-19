@@ -249,17 +249,39 @@ function GestionUsuariosAdministrador(){
         setUsuarioEditando(null);
     };
 
+    const normalizarTexto = (texto: string): string => {
+        return (texto || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim();
+    };
+
+    const normalizarRut = (rut: string): string => {
+        return (rut || '').replace(/[.\-\s]/g, '').toLowerCase().trim();
+    };
+
     const usuariosFiltrados = usuarios.filter((usuario) => {
         if (!busqueda.trim()) return true;
-        const termino = busqueda.toLowerCase().trim();
-        return (
-            usuario.nombre.toLowerCase().includes(termino) ||
-            usuario.apellido.toLowerCase().includes(termino) ||
-            usuario.rut.toLowerCase().includes(termino) ||
-            usuario.email.toLowerCase().includes(termino) ||
-            usuario.rol.toLowerCase().includes(termino) ||
-            (usuario.especialidad && usuario.especialidad.toLowerCase().includes(termino))
-        );
+
+        const terminoTexto = normalizarTexto(busqueda);
+        const terminoRut = normalizarRut(busqueda);
+
+        const nombreCompleto = normalizarTexto(`${usuario.nombre} ${usuario.apellido}`);
+        const apellidoNombre = normalizarTexto(`${usuario.apellido} ${usuario.nombre}`);
+        const nombre = normalizarTexto(usuario.nombre);
+        const apellido = normalizarTexto(usuario.apellido);
+
+        const coincideNombre =
+            nombreCompleto.includes(terminoTexto) ||
+            apellidoNombre.includes(terminoTexto) ||
+            nombre.includes(terminoTexto) ||
+            apellido.includes(terminoTexto);
+
+        const rutLimpio = normalizarRut(usuario.rut);
+        const coincideRut = terminoRut.length > 0 && rutLimpio.includes(terminoRut);
+
+        return coincideNombre || coincideRut;
     });
 
     return(
@@ -293,7 +315,7 @@ function GestionUsuariosAdministrador(){
                                     <FaSearch className="Icono-Buscador"/>
                                     <input 
                                         type="text" 
-                                        placeholder="Buscar persona..." 
+                                        placeholder="Buscar Usuario..." 
                                         id="buscador"
                                         value={busqueda}
                                         onChange={(e) => setBusqueda(e.target.value)}
@@ -319,7 +341,9 @@ function GestionUsuariosAdministrador(){
                                 </div>
                             ) : usuariosFiltrados.length === 0 ? (
                                 <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
-                                    No hay usuarios registrados.
+                                    {busqueda.trim()
+                                        ? `No se encontraron usuarios que coincidan con "${busqueda}".`
+                                        : 'No hay usuarios registrados.'}
                                 </div>
                             ) : (
                                 usuariosFiltrados.map((usuario) => (
