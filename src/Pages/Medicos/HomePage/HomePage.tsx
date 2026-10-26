@@ -1,13 +1,13 @@
-import "./HomePage.css"
+import "./HomePage.css";
 
 function HomePageMedico(){
+    const nombreUsuario = localStorage.getItem('userName') || 'Médico';
 
     return(
-
         <>
         <div className="ContenedorPrincipal-HomeMedico">
             <div className="ContenedorNombre-HomeMedico">
-                <h1>Bienvenido Wilson Flores</h1>
+                <h1>Bienvenido {nombreUsuario}</h1>
             </div>
             <div className="Contenedor-DashboardMedico">
                 <div className="ContenedorDarboard-Izquierda">
@@ -46,9 +46,7 @@ function HomePageMedico(){
             </div>
         </div>
         </>
-
-    )
-
+    );
 }
 
 export default HomePageMedico;

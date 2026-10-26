@@ -1,17 +1,18 @@
 import { useState } from "react";
-import "./HomePage.css"
+import "./HomePage.css";
 import { FaClipboardList } from "react-icons/fa";
 import RegisterPatientModal from "../../../Components/ModalRegistro/ModalRegistro";
 
 function HomePageRecepcionista() {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const nombreUsuario = localStorage.getItem('userName') || 'Recepcionista';
 
     return (
         <>
         <div className="ContenendorPrincipal-HomePage">
             <div className="ContenedorSuperior-HomePage">
                 <div className="ContenedorSuperior-Izquierda">
-                    <h1>Bienvenido Wilson Flores</h1>
+                    <h1>Bienvenido {nombreUsuario}</h1>
                 </div>
                 <div className="ContenedorSuperior-Derecha">
                     <button onClick={() => setIsModalOpen(true)}>
@@ -86,7 +87,7 @@ function HomePageRecepcionista() {
             <RegisterPatientModal onClose={() => setIsModalOpen(false)} />
         )}
         </>
-    )
+    );
 }
 
 export default HomePageRecepcionista;

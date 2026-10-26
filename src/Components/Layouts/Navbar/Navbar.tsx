@@ -3,10 +3,11 @@ import './Navbar.css';
 import { FaSignOutAlt  } from "react-icons/fa";
 import { NavLink, useNavigate } from 'react-router-dom';
 import { supabase } from '../../../Services/supabaseClient.ts';
+import { apiClient } from '../../../Services/apiClient.ts';
 import { getUserRole } from '../../Routes/roles.ts';
 import { NAV_CONFIG } from './navConfig.tsx';
 
-const NOMBRE_POR_DEFECTO = 'Wilson Flores';
+const NOMBRE_POR_DEFECTO = 'Usuario';
 
 const obtenerIniciales = (nombre: string) =>
     nombre
@@ -23,6 +24,60 @@ function Navbar(){
     const [menuAbierto, setMenuAbierto] = useState(false);
     const contenedorRef = useRef<HTMLDivElement>(null);
     const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+    const [nombreUsuario, setNombreUsuario] = useState<string>(() => {
+        const guardado = localStorage.getItem('userName');
+        return (guardado && guardado !== 'Wilson Flores') ? guardado : NOMBRE_POR_DEFECTO;
+    });
+
+    useEffect(() => {
+        const resolverNombre = async () => {
+            const guardado = localStorage.getItem('userName');
+            if (guardado && guardado !== 'Wilson Flores') {
+                setNombreUsuario(guardado);
+                return;
+            }
+
+            try {
+                const { data: authData } = await supabase.auth.getUser();
+                const user = authData?.user;
+                if (!user) return;
+
+                const userEmail = user.email || '';
+                const userId = user.id;
+
+                try {
+                    const staffList = await apiClient('/api/Staff', { method: 'GET' });
+                    if (Array.isArray(staffList)) {
+                        const staffMember = staffList.find((s: any) =>
+                            (s.userId && s.userId === userId) ||
+                            (s.email && s.email.toLowerCase() === userEmail.toLowerCase())
+                        );
+                        if (staffMember && (staffMember.firstName || staffMember.lastName)) {
+                            const nombreReal = `${staffMember.firstName || ''} ${staffMember.lastName || ''}`.trim();
+                            setNombreUsuario(nombreReal);
+                            localStorage.setItem('userName', nombreReal);
+                            return;
+                        }
+                    }
+                } catch {
+                    // Si falla consulta a staff, usar metadata de Supabase
+                }
+
+                const meta = user.user_metadata;
+                const nombreMeta = meta?.full_name ||
+                    (meta?.first_name ? `${meta.first_name} ${meta.last_name || ''}`.trim() : '') ||
+                    (userEmail ? userEmail.split('@')[0] : 'Usuario');
+
+                setNombreUsuario(nombreMeta);
+                localStorage.setItem('userName', nombreMeta);
+            } catch (err) {
+                console.error('Error al resolver nombre de usuario en Navbar:', err);
+            }
+        };
+
+        resolverNombre();
+    }, []);
 
     useEffect(() => {
         const manejarClickFuera = (e: MouseEvent) => {
@@ -49,7 +104,6 @@ function Navbar(){
     const userRole = getUserRole();
     const enlaces = NAV_CONFIG[userRole];
 
-    const nombreUsuario = localStorage.getItem('userName') || NOMBRE_POR_DEFECTO;
     const iniciales = obtenerIniciales(nombreUsuario);
 
     const abrirMenu = () => {

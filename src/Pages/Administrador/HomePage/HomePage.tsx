@@ -1,12 +1,14 @@
-import "./HomePage.css"
+import "./HomePage.css";
 import { FaClipboardList } from "react-icons/fa";
 
 function HomePageAdministrador() {
+    const nombreUsuario = localStorage.getItem('userName') || 'Administrador';
+
     return (
         <>
         <div className="ContenedorPrincipal-HomeAdministrador">
             <div className="EncabezadoNombre-HomeAdministrador">
-                <h1>Bienvenido de Wilson Flores</h1>
+                <h1>Bienvenido {nombreUsuario}</h1>
             </div>
             <div className="ContenenedorSuperior-HomeAdministrador">
                 <div className="ContenedorSuperior-IzquierdaHome">
@@ -62,7 +64,7 @@ function HomePageAdministrador() {
             </div>
         </div>
         </>
-    )
+    );
 }
 
 export default HomePageAdministrador;

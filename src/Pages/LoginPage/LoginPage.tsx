@@ -53,6 +53,9 @@ function LoginPage() {
         localStorage.setItem('token', accessToken);
 
         let userRole = 'paciente';
+        let userName = data.user.user_metadata?.full_name ||
+            (data.user.user_metadata?.first_name ? `${data.user.user_metadata.first_name} ${data.user.user_metadata.last_name || ''}`.trim() : '') ||
+            userEmail.split('@')[0];
 
         const { data: userData } = await supabase
             .from('usuarios')
@@ -72,19 +75,24 @@ function LoginPage() {
                     (s.email && s.email.toLowerCase() === userEmail.toLowerCase())
                 );
 
-                if (staffMember && staffMember.role !== undefined) {
-                    const mappedRole = mapearRolStaff(staffMember.role);
-                    if (mappedRole) {
-                        userRole = mappedRole;
-                        if (userData?.rol !== mappedRole) {
-                            await supabase
-                                .from('usuarios')
-                                .upsert({
-                                    id: userId,
-                                    email: userEmail,
-                                    rol: mappedRole,
-                                    CreatedAt: new Date().toISOString()
-                                });
+                if (staffMember) {
+                    if (staffMember.firstName || staffMember.lastName) {
+                        userName = `${staffMember.firstName || ''} ${staffMember.lastName || ''}`.trim();
+                    }
+                    if (staffMember.role !== undefined) {
+                        const mappedRole = mapearRolStaff(staffMember.role);
+                        if (mappedRole) {
+                            userRole = mappedRole;
+                            if (userData?.rol !== mappedRole) {
+                                await supabase
+                                    .from('usuarios')
+                                    .upsert({
+                                        id: userId,
+                                        email: userEmail,
+                                        rol: mappedRole,
+                                        CreatedAt: new Date().toISOString()
+                                    });
+                            }
                         }
                     }
                 }
@@ -94,6 +102,7 @@ function LoginPage() {
         }
 
         localStorage.setItem('userRole', userRole);
+        localStorage.setItem('userName', userName);
 
         toast.success('Inicio de sesión exitoso');
 
@@ -105,8 +114,15 @@ function LoginPage() {
     };
 
     const simularAcceso = (role: string, path: string) => {
+        const nombresSimulados: Record<string, string> = {
+            administrador: 'Admin MedCare',
+            medico: 'Dr. Médico Staff',
+            recepcionista: 'Recepcionista MedCare',
+            paciente: 'Paciente MedCare'
+        };
         localStorage.setItem('token', 'dev-token');
         localStorage.setItem('userRole', role);
+        localStorage.setItem('userName', nombresSimulados[role] || 'Usuario MedCare');
         toast.success(`Inicio de sesión exitoso (Simulado: ${role})`);
         navigate(path);
     };
