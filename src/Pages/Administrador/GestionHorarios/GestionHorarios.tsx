@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./GestionHorarios.css";
+import { toast } from "sonner";
 import { ModalDetalleHorario } from "../../../Components/ModalDetalleHorario/ModalDetalleHorario.tsx";
 import { ModalAsignarHorario } from "../../../Components/ModalAsignarHorario/ModalAsignarHorario.tsx";
 import type { BloqueHorario } from "../../../Services/horarios.ts";
@@ -15,14 +16,36 @@ const DIAS_COLUMNAS = [
     { id: 'Domingo', letra: 'D', className: 'Listado-GestionHorarios-7' },
 ];
 
-const NUMERO_A_DIA: Record<number, string> = {
-    0: 'Domingo',
-    1: 'Lunes',
-    2: 'Martes',
-    3: 'Miércoles',
-    4: 'Jueves',
-    5: 'Viernes',
-    6: 'Sábado'
+const DIA_MAP: Record<string, string> = {
+    '0': 'Domingo',
+    '1': 'Lunes',
+    '2': 'Martes',
+    '3': 'Miércoles',
+    '4': 'Jueves',
+    '5': 'Viernes',
+    '6': 'Sábado',
+    'sunday': 'Domingo',
+    'monday': 'Lunes',
+    'tuesday': 'Martes',
+    'wednesday': 'Miércoles',
+    'thursday': 'Jueves',
+    'friday': 'Viernes',
+    'saturday': 'Sábado',
+    'domingo': 'Domingo',
+    'lunes': 'Lunes',
+    'martes': 'Martes',
+    'miércoles': 'Miércoles',
+    'miercoles': 'Miércoles',
+    'jueves': 'Jueves',
+    'viernes': 'Viernes',
+    'sábado': 'Sábado',
+    'sabado': 'Sábado'
+};
+
+const normalizarNombreDia = (d: any): string => {
+    if (d === null || d === undefined) return 'Lunes';
+    const clave = String(d).trim().toLowerCase();
+    return DIA_MAP[clave] || 'Lunes';
 };
 
 function GestionHorariosAdministrador(){
@@ -33,38 +56,67 @@ function GestionHorariosAdministrador(){
 
     const cargarBloquesHorarios = async () => {
         try {
-            const data = await apiClient('/api/ScheduleBlocks', { method: 'GET' });
-            if (Array.isArray(data)) {
-                const lista: BloqueHorario[] = data.map((item: any) => {
-                    const dias = Array.isArray(item.daysOfWeek)
-                        ? item.daysOfWeek.map((d: number | string) => typeof d === 'number' ? (NUMERO_A_DIA[d] || 'Lunes') : String(d))
+            const [blocksRes, staffRes, boxesRes] = await Promise.allSettled([
+                apiClient('/api/ScheduleBlocks', { method: 'GET' }),
+                apiClient('/api/Staff', { method: 'GET' }),
+                apiClient('/api/Boxes', { method: 'GET' })
+            ]);
+
+            const data = blocksRes.status === 'fulfilled' ? blocksRes.value : null;
+            const staffList = staffRes.status === 'fulfilled' && Array.isArray(staffRes.value) ? staffRes.value : [];
+            const boxesList = boxesRes.status === 'fulfilled' && Array.isArray(boxesRes.value) ? boxesRes.value : [];
+
+            console.log('Datos recibidos de ScheduleBlocks:', data);
+
+            const listaCruda = Array.isArray(data)
+                ? data
+                : (data?.sblocks || data?.data || data?.items || data?.scheduleBlocks || data?.$values || []);
+
+            if (Array.isArray(listaCruda)) {
+                const lista: BloqueHorario[] = listaCruda.map((item: any) => {
+                    const rawDias = item.daysOfWeek || item.DaysOfWeek || item.dayOfWeeks || item.DayOfWeeks || [];
+                    const dias = Array.isArray(rawDias)
+                        ? rawDias.map(normalizarNombreDia)
                         : [];
+
+                    const rawStartTime = item.startTime || item.StartTime || item.horaInicio || item.HoraInicio || '08:00';
+                    const rawEndTime = item.endTime || item.EndTime || item.horaFin || item.HoraFin || '17:00';
+
+                    const staffId = String(item.staffId || item.StaffId || item.medicoId || item.MedicoId || '');
+                    const boxId = String(item.boxId || item.BoxId || '');
+
+                    const medico = staffList.find((s: any) => String(s.id || s.staffId) === staffId);
+                    const boxObj = boxesList.find((b: any) => String(b.id || b.boxId) === boxId);
+
                     return {
-                        id: String(item.id || item.ruleGroupId || crypto.randomUUID()),
-                        horaInicio: item.startTime ? String(item.startTime).substring(0, 5) : '08:00',
-                        horaFin: item.endTime ? String(item.endTime).substring(0, 5) : '17:00',
+                        id: String(item.id || item.Id || item.ruleGroupId || item.RuleGroupId || crypto.randomUUID()),
+                        horaInicio: String(rawStartTime).substring(0, 5),
+                        horaFin: String(rawEndTime).substring(0, 5),
                         box: {
-                            id: item.boxId || item.box?.id || '',
-                            nombre: item.boxName || item.box?.name || 'Box Asignado',
-                            ubicacion: item.boxLocation || item.box?.location || 'Consultas'
+                            id: boxId,
+                            nombre: boxObj?.name || boxObj?.nombre || item.boxName || item.BoxName || 'Box Asignado',
+                            ubicacion: boxObj?.floor || boxObj?.piso ? `${boxObj.floor || boxObj.piso} - ${boxObj.type || boxObj.tipo || 'Consultas'}` : (item.boxLocation || item.BoxLocation || 'Consultas')
                         },
                         diasSemana: dias,
                         rangoFechas: {
-                            fechaInicio: item.startDate || '',
-                            fechaFin: item.endDate || ''
+                            fechaInicio: item.startDate || item.StartDate || '',
+                            fechaFin: item.endDate || item.EndDate || ''
                         },
                         profesional: {
-                            id: item.staffId || item.staff?.id || '',
-                            nombre: item.staffFirstName || item.staff?.firstName || 'Médico',
-                            apellido: item.staffLastName || item.staff?.lastName || '',
-                            especialidad: item.specialty || item.staff?.specialty || 'Medicina General',
-                            cargo: item.roleName || item.staff?.roleName || 'Médico'
+                            id: staffId,
+                            nombre: medico?.firstName || item.staffFirstName || item.StaffFirstName || 'Médico',
+                            apellido: medico?.lastName || item.staffLastName || item.StaffLastName || '',
+                            especialidad: medico?.specialty || item.specialty || item.Specialty || 'Medicina General',
+                            cargo: medico?.roleName || item.roleName || item.RoleName || 'Médico'
                         }
                     };
                 });
+
                 setBloques(lista);
             }
-        } catch {
+        } catch (error: any) {
+            console.error('Error al cargar bloques horarios:', error);
+            toast.error(`Error al cargar bloques horarios: ${error.message}`);
         }
     };
 
