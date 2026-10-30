@@ -1,32 +1,98 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./AsignarHorarios.css";
 import { ModalReserva } from "../../../Components/ModalReserva/ModalReserva";
 import { FaSearch } from "react-icons/fa";
+import { supabase } from "../../../Services/supabaseClient.ts";
+import { toast } from "sonner";
 
-// Mock data para los usuarios
-const MOCK_USUARIOS = [
-    { id: "11111111-1111-1111-1111-111111111111", rut: "11.111.111-1", nombre: "Juan", apellido: "Pérez", email: "juan.perez@email.com" },
-    { id: "22222222-2222-2222-2222-222222222222", rut: "22.222.222-2", nombre: "María", apellido: "González", email: "maria.gonzalez@email.com" },
-    { id: "33333333-3333-3333-3333-333333333333", rut: "33.333.333-3", nombre: "Pedro", apellido: "Soto", email: "pedro.soto@email.com" },
-    { id: "44444444-4444-4444-4444-444444444444", rut: "44.444.444-4", nombre: "Ana", apellido: "Martínez", email: "ana.martinez@email.com" },
-    { id: "55555555-5555-5555-5555-555555555555", rut: "55.555.555-5", nombre: "Luis", apellido: "Rodríguez", email: "luis.rodriguez@email.com" },
-];
+interface Paciente {
+    id: string;
+    rut: string;
+    nombre: string;
+    apellido: string;
+    email: string;
+    telefono?: string;
+}
+
+const normalizarTexto = (texto: string): string => {
+    return (texto || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+};
+
+const normalizarRut = (rut: string): string => {
+    return (rut || '').replace(/[.\-\s]/g, '').toLowerCase().trim();
+};
 
 function AsignarHorariosRecepcionista() {
+    const [pacientes, setPacientes] = useState<Paciente[]>([]);
+    const [cargando, setCargando] = useState<boolean>(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<typeof MOCK_USUARIOS[0] | null>(null);
+    const [selectedUser, setSelectedUser] = useState<Paciente | null>(null);
 
-    const filteredUsers = MOCK_USUARIOS.filter((user) => {
-        const term = searchTerm.toLowerCase();
-        return (
-            user.rut.includes(term) ||
-            user.nombre.toLowerCase().includes(term) ||
-            user.apellido.toLowerCase().includes(term)
-        );
+    const cargarPacientes = async () => {
+        try {
+            setCargando(true);
+            const { data, error } = await supabase
+                .from('pacientes')
+                .select('*')
+                .order('nombre', { ascending: true });
+
+            if (error) {
+                toast.error(`Error al cargar pacientes: ${error.message}`);
+                return;
+            }
+
+            if (Array.isArray(data)) {
+                const lista: Paciente[] = data.map((item: any) => ({
+                    id: String(item.usuario_id || item.id),
+                    rut: item.rut || '',
+                    nombre: item.nombre || '',
+                    apellido: item.apellido || '',
+                    email: item.email || '',
+                    telefono: item.telefono || ''
+                }));
+                setPacientes(lista);
+            }
+        } catch (err: any) {
+            console.error('Error al cargar pacientes:', err);
+            toast.error(`Error al cargar pacientes: ${err.message}`);
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    useEffect(() => {
+        cargarPacientes();
+    }, []);
+
+    const filteredUsers = pacientes.filter((user) => {
+        if (!searchTerm.trim()) return true;
+
+        const terminoTexto = normalizarTexto(searchTerm);
+        const terminoRut = normalizarRut(searchTerm);
+
+        const nombreCompleto = normalizarTexto(`${user.nombre} ${user.apellido}`);
+        const apellidoNombre = normalizarTexto(`${user.apellido} ${user.nombre}`);
+        const nombre = normalizarTexto(user.nombre);
+        const apellido = normalizarTexto(user.apellido);
+
+        const coincideNombre =
+            nombreCompleto.includes(terminoTexto) ||
+            apellidoNombre.includes(terminoTexto) ||
+            nombre.includes(terminoTexto) ||
+            apellido.includes(terminoTexto);
+
+        const rutLimpio = normalizarRut(user.rut);
+        const coincideRut = terminoRut.length > 0 && rutLimpio.includes(terminoRut);
+
+        return coincideNombre || coincideRut;
     });
 
-    const handleOpenModal = (user: typeof MOCK_USUARIOS[0]) => {
+    const handleOpenModal = (user: Paciente) => {
         setSelectedUser(user);
         setIsModalOpen(true);
     };
@@ -66,7 +132,13 @@ function AsignarHorariosRecepcionista() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredUsers.length > 0 ? (
+                            {cargando ? (
+                                <tr>
+                                    <td colSpan={4} className="AsignarHorarios-NoResults">
+                                        Cargando pacientes...
+                                    </td>
+                                </tr>
+                            ) : filteredUsers.length > 0 ? (
                                 filteredUsers.map((user) => (
                                     <tr key={user.id}>
                                         <td>{user.rut}</td>
@@ -85,7 +157,9 @@ function AsignarHorariosRecepcionista() {
                             ) : (
                                 <tr>
                                     <td colSpan={4} className="AsignarHorarios-NoResults">
-                                        No se encontraron pacientes que coincidan con la búsqueda.
+                                        {searchTerm.trim()
+                                            ? `No se encontraron pacientes que coincidan con "${searchTerm}".`
+                                            : "No hay pacientes registrados en el sistema."}
                                     </td>
                                 </tr>
                             )}
@@ -103,7 +177,6 @@ function AsignarHorariosRecepcionista() {
             </div>
         </div>
         </>
-        
     );
 }
 
