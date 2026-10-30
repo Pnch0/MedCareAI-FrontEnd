@@ -6,6 +6,7 @@ import './MainPage.css';
 import { FaUserCircle } from "react-icons/fa";
 import { Contador } from '../../Components/Contador/Contador.tsx'
 import { ModalReserva } from '../../Components/ModalReserva/ModalReserva.tsx';
+import medico from '../../Assets/medico.jpg';
 
 
 function MainPage(){
@@ -90,7 +91,7 @@ function MainPage(){
                 </div>
             </div>
             <div className="ContenedorImagen-SobreNosotros">
-
+                <img src={medico} alt="Foto Medico" />
             </div>
         </div>
 
