@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import "./AsignarHorarios.css";
-import { ModalReserva } from "../../../Components/ModalReserva/ModalReserva";
-import { FaSearch } from "react-icons/fa";
-import { supabase } from "../../../Services/supabaseClient.ts";
 import { toast } from "sonner";
+import { ModalReserva } from "../../../Components/ModalReserva/ModalReserva.tsx";
+import { supabase } from "../../../Services/supabaseClient.ts";
 
 interface Paciente {
     id: string;
@@ -11,20 +10,8 @@ interface Paciente {
     nombre: string;
     apellido: string;
     email: string;
-    telefono?: string;
+    telefono: string;
 }
-
-const normalizarTexto = (texto: string): string => {
-    return (texto || '')
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .trim();
-};
-
-const normalizarRut = (rut: string): string => {
-    return (rut || '').replace(/[.\-\s]/g, '').toLowerCase().trim();
-};
 
 function AsignarHorariosRecepcionista() {
     const [pacientes, setPacientes] = useState<Paciente[]>([]);
@@ -48,7 +35,7 @@ function AsignarHorariosRecepcionista() {
 
             if (Array.isArray(data)) {
                 const lista: Paciente[] = data.map((item: any) => ({
-                    id: String(item.usuario_id || item.id),
+                    id: String(item.id || item.usuario_id),
                     rut: item.rut || '',
                     nombre: item.nombre || '',
                     apellido: item.apellido || '',
@@ -69,29 +56,6 @@ function AsignarHorariosRecepcionista() {
         cargarPacientes();
     }, []);
 
-    const filteredUsers = pacientes.filter((user) => {
-        if (!searchTerm.trim()) return true;
-
-        const terminoTexto = normalizarTexto(searchTerm);
-        const terminoRut = normalizarRut(searchTerm);
-
-        const nombreCompleto = normalizarTexto(`${user.nombre} ${user.apellido}`);
-        const apellidoNombre = normalizarTexto(`${user.apellido} ${user.nombre}`);
-        const nombre = normalizarTexto(user.nombre);
-        const apellido = normalizarTexto(user.apellido);
-
-        const coincideNombre =
-            nombreCompleto.includes(terminoTexto) ||
-            apellidoNombre.includes(terminoTexto) ||
-            nombre.includes(terminoTexto) ||
-            apellido.includes(terminoTexto);
-
-        const rutLimpio = normalizarRut(user.rut);
-        const coincideRut = terminoRut.length > 0 && rutLimpio.includes(terminoRut);
-
-        return coincideNombre || coincideRut;
-    });
-
     const handleOpenModal = (user: Paciente) => {
         setSelectedUser(user);
         setIsModalOpen(true);
@@ -102,81 +66,88 @@ function AsignarHorariosRecepcionista() {
         setSelectedUser(null);
     };
 
-    return (
-        <>
-        <div className="ContenedorPrincipal-AsignarHorarios">
-            <div className="AsignarHorarios-Container">
-                <h1 className="AsignarHorarios-Title">Asignar Hora a Paciente</h1>
-                
-                <div className="AsignarHorarios-SearchContainer">
-                    <div className="AsignarHorarios-SearchWrapper">
-                        <FaSearch className="AsignarHorarios-SearchIcon" />
-                        <input
-                            type="text"
-                            className="AsignarHorarios-SearchInput"
-                            placeholder="Buscar paciente por RUT, Nombre o Apellido..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                </div>
+    const pacientesFiltrados = pacientes.filter(p => {
+        const query = searchTerm.toLowerCase().trim();
+        const rutLimpio = query.replace(/[.\-]/g, '');
+        const pRutLimpio = p.rut.toLowerCase().replace(/[.\-]/g, '');
+        const nombreCompleto = `${p.nombre} ${p.apellido}`.toLowerCase();
+        
+        return nombreCompleto.includes(query) || pRutLimpio.includes(rutLimpio);
+    });
 
-                <div className="AsignarHorarios-TableContainer">
-                    <table className="AsignarHorarios-Table">
+    return (
+        <div className="Contenedor-Principal-AsignarHorarios">
+            <div className="Contenedor-Titulo-AsignarHorarios">
+                <h1>Asignación de Horarios Médicos</h1>
+                <p>Selecciona un paciente para comenzar el proceso de reserva</p>
+            </div>
+
+            <div className="Contenedor-BarraBusqueda-AsignarHorarios">
+                <input 
+                    type="text" 
+                    placeholder="Buscar por Nombre o RUT..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="Input-Busqueda-AsignarHorarios"
+                />
+            </div>
+
+            <div className="Contenedor-Tabla-AsignarHorarios">
+                {cargando ? (
+                    <div className="Cargando-AsignarHorarios">Cargando pacientes desde el sistema...</div>
+                ) : (
+                    <table className="Tabla-AsignarHorarios">
                         <thead>
                             <tr>
                                 <th>RUT</th>
-                                <th>Nombre Completo</th>
-                                <th>Email</th>
-                                <th>Acciones</th>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Correo</th>
+                                <th>Teléfono</th>
+                                <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {cargando ? (
-                                <tr>
-                                    <td colSpan={4} className="AsignarHorarios-NoResults">
-                                        Cargando pacientes...
-                                    </td>
-                                </tr>
-                            ) : filteredUsers.length > 0 ? (
-                                filteredUsers.map((user) => (
-                                    <tr key={user.id}>
-                                        <td>{user.rut}</td>
-                                        <td>{user.nombre} {user.apellido}</td>
-                                        <td>{user.email}</td>
+                            {pacientesFiltrados.length > 0 ? (
+                                pacientesFiltrados.map((paciente) => (
+                                    <tr key={paciente.id}>
+                                        <td>{paciente.rut}</td>
+                                        <td>{paciente.nombre}</td>
+                                        <td>{paciente.apellido}</td>
+                                        <td>{paciente.email}</td>
+                                        <td>{paciente.telefono || '-'}</td>
                                         <td>
                                             <button 
-                                                className="AsignarHorarios-BtnReserva"
-                                                onClick={() => handleOpenModal(user)}
+                                                className="Boton-Agendar-AsignarHorarios"
+                                                onClick={() => handleOpenModal(paciente)}
                                             >
-                                                Asignar Hora
+                                                Agendar Hora
                                             </button>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={4} className="AsignarHorarios-NoResults">
-                                        {searchTerm.trim()
-                                            ? `No se encontraron pacientes que coincidan con "${searchTerm}".`
-                                            : "No hay pacientes registrados en el sistema."}
+                                    <td colSpan={6} className="Sin-Resultados-AsignarHorarios">
+                                        No se encontraron pacientes que coincidan con la búsqueda.
                                     </td>
                                 </tr>
                             )}
                         </tbody>
                     </table>
-                </div>
-
-                {selectedUser && (
-                    <ModalReserva
-                        isOpen={isModalOpen}
-                        onClose={handleCloseModal}
-                        paciente={selectedUser}
-                    />
                 )}
             </div>
+
+            {/* Modal de Reserva */}
+            {selectedUser && (
+                <ModalReserva 
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    paciente={selectedUser}
+                    schedulingSource="Recepcion"
+                />
+            )}
         </div>
-        </>
     );
 }
 

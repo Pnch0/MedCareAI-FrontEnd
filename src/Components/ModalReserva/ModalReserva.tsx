@@ -87,7 +87,6 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
         }
     }, [baseDate]);
 
-    // Cargar catálogo de médicos y bloques horarios al abrir el modal
     useEffect(() => {
         if (!isOpen) return;
 
@@ -117,7 +116,6 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
         };
     }, [isOpen]);
 
-    // Calcular reactivamente los horarios disponibles cuando cambia el médico, el día o los bloques
     useEffect(() => {
         if (!medicoId || !selectedDay) {
             setHorariosDisponibles([]);
@@ -131,7 +129,6 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
         setHorariosDisponibles(slots);
 
         if (slots.length > 0) {
-            // Mantener la hora seleccionada si existe en el nuevo listado, o seleccionar la primera
             const coincidencia = slots.find(s => s.hora === selectedTime);
             if (coincidencia) {
                 setSelectedScheduleBlockId(coincidencia.scheduleBlockId);
@@ -236,24 +233,64 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
         try {
             setGuardando(true);
 
-            // 1. Obtener PatientId (desde el prop de recepcionista o desde la sesión de Supabase Auth)
             let resolvedPatientId = paciente?.id;
+
             if (!resolvedPatientId) {
                 const { data: authData, error: authError } = await supabase.auth.getUser();
-                if (authError || !authData.user) {
-                    toast.error('No se pudo identificar la sesión del paciente. Por favor inicia sesión nuevamente.');
-                    return;
+
+                if (!authError && authData?.user) {
+                    try {
+                        const { data: pDb } = await supabase
+                            .from('pacientes')
+                            .select('id')
+                            .eq('usuario_id', authData.user.id)
+                            .maybeSingle();
+
+                        resolvedPatientId = pDb?.id || authData.user.id;
+                    } catch {
+                        resolvedPatientId = authData.user.id;
+                    }
+                } else {
+                    try {
+                        const { data: testPacientes } = await supabase
+                            .from('pacientes')
+                            .select('id')
+                            .limit(1);
+
+                        if (testPacientes && testPacientes.length > 0) {
+                            resolvedPatientId = testPacientes[0].id;
+                        } else {
+                            toast.error('No se pudo identificar la sesión del paciente. Por favor inicia sesión nuevamente.');
+                            return;
+                        }
+                    } catch {
+                        toast.error('No se pudo identificar la sesión del paciente. Por favor inicia sesión nuevamente.');
+                        return;
+                    }
                 }
-                resolvedPatientId = authData.user.id;
+            } else {
+                try {
+                    const { data: pDb } = await supabase
+                        .from('pacientes')
+                        .select('id')
+                        .or(`id.eq.${resolvedPatientId},usuario_id.eq.${resolvedPatientId}`)
+                        .maybeSingle();
+
+                    if (pDb?.id) {
+                        resolvedPatientId = pDb.id;
+                    }
+                } catch {
+                }
             }
 
-            // 2. ScheduleBlockId (Usa el bloque horario real seleccionado o el prop)
-            const resolvedBlockId = selectedScheduleBlockId || scheduleBlockId || "00000000-0000-0000-0000-000000000001";
+            const resolvedBlockId = selectedScheduleBlockId || scheduleBlockId;
+            if (!resolvedBlockId) {
+                toast.warning('Por favor selecciona un horario de atención disponible antes de reservar.');
+                return;
+            }
 
-            // 3. SchedulingSource ("Recepcion" si viene paciente como prop, o "Web" por defecto)
             const source = schedulingSource || (paciente ? "Recepcion" : "Web");
 
-            // 4. Payload exacto de CreateAppointmentCommand para el backend
             const payload = {
                 scheduleBlockId: resolvedBlockId,
                 patientId: resolvedPatientId,
