@@ -4,8 +4,7 @@ import { toast } from 'sonner';
 import { supabase } from '../../Services/supabaseClient.ts';
 import { apiClient } from '../../Services/apiClient.ts';
 import {
-    obtenerEspecialidades,
-    obtenerMedicosPorEspecialidad,
+    obtenerCatalogoMedicos,
     type Especialidad,
     type Medico
 } from '../../Services/catalogoMedico.ts';
@@ -45,6 +44,7 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
     const [sintomas, setSintomas] = useState<string>('');
     const [guardando, setGuardando] = useState<boolean>(false);
 
+    const [todosLosMedicos, setTodosLosMedicos] = useState<Medico[]>([]);
     const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
     const [cargandoEspecialidades, setCargandoEspecialidades] = useState<boolean>(true);
     const [especialidad, setEspecialidad] = useState<string>('');
@@ -79,37 +79,31 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
         }
     }, [baseDate]);
 
+    // Cargar catálogo de médicos y especialidades reales desde el backend al abrir el modal
     useEffect(() => {
         if (!isOpen) return;
 
         let vigente = true;
+        setCargandoEspecialidades(true);
 
-        obtenerEspecialidades().then((lista) => {
-            if (!vigente) return;
-            setEspecialidades(lista);
-            setCargandoEspecialidades(false);
-        });
+        obtenerCatalogoMedicos()
+            .then(({ especialidades: listaEspecialidades, medicos: listaMedicos }) => {
+                if (!vigente) return;
+                setEspecialidades(listaEspecialidades);
+                setTodosLosMedicos(listaMedicos);
+                setCargandoEspecialidades(false);
+            })
+            .catch((error) => {
+                if (!vigente) return;
+                console.error('Error al cargar catálogo médico:', error);
+                toast.error('No se pudo cargar la lista de especialidades del servidor.');
+                setCargandoEspecialidades(false);
+            });
 
         return () => {
             vigente = false;
         };
     }, [isOpen]);
-
-    useEffect(() => {
-        if (!especialidad) return;
-
-        let vigente = true;
-
-        obtenerMedicosPorEspecialidad(especialidad).then((lista) => {
-            if (!vigente) return;
-            setMedicos(lista);
-            setCargandoMedicos(false);
-        });
-
-        return () => {
-            vigente = false;
-        };
-    }, [especialidad]);
 
     const reiniciarFormulario = () => {
         setBaseDate(new Date());
@@ -120,7 +114,6 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
         setMedicoId('');
         setMedicos([]);
         setCargandoMedicos(false);
-        setCargandoEspecialidades(true);
         setGuardando(false);
     };
 
@@ -132,8 +125,15 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
     const manejarCambioEspecialidad = (valor: string) => {
         setEspecialidad(valor);
         setMedicoId('');
-        setMedicos([]);
-        setCargandoMedicos(Boolean(valor));
+        if (valor) {
+            setCargandoMedicos(true);
+            const filtrados = todosLosMedicos.filter((m) => m.especialidadId === valor);
+            setMedicos(filtrados);
+            setCargandoMedicos(false);
+        } else {
+            setMedicos([]);
+            setCargandoMedicos(false);
+        }
     };
 
     if (!isOpen) return null;
@@ -176,7 +176,7 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
     };
 
     const especialidadNombre = especialidades.find((item) => item.id === especialidad)?.nombre ?? '';
-    const medicoSeleccionado = medicos.find((medico) => medico.id === medicoId) ?? null;
+    const medicoSeleccionado = todosLosMedicos.find((medico) => medico.id === medicoId) ?? null;
     const puedeReservar = Boolean(especialidad && medicoSeleccionado && selectedDay);
 
     const handleReservar = async () => {

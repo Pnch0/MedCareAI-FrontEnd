@@ -1,43 +1,87 @@
-export type Especialidad = {
+import { apiClient } from './apiClient.ts';
+
+export interface Especialidad {
     id: string;
     nombre: string;
-};
+}
 
-export type Medico = {
+export interface Medico {
     id: string;
     nombre: string;
     apellido: string;
+    especialidad: string;
     especialidadId: string;
     cargo: string;
-};
+}
 
-export const ESPECIALIDADES: Especialidad[] = [
-    { id: 'cardiologia', nombre: 'Cardiología' },
-    { id: 'pediatria', nombre: 'Pediatría' },
-    { id: 'dermatologia', nombre: 'Dermatología' },
-    { id: 'traumatologia', nombre: 'Traumatología' },
-    { id: 'neurologia', nombre: 'Neurología' }
-];
+export interface CatalogoMedicosResultado {
+    especialidades: Especialidad[];
+    medicos: Medico[];
+}
 
-export const MEDICOS: Medico[] = [
-    { id: 'med-1', nombre: 'Camila', apellido: 'Fernández Reyes', especialidadId: 'cardiologia', cargo: 'Médico Cardióloga' },
-    { id: 'med-2', nombre: 'Sebastián', apellido: 'Maldonado Cruz', especialidadId: 'pediatria', cargo: 'Médico Pediatra' },
-    { id: 'med-3', nombre: 'Isabel', apellido: 'Contreras Rivas', especialidadId: 'dermatologia', cargo: 'Médico Dermatóloga' },
-    { id: 'med-4', nombre: 'Rodrigo', apellido: 'Salas Pinto', especialidadId: 'cardiologia', cargo: 'Médico Cardiólogo' },
-    { id: 'med-5', nombre: 'Matías', apellido: 'Villalobos Tapia', especialidadId: 'traumatologia', cargo: 'Médico Traumatólogo' },
-    { id: 'med-6', nombre: 'Javiera', apellido: 'Núñez Paredes', especialidadId: 'neurologia', cargo: 'Médico Neuróloga' },
-    { id: 'med-7', nombre: 'Andrés', apellido: 'Cifuentes Mora', especialidadId: 'neurologia', cargo: 'Médico Neurólogo' }
-];
+export async function obtenerCatalogoMedicos(): Promise<CatalogoMedicosResultado> {
+    try {
+        const staffData = await apiClient('/api/Staff?role=2', { method: 'GET' });
 
-const ESPERA_SIMULADA_MS = 300;
+        if (!Array.isArray(staffData)) {
+            return { especialidades: [], medicos: [] };
+        }
 
-const simularEspera = <T,>(datos: T): Promise<T> =>
-    new Promise((resolve) => setTimeout(() => resolve(datos), ESPERA_SIMULADA_MS));
+        const docsValidos = staffData.filter((item: any) =>
+            item.role === 2 ||
+            String(item.role).toLowerCase() === 'medico' ||
+            (item.role === undefined && String(item.roleName || '').toLowerCase().includes('medico'))
+        );
+
+        const especialidadesMap = new Map<string, Especialidad>();
+
+        const medicosMapeados: Medico[] = docsValidos.map((item: any) => {
+            const rawSpecialty = (item.specialty || '').trim() || 'Medicina General';
+            
+
+            const espId = rawSpecialty
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, '-');
+
+            if (!especialidadesMap.has(espId)) {
+                especialidadesMap.set(espId, {
+                    id: espId,
+                    nombre: rawSpecialty
+                });
+            }
+
+            return {
+                id: String(item.id || item.staffId),
+                nombre: String(item.firstName || '').trim(),
+                apellido: String(item.lastName || '').trim(),
+                especialidad: rawSpecialty,
+                especialidadId: espId,
+                cargo: String(item.roleName || 'Médico')
+            };
+        });
+
+        const especialidades = Array.from(especialidadesMap.values()).sort((a, b) =>
+            a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' })
+        );
+
+        return {
+            especialidades,
+            medicos: medicosMapeados
+        };
+    } catch (error) {
+        console.error('Error al obtener catálogo médico desde el backend:', error);
+        return { especialidades: [], medicos: [] };
+    }
+}
 
 export async function obtenerEspecialidades(): Promise<Especialidad[]> {
-    return simularEspera(ESPECIALIDADES);
+    const catalogo = await obtenerCatalogoMedicos();
+    return catalogo.especialidades;
 }
 
 export async function obtenerMedicosPorEspecialidad(especialidadId: string): Promise<Medico[]> {
-    return simularEspera(MEDICOS.filter((medico) => medico.especialidadId === especialidadId));
+    const catalogo = await obtenerCatalogoMedicos();
+    return catalogo.medicos.filter((m) => m.especialidadId === especialidadId);
 }
