@@ -8,6 +8,12 @@ import {
     type Especialidad,
     type Medico
 } from '../../Services/catalogoMedico.ts';
+import {
+    obtenerBloquesHorarios,
+    obtenerHorariosPorMedicoYFecha,
+    type BloqueHorario,
+    type SlotHorario
+} from '../../Services/horarios.ts';
 
 interface ReservaModalProps {
     isOpen: boolean;
@@ -28,8 +34,6 @@ interface DayInfo {
     fullDate: Date;
 }
 
-const HORAS_POR_DEFECTO = '12:00';
-
 export const ModalReserva: React.FC<ReservaModalProps> = ({
     isOpen,
     onClose,
@@ -40,7 +44,8 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
     const [baseDate, setBaseDate] = useState<Date>(new Date());
     const [days, setDays] = useState<DayInfo[]>([]); 
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-    const [selectedTime, setSelectedTime] = useState<string>(HORAS_POR_DEFECTO);
+    const [selectedTime, setSelectedTime] = useState<string>('');
+    const [selectedScheduleBlockId, setSelectedScheduleBlockId] = useState<string>('');
     const [sintomas, setSintomas] = useState<string>('');
     const [guardando, setGuardando] = useState<boolean>(false);
 
@@ -52,7 +57,10 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
     const [cargandoMedicos, setCargandoMedicos] = useState<boolean>(false);
     const [medicoId, setMedicoId] = useState<string>('');
 
-    const times = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+    const [bloques, setBloques] = useState<BloqueHorario[]>([]);
+    const [horariosDisponibles, setHorariosDisponibles] = useState<SlotHorario[]>([]);
+    const [cargandoHorarios, setCargandoHorarios] = useState<boolean>(false);
+
     const dayNames = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
 
     useEffect(() => {
@@ -79,24 +87,28 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
         }
     }, [baseDate]);
 
-    // Cargar catálogo de médicos y especialidades reales desde el backend al abrir el modal
+    // Cargar catálogo de médicos y bloques horarios al abrir el modal
     useEffect(() => {
         if (!isOpen) return;
 
         let vigente = true;
         setCargandoEspecialidades(true);
 
-        obtenerCatalogoMedicos()
-            .then(({ especialidades: listaEspecialidades, medicos: listaMedicos }) => {
+        Promise.all([
+            obtenerCatalogoMedicos(),
+            obtenerBloquesHorarios()
+        ])
+            .then(([catalogo, listaBloques]) => {
                 if (!vigente) return;
-                setEspecialidades(listaEspecialidades);
-                setTodosLosMedicos(listaMedicos);
+                setEspecialidades(catalogo.especialidades);
+                setTodosLosMedicos(catalogo.medicos);
+                setBloques(listaBloques);
                 setCargandoEspecialidades(false);
             })
             .catch((error) => {
                 if (!vigente) return;
-                console.error('Error al cargar catálogo médico:', error);
-                toast.error('No se pudo cargar la lista de especialidades del servidor.');
+                console.error('Error al cargar datos en modal de reserva:', error);
+                toast.error('No se pudieron cargar los datos del servidor.');
                 setCargandoEspecialidades(false);
             });
 
@@ -105,15 +117,47 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
         };
     }, [isOpen]);
 
+    // Calcular reactivamente los horarios disponibles cuando cambia el médico, el día o los bloques
+    useEffect(() => {
+        if (!medicoId || !selectedDay) {
+            setHorariosDisponibles([]);
+            setSelectedTime('');
+            setSelectedScheduleBlockId('');
+            return;
+        }
+
+        setCargandoHorarios(true);
+        const slots = obtenerHorariosPorMedicoYFecha(bloques, medicoId, selectedDay, 60);
+        setHorariosDisponibles(slots);
+
+        if (slots.length > 0) {
+            // Mantener la hora seleccionada si existe en el nuevo listado, o seleccionar la primera
+            const coincidencia = slots.find(s => s.hora === selectedTime);
+            if (coincidencia) {
+                setSelectedScheduleBlockId(coincidencia.scheduleBlockId);
+            } else {
+                setSelectedTime(slots[0].hora);
+                setSelectedScheduleBlockId(slots[0].scheduleBlockId);
+            }
+        } else {
+            setSelectedTime('');
+            setSelectedScheduleBlockId('');
+        }
+        setCargandoHorarios(false);
+    }, [medicoId, selectedDay, bloques]);
+
     const reiniciarFormulario = () => {
         setBaseDate(new Date());
         setSelectedDay(new Date());
-        setSelectedTime(HORAS_POR_DEFECTO);
+        setSelectedTime('');
+        setSelectedScheduleBlockId('');
         setSintomas('');
         setEspecialidad('');
         setMedicoId('');
         setMedicos([]);
+        setHorariosDisponibles([]);
         setCargandoMedicos(false);
+        setCargandoHorarios(false);
         setGuardando(false);
     };
 
@@ -125,6 +169,9 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
     const manejarCambioEspecialidad = (valor: string) => {
         setEspecialidad(valor);
         setMedicoId('');
+        setSelectedTime('');
+        setSelectedScheduleBlockId('');
+        setHorariosDisponibles([]);
         if (valor) {
             setCargandoMedicos(true);
             const filtrados = todosLosMedicos.filter((m) => m.especialidadId === valor);
@@ -177,7 +224,13 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
 
     const especialidadNombre = especialidades.find((item) => item.id === especialidad)?.nombre ?? '';
     const medicoSeleccionado = todosLosMedicos.find((medico) => medico.id === medicoId) ?? null;
-    const puedeReservar = Boolean(especialidad && medicoSeleccionado && selectedDay);
+    const puedeReservar = Boolean(
+        especialidad &&
+        medicoSeleccionado &&
+        selectedDay &&
+        selectedTime &&
+        (selectedScheduleBlockId || scheduleBlockId)
+    );
 
     const handleReservar = async () => {
         try {
@@ -194,8 +247,8 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
                 resolvedPatientId = authData.user.id;
             }
 
-            // 2. ScheduleBlockId (Placeholder temporal hasta que el controlador esté listo en el backend)
-            const resolvedBlockId = scheduleBlockId || "00000000-0000-0000-0000-000000000001";
+            // 2. ScheduleBlockId (Usa el bloque horario real seleccionado o el prop)
+            const resolvedBlockId = selectedScheduleBlockId || scheduleBlockId || "00000000-0000-0000-0000-000000000001";
 
             // 3. SchedulingSource ("Recepcion" si viene paciente como prop, o "Web" por defecto)
             const source = schedulingSource || (paciente ? "Recepcion" : "Web");
@@ -311,17 +364,33 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
                         </div>
 
                         <h4 className="Modal-Subtitle">Seleccione Horario:</h4>
-                        <div className="Times-Grid">
-                            {times.map((time, index) => (
-                                <button 
-                                    key={index} 
-                                    className={`Time-Button ${selectedTime === time ? 'active' : ''}`}
-                                    onClick={() => setSelectedTime(time)}
-                                >
-                                    {time}
-                                </button>
-                            ))}
-                        </div>
+                        
+                        {!medicoId ? (
+                            <div className="Medicos-Mensaje">
+                                Selecciona un médico para ver sus horarios de atención.
+                            </div>
+                        ) : cargandoHorarios ? (
+                            <div className="Medicos-Mensaje">Cargando horarios del médico...</div>
+                        ) : horariosDisponibles.length === 0 ? (
+                            <div className="Medicos-Mensaje">
+                                El médico no tiene bloques de atención asignados para este día ({selectedDay ? selectedDay.toLocaleDateString('es-ES', { weekday: 'long' }) : ''}).
+                            </div>
+                        ) : (
+                            <div className="Times-Grid">
+                                {horariosDisponibles.map((slot, index) => (
+                                    <button 
+                                        key={index} 
+                                        className={`Time-Button ${selectedTime === slot.hora ? 'active' : ''}`}
+                                        onClick={() => {
+                                            setSelectedTime(slot.hora);
+                                            setSelectedScheduleBlockId(slot.scheduleBlockId);
+                                        }}
+                                    >
+                                        {slot.hora}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
 
                         <div className="Sintomas-Container">
                             <h4 className="Modal-Subtitle">Describe tus síntomas (Opcional):</h4>
@@ -357,7 +426,7 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
                             <p><strong>Especialidad:</strong> {especialidadNombre || '—'}</p>
                             <p><strong>Médico:</strong> {medicoSeleccionado ? `Dr. ${medicoSeleccionado.nombre} ${medicoSeleccionado.apellido}` : '—'}</p>
                             <p><strong>Dia:</strong> {formatSummaryDate(selectedDay)}</p>
-                            <p><strong>Hora:</strong> {selectedTime} {parseInt(selectedTime) >= 12 ? 'PM' : 'AM'}</p>
+                            <p><strong>Hora:</strong> {selectedTime ? `${selectedTime} ${parseInt(selectedTime) >= 12 ? 'PM' : 'AM'}` : '—'}</p>
                         </div>
                         <button
                             className="Boton-Reservar-Final"

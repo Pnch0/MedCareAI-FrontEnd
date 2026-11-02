@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './ModalAsignarHorario.css';
 import { toast } from 'sonner';
 import { apiClient } from '../../Services/apiClient';
+import { guardarBloqueLocal } from '../../Services/horarios.ts';
 
 interface ModalAsignarHorarioProps {
     isOpen: boolean;
@@ -177,6 +178,7 @@ export const ModalAsignarHorario: React.FC<ModalAsignarHorarioProps> = ({ isOpen
                 }
             };
 
+            guardarBloqueLocal(nuevoBloque);
             onHorarioCreado?.(nuevoBloque);
 
             // Limpiar formulario y cerrar
