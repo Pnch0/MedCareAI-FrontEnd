@@ -186,6 +186,10 @@
     color: #979797
 }
 
+.Bloque-CitaMedica h4{
+    text-align: center;
+}
+
 /* DISEÑO CALENDARIOS */
 
 .ContenedorCalendario-AgendaMedico {

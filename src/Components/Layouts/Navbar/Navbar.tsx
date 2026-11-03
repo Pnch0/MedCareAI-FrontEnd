@@ -27,13 +27,13 @@ function Navbar(){
 
     const [nombreUsuario, setNombreUsuario] = useState<string>(() => {
         const guardado = localStorage.getItem('userName');
-        return (guardado && guardado !== 'Wilson Flores') ? guardado : NOMBRE_POR_DEFECTO;
+        return (guardado && guardado !== 'Wilson Flores' && !guardado.includes('@')) ? guardado : NOMBRE_POR_DEFECTO;
     });
 
     useEffect(() => {
         const resolverNombre = async () => {
             const guardado = localStorage.getItem('userName');
-            if (guardado && guardado !== 'Wilson Flores') {
+            if (guardado && guardado !== 'Wilson Flores' && !guardado.includes('@')) {
                 setNombreUsuario(guardado);
                 return;
             }
@@ -61,7 +61,24 @@ function Navbar(){
                         }
                     }
                 } catch {
-                    // Si falla consulta a staff, usar metadata de Supabase
+                    // Si falla consulta a staff, verificar si es paciente
+                }
+
+                try {
+                    const { data: pacienteData } = await supabase
+                        .from('pacientes')
+                        .select('nombre, apellido')
+                        .eq('usuario_id', userId)
+                        .maybeSingle();
+
+                    if (pacienteData?.nombre) {
+                        const nombreReal = `${pacienteData.nombre} ${pacienteData.apellido || ''}`.trim();
+                        setNombreUsuario(nombreReal);
+                        localStorage.setItem('userName', nombreReal);
+                        return;
+                    }
+                } catch {
+                    // Fallback a metadata de autenticación
                 }
 
                 const meta = user.user_metadata;

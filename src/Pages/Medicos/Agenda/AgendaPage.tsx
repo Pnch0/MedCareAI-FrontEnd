@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { FaTimes } from 'react-icons/fa'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/react/daygrid'
@@ -9,109 +9,16 @@ import '@fullcalendar/react/themes/classic/theme.css'
 import '@fullcalendar/react/themes/classic/palette.css'
 import { FaRegUserCircle } from "react-icons/fa";
 import "./AgendaPage.css"
-
-type DiaSemana = 0 | 1 | 2 | 3 | 4 | 5 | 6
-type Box = 1 | 2 | 3 | 4 | 5 | 6 | 7
-
-type Cita = {
-    id: string
-    dia: DiaSemana
-    hora: string
-    paciente: string
-    motivo: string
-    box: Box
-}
+import {
+    obtenerAgendaSemanalMedico,
+    obtenerIndiceDia,
+    MEDICO_DEFAULT_ID,
+    type Cita,
+    type DiaSemana
+} from '../../../Services/agenda.ts';
 
 const DIAS_SEMANA = ['L', 'M', 'M', 'J', 'V', 'S', 'D'] as const
-
-const mockCitas: Cita[] = [
-    {
-        id: 'cita-1',
-        dia: 0,
-        hora: '12:00 - 13:00',
-        paciente: 'Juan Perez',
-        motivo: 'Motivo de consulta por dolor de garganta persistente, congestión nasal intensa y fatiga general desde hace cuatro días, con molestias agudas al tragar especialmente por las mañanas, dificultad para respirar por la nariz durante la noche, sensación de decaimiento por falta de descanso adecuado y episodios leves de escalofríos sin fiebre alta confirmada, buscando una evaluación médica para descartar infección y recibir el tratamiento farmacológico adecuado.',
-        box: 5
-    },
-    {
-        id: 'cita-2',
-        dia: 0,
-        hora: '14:00 - 15:00',
-        paciente: 'Maria Lopez',
-        motivo: 'Motivo de consulta por dolor de garganta persistente, congestión nasal intensa y fatiga general desde hace cuatro días, con molestias agudas al tragar especialmente por las mañanas, dificultad para respirar por la nariz durante la noche, sensación de decaimiento por falta de descanso adecuado y episodios leves de escalofríos sin fiebre alta confirmada, buscando una evaluación médica para descartar infección y recibir el tratamiento farmacológico adecuado.',
-        box: 2
-    },
-    {
-        id: 'cita-3',
-        dia: 1,
-        hora: '09:00 - 10:00',
-        paciente: 'Ana Gomez',
-        motivo: 'Motivo de consulta por dolor de garganta persistente, congestión nasal intensa y fatiga general desde hace cuatro días, con molestias agudas al tragar especialmente por las mañanas, dificultad para respirar por la nariz durante la noche, sensación de decaimiento por falta de descanso adecuado y episodios leves de escalofríos sin fiebre alta confirmada, buscando una evaluación médica para descartar infección y recibir el tratamiento farmacológico adecuado.',
-        box: 3
-    },
-    {
-        id: 'cita-4',
-        dia: 3,
-        hora: '11:00 - 12:00',
-        paciente: 'Carlos Ruiz',
-        motivo: 'Motivo de consulta por dolor de garganta persistente, congestión nasal intensa y fatiga general desde hace cuatro días, con molestias agudas al tragar especialmente por las mañanas, dificultad para respirar por la nariz durante la noche, sensación de decaimiento por falta de descanso adecuado y episodios leves de escalofríos sin fiebre alta confirmada, buscando una evaluación médica para descartar infección y recibir el tratamiento farmacológico adecuado.',
-        box: 5
-    },
-    {
-        id: 'cita-5',
-        dia: 4,
-        hora: '16:00 - 17:00',
-        paciente: 'Sofia Diaz',
-        motivo: 'Motivo de consulta por dolor de garganta persistente, congestión nasal intensa y fatiga general desde hace cuatro días, con molestias agudas al tragar especialmente por las mañanas, dificultad para respirar por la nariz durante la noche, sensación de decaimiento por falta de descanso adecuado y episodios leves de escalofríos sin fiebre alta confirmada, buscando una evaluación médica para descartar infección y recibir el tratamiento farmacológico adecuado.',
-        box: 6
-    },
-    {
-        id: 'cita-6',
-        dia: 6,
-        hora: '17:00 - 18:00',
-        paciente: 'Diego Fernandez',
-        motivo: 'Control de seguimiento de hipertensión arterial, con cefalea occipital matutina, mareos leves y cifras de presión elevadas registradas en el domicilio durante las últimas semanas.',
-        box: 4
-    },
-    {
-        id: 'cita-7',
-        dia: 6,
-        hora: '09:00 - 10:00',
-        paciente: 'Valentina Ortiz',
-        motivo: 'Dolor abdominal en epigastrio de dos semanas de evolucion, con ardor y reflujo que no cede con antiacidos comunes.',
-        box: 1
-    },
-    {
-        id: 'cita-8',
-        dia: 6,
-        hora: '12:30 - 13:15',
-        paciente: 'Andres Morales',
-        motivo: 'Evaluación de dolor en el hombro derecho de inicio posterior a caída, con limitación de movilidad y dolor al elevar el brazo.',
-        box: 7
-    },
-    {
-        id: 'cita-9',
-        dia: 6,
-        hora: '10:15 - 11:00',
-        paciente: 'Camila Rojas',
-        motivo: 'Fiebre y tos seca persistente, con ruidos respiratorios en la base. Se solicita evaluacion clinica y radiografia de torax para descartar infeccion respiratoria.',
-        box: 2
-    },
-    {
-        id: 'cita-10',
-        dia: 6,
-        hora: '15:00 - 16:00',
-        paciente: 'Sebastian Vega',
-        motivo: 'Revisión de resultados de laboratorio y ajuste de tratamiento farmacológico en paciente con diabetes mellitus tipo 2.',
-        box: 3
-    }
-]
-
 const NOMBRES_DIA = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'] as const
-
-function obtenerIndiceDia(fecha: Date): DiaSemana {
-    return (((fecha.getUTCDay() + 6) % 7) as DiaSemana)
-}
 
 function obtenerMinutosInicio(hora: string): number {
     const [inicio] = hora.split('-').map((parte) => parte.trim())
@@ -124,12 +31,40 @@ function AgendaPageMedico(){
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [citaSeleccionada, setCitaSeleccionada] = useState<Cita | null>(null);
     const [diaSeleccionado, setDiaSeleccionado] = useState<DiaSemana>(obtenerIndiceDia(new Date()));
+    const [fechaSeleccionada, setFechaSeleccionada] = useState<Date>(new Date());
+    const [citas, setCitas] = useState<Cita[]>([]);
+    const [cargando, setCargando] = useState<boolean>(true);
+
+    useEffect(() => {
+        let cancelado = false;
+        const cargarCitas = async () => {
+            setCargando(true);
+            try {
+                const staffId = localStorage.getItem('staffId') || localStorage.getItem('medicoId') || MEDICO_DEFAULT_ID;
+                const citasCargadas = await obtenerAgendaSemanalMedico(staffId, fechaSeleccionada);
+                if (!cancelado) {
+                    setCitas(citasCargadas);
+                }
+            } catch (error) {
+                console.error('Error al cargar agenda del médico:', error);
+            } finally {
+                if (!cancelado) {
+                    setCargando(false);
+                }
+            }
+        };
+
+        cargarCitas();
+        return () => {
+            cancelado = true;
+        };
+    }, [fechaSeleccionada]);
 
     const citasOrdenadas = useMemo(
-        () => mockCitas
+        () => citas
             .filter((cita) => cita.dia === diaSeleccionado)
             .sort((a, b) => obtenerMinutosInicio(a.hora) - obtenerMinutosInicio(b.hora)),
-        [diaSeleccionado]
+        [citas, diaSeleccionado]
     );
 
     const abrirModalCita = (datosCita: Cita) => {
@@ -163,7 +98,10 @@ function AgendaPageMedico(){
                          headerToolbarClass="agenda-calendar-toolbar"
                          buttonClass="agenda-calendar-button"
                          dayHeaderInnerClass="agenda-calendar-day-header"
-                         dateClick={(arg) => setDiaSeleccionado(obtenerIndiceDia(arg.date))}
+                         dateClick={(arg) => {
+                             setDiaSeleccionado(obtenerIndiceDia(arg.date));
+                             setFechaSeleccionada(arg.date);
+                         }}
                          dayCellClass={({ isOther, isToday }) =>
                              `agenda-calendar-day ${isOther ? 'agenda-calendar-day-other' : ''} ${isToday ? 'agenda-calendar-day-today' : ''}`
                          }
@@ -179,7 +117,11 @@ function AgendaPageMedico(){
                 </div>
                 <div className="ContenedorListado-AgendaMedico">
                     <div className="Listado-AgendaMedico">
-                        {citasOrdenadas.length === 0 ? (
+                        {cargando ? (
+                            <p className="Listado-AgendaMedico-Vacio">
+                                Cargando agenda...
+                            </p>
+                        ) : citasOrdenadas.length === 0 ? (
                             <p className="Listado-AgendaMedico-Vacio">
                                 No hay citas para el {NOMBRES_DIA[diaSeleccionado].toLowerCase()}
                             </p>
@@ -213,7 +155,7 @@ function AgendaPageMedico(){
             <div className="ContenedorDerecha-AgendaMedico">
                 <div className="ContenedorCitas-AgendaMedico">
                     {DIAS_SEMANA.map((dia, indice) => {
-                        const citasDelDia = mockCitas
+                        const citasDelDia = citas
                             .filter((cita) => cita.dia === indice)
                             .sort((a, b) => obtenerMinutosInicio(a.hora) - obtenerMinutosInicio(b.hora));
                         const claseColumna = indice === 0

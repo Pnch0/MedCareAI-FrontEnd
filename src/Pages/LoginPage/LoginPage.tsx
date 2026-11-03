@@ -101,6 +101,23 @@ function LoginPage() {
             console.warn('No se pudo verificar staff en backend, usando rol de Supabase:', staffErr);
         }
 
+        // Si el usuario es paciente o el nombre sigue siendo correo, consultar la tabla pacientes
+        if (userRole === 'paciente' || userName.includes('@')) {
+            try {
+                const { data: pacienteData } = await supabase
+                    .from('pacientes')
+                    .select('nombre, apellido')
+                    .eq('usuario_id', userId)
+                    .maybeSingle();
+
+                if (pacienteData?.nombre) {
+                    userName = `${pacienteData.nombre} ${pacienteData.apellido || ''}`.trim();
+                }
+            } catch (pErr) {
+                console.warn('No se pudo obtener datos del paciente desde Supabase:', pErr);
+            }
+        }
+
         localStorage.setItem('userRole', userRole);
         localStorage.setItem('userName', userName);
 
