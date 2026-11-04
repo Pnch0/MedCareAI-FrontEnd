@@ -51,7 +51,8 @@ export function obtenerCitasLocales(): Cita[] {
     try {
         const data = localStorage.getItem(LOCAL_CITAS_KEY);
         if (!data) return [];
-        const citas: Cita[] = JSON.parse(data);
+        // Filtrar cualquier ID que provenga de pruebas simuladas previas
+        const citas: Cita[] = JSON.parse(data).filter((c: Cita) => !c.id.startsWith('demo-'));
         const storedUserName = localStorage.getItem('userName');
         let modificado = false;
 
@@ -115,58 +116,6 @@ function extraerNumeroBox(boxId: string): Box {
     }
     return 1;
 }
-
-// Citas iniciales de demostración para que el doctor nunca vea la pantalla vacía
-const CITAS_INICIALES_DEMO: Cita[] = [
-    {
-        id: 'demo-1',
-        dia: 0,
-        hora: '10:00 - 11:00',
-        paciente: 'Juan Pérez Reyes',
-        motivo: 'Dolor torácico moderado de 3 días de evolución, con irradiación a espalda.',
-        box: 1
-    },
-    {
-        id: 'demo-2',
-        dia: 0,
-        hora: '14:00 - 15:00',
-        paciente: 'María López Fuentes',
-        motivo: 'Control de hipertensión arterial y ajuste de dosis de enalapril.',
-        box: 1
-    },
-    {
-        id: 'demo-3',
-        dia: 1,
-        hora: '09:00 - 10:00',
-        paciente: 'Ana Gómez Silva',
-        motivo: 'Palpitaciones frecuentes y fatiga general tras esfuerzo leve.',
-        box: 1
-    },
-    {
-        id: 'demo-4',
-        dia: 2,
-        hora: '11:00 - 12:00',
-        paciente: 'Carlos Ruiz Muñoz',
-        motivo: 'Chequeo cardiológico preventivo para práctica deportiva de alta intensidad.',
-        box: 1
-    },
-    {
-        id: 'demo-5',
-        dia: 3,
-        hora: '15:00 - 16:00',
-        paciente: 'Sofía Díaz Morales',
-        motivo: 'Evaluación de electrocardiograma con sospecha de arritmia sinusal.',
-        box: 1
-    },
-    {
-        id: 'demo-6',
-        dia: 4,
-        hora: '12:00 - 13:00',
-        paciente: 'Diego Fernández Araya',
-        motivo: 'Disnea de esfuerzo y control posoperatorio de cateterismo.',
-        box: 1
-    }
-];
 
 /**
  * Consulta la agenda diaria del médico en el backend de Render:
@@ -237,16 +186,12 @@ export async function obtenerAgendaDiariaMedico(
 
     // Fallback: retornar citas locales que coincidan con la fecha o el día
     const localesFiltradas = citasLocales.filter(c => c.fecha === fechaStr || c.dia === diaIndice);
-    if (localesFiltradas.length > 0) {
-        return localesFiltradas;
-    }
-
-    // Si aún no hay citas en absoluto, proveer citas demo para el día seleccionado
-    return CITAS_INICIALES_DEMO.filter(c => c.dia === diaIndice);
+    return localesFiltradas;
 }
 
 /**
  * Obtiene las citas de toda la semana para poblar las 7 columnas (Lunes a Domingo) de la Agenda.
+ * Solo incluye citas reales devueltas por el backend o creadas en localStorage.
  */
 export async function obtenerAgendaSemanalMedico(
     medicoId: string = MEDICO_DEFAULT_ID,
@@ -273,13 +218,9 @@ export async function obtenerAgendaSemanalMedico(
         const resultados = await Promise.allSettled(promesas);
         const citasSemanales: Cita[] = [];
 
-        resultados.forEach((res, index) => {
+        resultados.forEach((res) => {
             if (res.status === 'fulfilled' && Array.isArray(res.value)) {
                 citasSemanales.push(...res.value);
-            } else {
-                // Fallback por día si alguna petición individual falló
-                const demoDia = CITAS_INICIALES_DEMO.filter(c => c.dia === index);
-                citasSemanales.push(...demoDia);
             }
         });
 
@@ -290,16 +231,8 @@ export async function obtenerAgendaSemanalMedico(
             }
         }
 
-        // Si algún día no tiene citas registradas, complementar con citas demo para mantener la agenda visualmente activa
-        const diasConCitas = new Set(citasSemanales.map(c => c.dia));
-        for (const demo of CITAS_INICIALES_DEMO) {
-            if (!diasConCitas.has(demo.dia)) {
-                citasSemanales.push(demo);
-            }
-        }
-
         return citasSemanales;
     } catch {
-        return [...citasLocales, ...CITAS_INICIALES_DEMO];
+        return citasLocales;
     }
 }
