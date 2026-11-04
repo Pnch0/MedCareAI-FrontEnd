@@ -117,30 +117,37 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    height: 290px;
+    box-sizing: border-box;
 }
-
-
 
 .Tarjeta-Resumen h3 {
     margin: 0;
     color: #333;
     font-size: 1.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .Tarjeta-Resumen .Edad-Paciente{
     font-weight: bold;
     color: #9F9F9F;
+    margin: 0;
 }
 
 .Contenedor-InformacionPaciente{
     width: 100%;
-    min-height: 10dvh;
+    height: 110px;
     background-color: #FFFFFF;
     border: 1px solid #E1EAEF;
     border-radius: 10px;
-    padding: 5px;
+    padding: 10px;
+    box-sizing: border-box;
     overflow: hidden;
-    overflow-wrap: break-word;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .Tarjeta-Resumen .Diagnostico {
@@ -149,6 +156,22 @@
     font-weight: 600;
     border-radius: 20px;
     align-self: flex-start;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.Contenedor-InformacionPaciente p {
+    margin: 0;
+    color: #6B7280;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .Tarjeta-Resumen p {
@@ -253,6 +276,7 @@
     border-top: 1px solid #E1EAEF;
     display: flex;
     justify-content: flex-end;
+    gap: 12px;
 }
 
 .Btn-Accion {
@@ -263,4 +287,74 @@
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
+    font-size: 0.95rem;
+    transition: background-color 0.2s;
+}
+
+.Btn-Accion:hover {
+    background-color: #1583D1;
+}
+
+.Btn-Secundario {
+    background-color: #F7F8F8;
+    color: #1E9CF1;
+    border: 1px solid #1E9CF1;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.Btn-Secundario:hover {
+    background-color: #EBF5FF;
+}
+
+.Formulario-Edicion-Ficha {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.Campo-Edicion-Ficha {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.Campo-Edicion-Ficha label {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.Campo-Edicion-Ficha input,
+.Campo-Edicion-Ficha textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #E1EAEF;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #333;
+    background-color: #F7F8F8;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.Campo-Edicion-Ficha input:focus,
+.Campo-Edicion-Ficha textarea:focus {
+    border-color: #1E9CF1;
+    box-shadow: 0 0 0 2px rgba(30, 156, 241, 0.15);
+}
+
+.Listado-Resumen-Vacio {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: #9CA3AF;
+    font-size: 1.1rem;
 }
