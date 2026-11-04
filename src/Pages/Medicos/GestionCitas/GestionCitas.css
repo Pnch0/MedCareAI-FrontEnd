@@ -41,6 +41,8 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    height: 200px;
+    box-sizing: border-box;
 }
 
 
@@ -92,9 +94,19 @@
 }
 
 
+.ContenedorVacio-GestionCitas{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 50px;
+    box-sizing: border-box;
+}
+
 .ListadoVacio-GestionCitas{
-    padding: 20px 10px;
-    color: #979797;
-    font-size: 0.85rem;
+    color: #9CA3AF;
+    font-size: 1.18rem;
+    font-weight: 500;
+    margin: 0;
     text-align: center;
 }
