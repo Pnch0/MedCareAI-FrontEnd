@@ -45,7 +45,8 @@ export function guardarCitaLocal(cita: Cita): void {
 }
 
 /**
- * Obtiene todas las citas almacenadas localmente, asegurando que el nombre del paciente sea legible.
+ * Obtiene todas las citas almacenadas localmente, asegurando que el nombre del paciente sea legible
+ * y resolviendo el box correcto de acuerdo a los bloques asignados.
  */
 export function obtenerCitasLocales(): Cita[] {
     try {
@@ -56,7 +57,18 @@ export function obtenerCitasLocales(): Cita[] {
         const storedUserName = localStorage.getItem('userName');
         let modificado = false;
 
+        let bloquesLocales: any[] = [];
+        try {
+            const rawBloques = localStorage.getItem('medcare_schedule_blocks');
+            if (rawBloques) bloquesLocales = JSON.parse(rawBloques);
+        } catch {
+            // Ignorar error al leer bloques
+        }
+
         const citasLimpias = citas.map((c) => {
+            let citaActualizada = { ...c };
+
+            // 1. Limpiar nombre si contiene correo
             if (c.paciente && c.paciente.includes('@')) {
                 modificado = true;
                 let nombreLimpio = 'Paciente';
@@ -68,9 +80,26 @@ export function obtenerCitasLocales(): Cita[] {
                     const parteNombre = c.paciente.split('@')[0].replace(/[._-]/g, ' ');
                     nombreLimpio = parteNombre.charAt(0).toUpperCase() + parteNombre.slice(1);
                 }
-                return { ...c, paciente: nombreLimpio };
+                citaActualizada.paciente = nombreLimpio;
             }
-            return c;
+
+            // 2. Corregir box si fue guardado erróneamente como 6 debido al cálculo anterior con UUIDs
+            if (citaActualizada.box === 6 && bloquesLocales.length > 0) {
+                const bloqueCoincidente = bloquesLocales.find((b: any) => 
+                    b?.id === c.id || 
+                    (b?.profesional?.id && c.medicoId && String(b.profesional.id) === String(c.medicoId))
+                );
+                if (bloqueCoincidente?.box?.nombre) {
+                    const match = String(bloqueCoincidente.box.nombre).match(/\d+/);
+                    const boxReal = match ? parseInt(match[0], 10) : bloqueCoincidente.box.nombre;
+                    if (boxReal !== 6) {
+                        modificado = true;
+                        citaActualizada.box = boxReal;
+                    }
+                }
+            }
+
+            return citaActualizada;
         });
 
         if (modificado) {
@@ -103,17 +132,108 @@ export function formatearFechaISO(fecha: Date): string {
     return `${yyyy}-${mm}-${dd}`;
 }
 
+let boxesCache: Map<string, Box> | null = null;
+
 /**
- * Mapea un boxId o UUID a un número simple de box (1-7).
+ * Carga el catálogo de boxes para mapear identificadores UUIDs a números o nombres reales de Box.
  */
-function extraerNumeroBox(boxId: string): Box {
-    if (!boxId) return 1;
-    // Si contiene números, extraer el primero
-    const match = String(boxId).match(/\d+/);
-    if (match) {
-        const n = parseInt(match[0], 10);
-        return ((n % 7) || 1) as Box;
+export async function cargarMapaBoxes(): Promise<Map<string, Box>> {
+    if (boxesCache && boxesCache.size > 0) {
+        return boxesCache;
     }
+
+    const mapa = new Map<string, Box>();
+
+    // 1. Cargar desde los bloques horarios locales
+    try {
+        const bloquesLocales = localStorage.getItem('medcare_schedule_blocks');
+        if (bloquesLocales) {
+            const parsed = JSON.parse(bloquesLocales);
+            if (Array.isArray(parsed)) {
+                for (const b of parsed) {
+                    if (b?.box?.id && b?.box?.nombre) {
+                        const match = String(b.box.nombre).match(/\d+/);
+                        const num = match ? parseInt(match[0], 10) : b.box.nombre;
+                        mapa.set(String(b.box.id), num);
+                    }
+                }
+            }
+        }
+    } catch {
+        // Ignorar
+    }
+
+    // 2. Consultar catálogo de boxes desde el backend
+    try {
+        const data = await apiClient('/api/Boxes', { method: 'GET' });
+        if (Array.isArray(data)) {
+            for (const item of data) {
+                const id = String(item.id || item.boxId || '');
+                const nombre = String(item.name || item.nombre || '');
+                if (id && nombre) {
+                    const match = nombre.match(/\d+/);
+                    const num = match ? parseInt(match[0], 10) : nombre;
+                    mapa.set(id, num);
+                }
+            }
+        }
+    } catch {
+        // Fallback silencioso al mapa local
+    }
+
+    boxesCache = mapa;
+    return mapa;
+}
+
+/**
+ * Resuelve el número o identificador del Box de forma segura,
+ * evitando aplicar operaciones módulo arbitrarias sobre UUIDs.
+ */
+export function resolverBox(boxId: string | number | undefined, mapaBoxes?: Map<string, Box>): Box {
+    if (!boxId) return 1;
+
+    // Si ya es un número (ej: 1, 2)
+    if (typeof boxId === 'number') return boxId;
+
+    const str = String(boxId).trim();
+
+    // Si es un string numérico corto (ej: "1", "2")
+    if (str.length <= 2 && !isNaN(Number(str))) {
+        return parseInt(str, 10) as Box;
+    }
+
+    // Si contiene la palabra "box" seguida de número (ej: "Box 1")
+    if (str.toLowerCase().includes('box')) {
+        const match = str.match(/\d+/);
+        if (match) return parseInt(match[0], 10) as Box;
+    }
+
+    // Buscar en el catálogo de boxes por UUID
+    const mapa = mapaBoxes || boxesCache;
+    if (mapa && mapa.has(str)) {
+        return mapa.get(str)!;
+    }
+
+    // Buscar en los bloques locales guardados
+    try {
+        const bloquesLocales = localStorage.getItem('medcare_schedule_blocks');
+        if (bloquesLocales) {
+            const parsed = JSON.parse(bloquesLocales);
+            if (Array.isArray(parsed)) {
+                const encontrado = parsed.find((b: any) => 
+                    String(b?.box?.id) === str || 
+                    String(b?.id) === str
+                );
+                if (encontrado?.box?.nombre) {
+                    const match = String(encontrado.box.nombre).match(/\d+/);
+                    return match ? (parseInt(match[0], 10) as Box) : encontrado.box.nombre;
+                }
+            }
+        }
+    } catch {
+        // Fallback
+    }
+
     return 1;
 }
 
@@ -123,11 +243,13 @@ function extraerNumeroBox(boxId: string): Box {
  */
 export async function obtenerAgendaDiariaMedico(
     medicoId: string = MEDICO_DEFAULT_ID,
-    fecha: Date = new Date()
+    fecha: Date = new Date(),
+    mapaBoxesParam?: Map<string, Box>
 ): Promise<Cita[]> {
     const fechaStr = formatearFechaISO(fecha);
     const diaIndice = obtenerIndiceDia(fecha);
     const citasLocales = obtenerCitasLocales();
+    const mapaBoxes = mapaBoxesParam || (await cargarMapaBoxes());
 
     try {
         const slots = await apiClient(`/api/Agenda/medico/${medicoId}?fecha=${fechaStr}`, {
@@ -141,7 +263,7 @@ export async function obtenerAgendaDiariaMedico(
                 const horaInicio = slot.fechaInicio ? slot.fechaInicio.slice(11, 16) : '08:00';
                 const horaFin = slot.fechaFin ? slot.fechaFin.slice(11, 16) : '09:00';
                 const horaRango = `${horaInicio} - ${horaFin}`;
-                const boxNum = extraerNumeroBox(slot.boxId);
+                const boxResuelto = resolverBox(slot.boxId, mapaBoxes);
 
                 // 1. Si el backend ya tiene una cita asignada en este slot
                 if (slot.disponibilidad !== 'libre' && slot.pacienteNombre) {
@@ -151,7 +273,7 @@ export async function obtenerAgendaDiariaMedico(
                         hora: horaRango,
                         paciente: slot.pacienteNombre,
                         motivo: slot.motivoConsulta || 'Consulta médica agendada',
-                        box: boxNum,
+                        box: boxResuelto,
                         fecha: fechaStr,
                         disponibilidad: 'ocupado',
                         citaId: slot.citaId,
@@ -167,11 +289,16 @@ export async function obtenerAgendaDiariaMedico(
                 );
 
                 if (citaLocalCoincidente) {
+                    // Respetar prioritariamente el box de la cita local si es válido (o el box resuelto del bloque)
+                    const boxFinal = (citaLocalCoincidente.box !== undefined && citaLocalCoincidente.box !== null && citaLocalCoincidente.box !== 6)
+                        ? citaLocalCoincidente.box
+                        : boxResuelto;
+
                     citasMapeadas.push({
                         ...citaLocalCoincidente,
                         dia: diaIndice,
                         hora: horaRango,
-                        box: boxNum,
+                        box: boxFinal,
                         fecha: fechaStr,
                         disponibilidad: 'ocupado'
                     });
@@ -197,6 +324,7 @@ export async function obtenerAgendaSemanalMedico(
     medicoId: string = MEDICO_DEFAULT_ID,
     fechaReferencia: Date = new Date()
 ): Promise<Cita[]> {
+    const mapaBoxes = await cargarMapaBoxes();
     const citasLocales = obtenerCitasLocales();
 
     // Calcular el lunes de la semana actual
@@ -207,11 +335,11 @@ export async function obtenerAgendaSemanalMedico(
 
     const promesas = [];
 
-    // Consultar cada uno de los 7 días de la semana
+    // Consultar cada uno de los 7 días de la semana pasando el mapa cargado
     for (let i = 0; i < 7; i++) {
         const dia = new Date(current);
         dia.setDate(current.getDate() + i);
-        promesas.push(obtenerAgendaDiariaMedico(medicoId, dia));
+        promesas.push(obtenerAgendaDiariaMedico(medicoId, dia, mapaBoxes));
     }
 
     try {

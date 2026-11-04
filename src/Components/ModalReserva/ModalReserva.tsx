@@ -236,13 +236,10 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
         try {
             setGuardando(true);
 
-            // 1. Obtener PatientId
-            // 1. Resolver PatientId y Nombre del Paciente
             let resolvedPatientId = paciente?.id;
             let resolvedPatientNombre = paciente ? `${paciente.nombre} ${paciente.apellido}`.trim() : '';
 
             if (!resolvedPatientId) {
-                // Vista del Paciente: identificar usuario en sesión
                 const { data: authData, error: authError } = await supabase.auth.getUser();
 
                 if (!authError && authData?.user) {
@@ -304,7 +301,6 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
                 }
             }
 
-            // Si aún no se resolvió el nombre, verificar localStorage limpiando correos
             if (!resolvedPatientNombre) {
                 const storedUser = localStorage.getItem('userName');
                 if (storedUser && !storedUser.includes('@')) {
@@ -314,17 +310,14 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
                 }
             }
 
-            // 2. ScheduleBlockId
             const resolvedBlockId = selectedScheduleBlockId || scheduleBlockId;
             if (!resolvedBlockId) {
                 toast.warning('Por favor selecciona un horario de atención disponible antes de reservar.');
                 return;
             }
 
-            // 3. SchedulingSource
             const source = schedulingSource || (paciente ? "Recepcion" : "Web");
 
-            // 4. Payload para el backend CQRS
             const payload = {
                 scheduleBlockId: resolvedBlockId,
                 patientId: resolvedPatientId,
@@ -332,11 +325,17 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
                 schedulingSource: source
             };
 
-            // 5. Almacenar cita de respaldo para visualización inmediata en la Agenda del Médico
             const fechaStr = selectedDay ? selectedDay.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
             const diaSemanaNum = selectedDay ? (((selectedDay.getDay() + 6) % 7) as any) : 0;
             const [hIni] = selectedTime.split(':').map(Number);
             const hFinStr = !isNaN(hIni) ? `${String(hIni + 1).padStart(2, '0')}:00` : '10:00';
+
+            const bloqueSeleccionado = bloques.find(b => b.id === resolvedBlockId);
+            let boxAsignado: number | string = 1;
+            if (bloqueSeleccionado?.box?.nombre) {
+                const matchBox = String(bloqueSeleccionado.box.nombre).match(/\d+/);
+                boxAsignado = matchBox ? parseInt(matchBox[0], 10) : bloqueSeleccionado.box.nombre;
+            }
 
             const citaRespaldo = {
                 id: crypto.randomUUID(),
@@ -344,7 +343,7 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
                 hora: `${selectedTime} - ${hFinStr}`,
                 paciente: resolvedPatientNombre,
                 motivo: sintomas.trim() || 'Consulta médica general',
-                box: 1,
+                box: boxAsignado,
                 fecha: fechaStr,
                 disponibilidad: 'ocupado' as const,
                 medicoId: medicoId
@@ -352,7 +351,6 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
 
             guardarCitaLocal(citaRespaldo);
 
-            // Intentar enviar al backend en Render
             try {
                 await apiClient('/api/Appointments', {
                     method: 'POST',
