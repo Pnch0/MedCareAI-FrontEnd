@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import "./HomePage.css";
+import { toast } from "sonner";
 import { supabase } from "../../../Services/supabaseClient.ts";
 import {
     obtenerAgendaDiariaMedico,
     obtenerCitasLocales,
+    actualizarEstadoCitaBackend,
     formatearFechaISO,
     obtenerIndiceDia,
     MEDICO_DEFAULT_ID,
@@ -53,7 +55,8 @@ function normalizarTexto(texto: string): string {
 function HomePageMedico(){
     const nombreUsuario = localStorage.getItem('userName') || 'Médico';
     const [citasDelDia, setCitasDelDia] = useState<CitaAgendaCard[]>([]);
-    const [resumenCercano, setResumenCercano] = useState<PacienteResumenClinico | null>(null);
+    const [mapaEdades, setMapaEdades] = useState<Map<string, number>>(new Map());
+    const [fichasGuardadas, setFichasGuardadas] = useState<Record<string, any>>({});
     const [cargando, setCargando] = useState<boolean>(true);
 
     useEffect(() => {
@@ -75,14 +78,14 @@ function HomePageMedico(){
                 } catch {}
 
                 // 2. Obtener fichas clínicas guardadas localmente
-                let fichasGuardadas: Record<string, any> = {};
+                let fichas: Record<string, any> = {};
                 try {
                     const rawFichas = localStorage.getItem(LOCAL_FICHAS_KEY);
-                    if (rawFichas) fichasGuardadas = JSON.parse(rawFichas);
+                    if (rawFichas) fichas = JSON.parse(rawFichas);
                 } catch {}
 
                 // 3. Consultar edades de pacientes en Supabase
-                const mapaEdades = new Map<string, number>();
+                const edadesMap = new Map<string, number>();
                 try {
                     const { data: dbPacientes } = await supabase
                         .from('pacientes')
@@ -91,8 +94,8 @@ function HomePageMedico(){
                         for (const p of dbPacientes) {
                             const nombreCompleto = `${p.nombre || ''} ${p.apellido || ''}`.trim();
                             const edad = calcularEdad(p.fecha_nacimiento);
-                            if (nombreCompleto) mapaEdades.set(normalizarTexto(nombreCompleto), edad);
-                            if (p.nombre) mapaEdades.set(normalizarTexto(p.nombre), edad);
+                            if (nombreCompleto) edadesMap.set(normalizarTexto(nombreCompleto), edad);
+                            if (p.nombre) edadesMap.set(normalizarTexto(p.nombre), edad);
                         }
                     }
                 } catch {}
@@ -136,76 +139,8 @@ function HomePageMedico(){
 
                 if (!cancelado) {
                     setCitasDelDia(listaCards);
-
-                    // 5. Determinar la cita más cercana para el Resumen Clínico
-                    if (listaCards.length > 0) {
-                        // Prioridad 1: Cita en curso
-                        let citaCercana = listaCards.find(c => c.estado === 'en-curso');
-
-                        // Prioridad 2: Próxima cita pendiente más cercana al horario actual
-                        if (!citaCercana) {
-                            const ahora = new Date();
-                            const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
-
-                            const pendientes = listaCards.filter(c => c.estado === 'pendiente');
-                            if (pendientes.length > 0) {
-                                citaCercana = pendientes.find(c => {
-                                    const [ini] = c.hora.split('-').map(s => s.trim());
-                                    const [h, m] = (ini || '09:00').split(':').map(Number);
-                                    const minCita = (h || 9) * 60 + (m || 0);
-                                    return minCita >= minutosAhora - 30;
-                                }) || pendientes[0];
-                            }
-                        }
-
-                        // Prioridad 3: Primera cita del día
-                        if (!citaCercana) {
-                            citaCercana = listaCards[0];
-                        }
-
-                        if (citaCercana) {
-                            const pacNorm = normalizarTexto(citaCercana.paciente);
-                            let edad = 24;
-                            if (mapaEdades.has(pacNorm)) {
-                                edad = mapaEdades.get(pacNorm)!;
-                            } else {
-                                for (const [nom, ed] of mapaEdades.entries()) {
-                                    if (pacNorm.includes(nom) || nom.includes(pacNorm)) {
-                                        edad = ed;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            // Buscar si tiene ficha clínica previa registrada
-                            const ficha = fichasGuardadas[citaCercana.id] || fichasGuardadas[pacNorm];
-
-                            let diagnostico = 'Consulta en espera';
-                            let resumen = `Motivo de consulta: ${citaCercana.motivo}`;
-
-                            if (ficha) {
-                                diagnostico = ficha.diagnostico || 'Atención registrada';
-                                resumen = ficha.diagnosticoCompleto || ficha.resumen || resumen;
-                            } else if (citaCercana.motivo) {
-                                diagnostico = 'Primera evaluación';
-                                resumen = `Síntomas referidos: "${citaCercana.motivo}". En espera de evaluación clínica.`;
-                            }
-
-                            setResumenCercano({
-                                nombre: citaCercana.paciente,
-                                edad,
-                                hora: citaCercana.hora,
-                                box: citaCercana.box,
-                                diagnostico,
-                                resumen,
-                                estado: citaCercana.estadoTexto
-                            });
-                        } else {
-                            setResumenCercano(null);
-                        }
-                    } else {
-                        setResumenCercano(null);
-                    }
+                    setMapaEdades(edadesMap);
+                    setFichasGuardadas(fichas);
                 }
             } catch (error) {
                 console.error('Error al cargar agenda del día en HomePageMedico:', error);
@@ -219,6 +154,133 @@ function HomePageMedico(){
         cargarAgenda();
         return () => { cancelado = true; };
     }, []);
+
+    // Determinar de forma reactiva la cita más cercana para el Resumen Clínico
+    const resumenCercano = useMemo<PacienteResumenClinico | null>(() => {
+        if (citasDelDia.length === 0) return null;
+
+        // Prioridad 1: Cita en curso
+        let citaCercana = citasDelDia.find(c => c.estado === 'en-curso');
+
+        // Prioridad 2: Próxima cita pendiente más cercana al horario actual
+        if (!citaCercana) {
+            const ahora = new Date();
+            const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
+
+            const pendientes = citasDelDia.filter(c => c.estado === 'pendiente');
+            if (pendientes.length > 0) {
+                citaCercana = pendientes.find(c => {
+                    const [ini] = c.hora.split('-').map(s => s.trim());
+                    const [h, m] = (ini || '09:00').split(':').map(Number);
+                    const minCita = (h || 9) * 60 + (m || 0);
+                    return minCita >= minutosAhora - 30;
+                }) || pendientes[0];
+            }
+        }
+
+        // Prioridad 3: Primera cita del día
+        if (!citaCercana) {
+            citaCercana = citasDelDia[0];
+        }
+
+        if (!citaCercana) return null;
+
+        const pacNorm = normalizarTexto(citaCercana.paciente);
+        let edad = 24;
+        if (mapaEdades.has(pacNorm)) {
+            edad = mapaEdades.get(pacNorm)!;
+        } else {
+            for (const [nom, ed] of mapaEdades.entries()) {
+                if (pacNorm.includes(nom) || nom.includes(pacNorm)) {
+                    edad = ed;
+                    break;
+                }
+            }
+        }
+
+        // Buscar si tiene ficha clínica previa registrada
+        const ficha = fichasGuardadas[citaCercana.id] || fichasGuardadas[pacNorm];
+
+        let diagnostico = 'Consulta en espera';
+        let resumen = `Motivo de consulta: ${citaCercana.motivo}`;
+
+        if (ficha) {
+            diagnostico = ficha.diagnostico || 'Atención registrada';
+            resumen = ficha.diagnosticoCompleto || ficha.resumen || resumen;
+        } else if (citaCercana.motivo) {
+            diagnostico = 'Primera evaluación';
+            resumen = `Síntomas referidos: "${citaCercana.motivo}". En espera de evaluación clínica.`;
+        }
+
+        return {
+            nombre: citaCercana.paciente,
+            edad,
+            hora: citaCercana.hora,
+            box: citaCercana.box,
+            diagnostico,
+            resumen,
+            estado: citaCercana.estadoTexto
+        };
+    }, [citasDelDia, mapaEdades, fichasGuardadas]);
+
+    // Determinar de forma reactiva la cita más cercana para el Control de Gestión
+    const citaControlActiva = useMemo(() => {
+        // Prioridad 1: Cita actualmente en curso
+        const enCurso = citasDelDia.find(c => c.estado === 'en-curso');
+        if (enCurso) return enCurso;
+
+        // Prioridad 2: Próxima cita pendiente
+        const pendiente = citasDelDia.find(c => c.estado === 'pendiente');
+        if (pendiente) return pendiente;
+
+        return null;
+    }, [citasDelDia]);
+
+    const handleIniciarCita = async (id: string) => {
+        try {
+            // 1. Notificar al AppointmentsController en el backend
+            await actualizarEstadoCitaBackend(id, 'en_curso');
+
+            // 2. Persistir en almacenamiento local de respaldo
+            let estadosGuardados: Record<string, string> = {};
+            try {
+                const raw = localStorage.getItem(LOCAL_ESTADOS_CITAS_KEY);
+                if (raw) estadosGuardados = JSON.parse(raw);
+            } catch {}
+
+            estadosGuardados[id] = 'en-curso';
+            localStorage.setItem(LOCAL_ESTADOS_CITAS_KEY, JSON.stringify(estadosGuardados));
+
+            // 3. Actualizar estado reactivo
+            setCitasDelDia(prev => prev.map(c => c.id === id ? { ...c, estado: 'en-curso', estadoTexto: 'En curso' } : c));
+            toast.info('Cita médica iniciada');
+        } catch (err: any) {
+            toast.error(`Error al iniciar cita: ${err.message}`);
+        }
+    };
+
+    const handleFinalizarCita = async (id: string) => {
+        try {
+            // 1. Notificar al AppointmentsController en el backend
+            await actualizarEstadoCitaBackend(id, 'finalizada');
+
+            // 2. Persistir en almacenamiento local de respaldo
+            let estadosGuardados: Record<string, string> = {};
+            try {
+                const raw = localStorage.getItem(LOCAL_ESTADOS_CITAS_KEY);
+                if (raw) estadosGuardados = JSON.parse(raw);
+            } catch {}
+
+            estadosGuardados[id] = 'finalizada';
+            localStorage.setItem(LOCAL_ESTADOS_CITAS_KEY, JSON.stringify(estadosGuardados));
+
+            // 3. Actualizar estado reactivo (automáticamente pasa a la siguiente)
+            setCitasDelDia(prev => prev.map(c => c.id === id ? { ...c, estado: 'finalizada', estadoTexto: 'Finalizada' } : c));
+            toast.success('Cita médica finalizada exitosamente');
+        } catch (err: any) {
+            toast.error(`Error al finalizar cita: ${err.message}`);
+        }
+    };
 
     return(
         <>
@@ -296,9 +358,53 @@ function HomePageMedico(){
                         <div className="Titulo-ControlCita">
                             <h3>Control Gestion de Cita</h3>
                         </div>
-                        <div className="ContenedorListado-ControlCita">
-                            
-                        </div>
+                        {citaControlActiva ? (
+                            <div className="ContenedorListado-ControlCita">
+                                <div className="ControlCita-Header">
+                                    <h3>{citaControlActiva.paciente}</h3>
+                                    <span className="ControlCita-BoxBadge">Box {citaControlActiva.box}</span>
+                                </div>
+                                <div className="ControlCita-InfoRow">
+                                    <p className="ControlCita-Hora">
+                                        <strong>Horario:</strong> {citaControlActiva.hora}
+                                    </p>
+                                    <p className="ControlCita-Motivo">
+                                        <strong>Motivo:</strong> {citaControlActiva.motivo}
+                                    </p>
+                                </div>
+                                <div className="ControlCita-AccionRow">
+                                    <div className="ControlCita-EstadoInfo">
+                                        <span>Estado:</span>
+                                        <span className={`ControlCita-EstadoBadge ${citaControlActiva.estado}`}>
+                                            {citaControlActiva.estadoTexto}
+                                        </span>
+                                    </div>
+                                    {citaControlActiva.estado === 'pendiente' ? (
+                                        <button
+                                            type="button"
+                                            className="Btn-ControlCita Iniciar"
+                                            onClick={() => handleIniciarCita(citaControlActiva.id)}
+                                        >
+                                            Iniciar cita
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            className="Btn-ControlCita Finalizar"
+                                            onClick={() => handleFinalizarCita(citaControlActiva.id)}
+                                        >
+                                            Finalizar cita
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="ContenedorListado-ControlCita Vacio">
+                                <p className="TextoVacio">
+                                    {cargando ? "Cargando control de citas..." : "No hay citas pendientes por gestionar hoy."}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

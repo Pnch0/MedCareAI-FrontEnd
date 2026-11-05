@@ -331,25 +331,150 @@
     border-radius: 15px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    box-sizing: border-box;
 }
 
 .Titulo-ControlCita{
     width: 100%;
-    height: 10dvh;
+    height: 9dvh;
     border-radius: 15px 15px 0 0;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #1E9CF1;
     font-size: 20px;
+    flex-shrink: 0;
 }
 
 .ContenedorListado-ControlCita{
-    width: 80%;
-    height: 25dvh;
+    width: 90%;
+    height: 27dvh;
+    margin: 0 auto 15px auto;
     background-color: #FFFFFF;
     border: 1px solid #E1EAEF;
     border-radius: 15px;
     box-sizing: border-box;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.ControlCita-Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.ControlCita-Header h3 {
+    font-size: 1.15rem;
+    color: #1e293b;
+    margin: 0;
+    font-weight: 600;
+}
+
+.ControlCita-BoxBadge {
+    background-color: #E8F4FD;
+    color: #1E9CF1;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.ControlCita-InfoRow {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 6px 0;
+}
+
+.ControlCita-Hora,
+.ControlCita-Motivo {
+    margin: 0;
+    font-size: 0.86rem;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ControlCita-AccionRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 1px solid #F1F5F9;
+}
+
+.ControlCita-EstadoInfo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #475569;
+}
+
+.ControlCita-EstadoBadge {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: capitalize;
+}
+
+.ControlCita-EstadoBadge.pendiente {
+    background-color: #FEF3C7;
+    color: #D97706;
+}
+
+.ControlCita-EstadoBadge.en-curso {
+    background-color: #DEF7EC;
+    color: #046C4E;
+}
+
+.Btn-ControlCita {
+    padding: 8px 20px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.Btn-ControlCita:active {
+    transform: scale(0.98);
+}
+
+.Btn-ControlCita.Iniciar {
+    background-color: #17BF63;
+    color: #FFFFFF;
+}
+
+.Btn-ControlCita.Iniciar:hover {
+    background-color: #14a354;
+}
+
+.Btn-ControlCita.Finalizar {
+    background-color: #F4212E;
+    color: #FFFFFF;
+}
+
+.Btn-ControlCita.Finalizar:hover {
+    background-color: #d91b27;
+}
+
+.ContenedorListado-ControlCita.Vacio {
+    justify-content: center;
+    align-items: center;
+}
+
+.ContenedorListado-ControlCita .TextoVacio {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    text-align: center;
+    margin: 0;
 }
