@@ -1,4 +1,5 @@
-.ContenedorPrincipal-AsignarHorarios{
+.ContenedorPrincipal-AsignarHorarios,
+.Contenedor-Principal-AsignarHorarios {
     width: 100%;
     height: 100dvh;
     display: flex;
@@ -8,25 +9,30 @@
 }
 
 .AsignarHorarios-Container {
-    width: 60%;
+    width: 70%;
+    max-width: 1100px;
+    min-width: 650px;
     height: auto;
-    max-height: 80dvh;
+    max-height: 85dvh;
     background-color: #F7F8F8;
     border: 1px solid #E1EAEF;
     border-radius: 15px;
     padding: 2rem;
     margin: 0 auto;
-    
-    
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
-.AsignarHorarios-Title {
+.AsignarHorarios-Title,
+.Contenedor-Titulo-AsignarHorarios h1 {
     color: #1E9CF1;
     margin-bottom: 1.5rem;
     text-align: center;
 }
 
-.AsignarHorarios-SearchContainer {
+.AsignarHorarios-SearchContainer,
+.Contenedor-BarraBusqueda-AsignarHorarios {
     margin-bottom: 2rem;
     display: flex;
     justify-content: center;
@@ -48,7 +54,8 @@
     pointer-events: none;
 }
 
-.AsignarHorarios-SearchInput {
+.AsignarHorarios-SearchInput,
+.Input-Busqueda-AsignarHorarios {
     width: 100%;
     padding: 0.85rem 1.2rem 0.85rem 3.2rem;
     font-size: 1rem;
@@ -58,37 +65,45 @@
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.AsignarHorarios-SearchInput:focus {
+.AsignarHorarios-SearchInput:focus,
+.Input-Busqueda-AsignarHorarios:focus {
     border-color: #1E9CF1;
     box-shadow: 0 0 5px rgba(30, 156, 241, 0.25);
 }
 
-.AsignarHorarios-TableContainer {
+.AsignarHorarios-TableContainer,
+.Contenedor-Tabla-AsignarHorarios {
     background: #fff;
     border-radius: 8px;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: calc(85dvh - 180px);
 }
 
-.AsignarHorarios-Table {
+.AsignarHorarios-Table,
+.Tabla-AsignarHorarios {
     width: 100%;
     border-collapse: collapse;
     text-align: center;
 }
 
 .AsignarHorarios-Table th,
-.AsignarHorarios-Table td {
+.AsignarHorarios-Table td,
+.Tabla-AsignarHorarios th,
+.Tabla-AsignarHorarios td {
     padding: 1rem;
     border-bottom: 1px solid #eee;
 }
 
-.AsignarHorarios-Table th {
+.AsignarHorarios-Table th,
+.Tabla-AsignarHorarios th {
     background-color: #1E9CF1;
     color: #FFFFFF;
     font-weight: 600;
 }
 
-
-.AsignarHorarios-BtnReserva {
+.AsignarHorarios-BtnReserva,
+.Boton-Agendar-AsignarHorarios {
     background-color: #1E9CF1;
     color: white;
     border: none;
@@ -99,11 +114,14 @@
     transition: background-color 0.2s;
 }
 
-.AsignarHorarios-BtnReserva:hover {
+.AsignarHorarios-BtnReserva:hover,
+.Boton-Agendar-AsignarHorarios:hover {
     background-color: #1e9df1e3;
 }
 
-.AsignarHorarios-NoResults {
+.AsignarHorarios-NoResults,
+.Sin-Resultados-AsignarHorarios,
+.Cargando-AsignarHorarios {
     text-align: center;
     color: #777;
     padding: 2rem !important;

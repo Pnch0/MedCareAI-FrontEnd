@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./AsignarHorarios.css";
+import { FaSearch } from "react-icons/fa";
 import { toast } from "sonner";
 import { ModalReserva } from "../../../Components/ModalReserva/ModalReserva.tsx";
 import { supabase } from "../../../Services/supabaseClient.ts";
@@ -76,27 +77,27 @@ function AsignarHorariosRecepcionista() {
     });
 
     return (
-        <div className="Contenedor-Principal-AsignarHorarios">
-            <div className="Contenedor-Titulo-AsignarHorarios">
-                <h1>Asignación de Horarios Médicos</h1>
-                <p>Selecciona un paciente para comenzar el proceso de reserva</p>
-            </div>
+        <div className="ContenedorPrincipal-AsignarHorarios">
+            <div className="AsignarHorarios-Container">
+                <h1 className="AsignarHorarios-Title">Asignar Hora a Paciente</h1>
 
-            <div className="Contenedor-BarraBusqueda-AsignarHorarios">
-                <input 
-                    type="text" 
-                    placeholder="Buscar por Nombre o RUT..." 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="Input-Busqueda-AsignarHorarios"
-                />
-            </div>
+                {/* Barra de búsqueda */}
+                <div className="AsignarHorarios-SearchContainer">
+                    <div className="AsignarHorarios-SearchWrapper">
+                        <FaSearch className="AsignarHorarios-SearchIcon" />
+                        <input
+                            type="text"
+                            className="AsignarHorarios-SearchInput"
+                            placeholder="Buscar paciente por RUT, Nombre o Apellido..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                </div>
 
-            <div className="Contenedor-Tabla-AsignarHorarios">
-                {cargando ? (
-                    <div className="Cargando-AsignarHorarios">Cargando pacientes desde el sistema...</div>
-                ) : (
-                    <table className="Tabla-AsignarHorarios">
+                {/* Tabla de pacientes */}
+                <div className="AsignarHorarios-TableContainer">
+                    <table className="AsignarHorarios-Table">
                         <thead>
                             <tr>
                                 <th>RUT</th>
@@ -108,7 +109,13 @@ function AsignarHorariosRecepcionista() {
                             </tr>
                         </thead>
                         <tbody>
-                            {pacientesFiltrados.length > 0 ? (
+                            {cargando ? (
+                                <tr>
+                                    <td colSpan={6} className="AsignarHorarios-NoResults">
+                                        Cargando pacientes desde el sistema...
+                                    </td>
+                                </tr>
+                            ) : pacientesFiltrados.length > 0 ? (
                                 pacientesFiltrados.map((paciente) => (
                                     <tr key={paciente.id}>
                                         <td>{paciente.rut}</td>
@@ -118,7 +125,7 @@ function AsignarHorariosRecepcionista() {
                                         <td>{paciente.telefono || '-'}</td>
                                         <td>
                                             <button 
-                                                className="Boton-Agendar-AsignarHorarios"
+                                                className="AsignarHorarios-BtnReserva"
                                                 onClick={() => handleOpenModal(paciente)}
                                             >
                                                 Agendar Hora
@@ -128,25 +135,25 @@ function AsignarHorariosRecepcionista() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={6} className="Sin-Resultados-AsignarHorarios">
+                                    <td colSpan={6} className="AsignarHorarios-NoResults">
                                         No se encontraron pacientes que coincidan con la búsqueda.
                                     </td>
                                 </tr>
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Modal de Reserva */}
+                {selectedUser && (
+                    <ModalReserva 
+                        isOpen={isModalOpen}
+                        onClose={handleCloseModal}
+                        paciente={selectedUser}
+                        schedulingSource="Recepcion"
+                    />
                 )}
             </div>
-
-            {/* Modal de Reserva */}
-            {selectedUser && (
-                <ModalReserva 
-                    isOpen={isModalOpen}
-                    onClose={handleCloseModal}
-                    paciente={selectedUser}
-                    schedulingSource="Recepcion"
-                />
-            )}
         </div>
     );
 }
