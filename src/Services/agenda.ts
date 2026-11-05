@@ -238,8 +238,39 @@ export function resolverBox(boxId: string | number | undefined, mapaBoxes?: Map<
 }
 
 /**
+ * Envía la actualización de estado de la consulta médica al AppointmentsController:
+ * PATCH /api/Appointments/{id}/estado
+ * Body: { estado: 'en_curso' | 'finalizada' }
+ */
+export async function actualizarEstadoCitaBackend(
+    citaId: string, 
+    estado: 'en_curso' | 'finalizada'
+): Promise<boolean> {
+    if (!citaId) return false;
+
+    // El backend en C# tiene la ruta [HttpPatch("{id:guid}/estado")]
+    const esGuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(citaId);
+    if (!esGuid) {
+        console.warn(`ID de cita (${citaId}) no tiene formato GUID estándar, solo se guardará localmente.`);
+        return false;
+    }
+
+    try {
+        await apiClient(`/api/Appointments/${citaId}/estado`, {
+            method: 'PATCH',
+            body: JSON.stringify({ estado })
+        });
+        return true;
+    } catch (error: any) {
+        console.warn(`Error al actualizar estado ${estado} en backend:`, error.message);
+        return false;
+    }
+}
+
+/**
  * Consulta la agenda diaria del médico en el backend de Render:
- * GET /api/Agenda/medico/{medicoId}?fecha={fecha}
+ * 1. GET /api/Appointments/medico/{medicoId}?fecha={fecha} (AppointmentsController)
+ * 2. GET /api/Agenda/medico/{medicoId}?fecha={fecha} (Fallback)
  */
 export async function obtenerAgendaDiariaMedico(
     medicoId: string = MEDICO_DEFAULT_ID,
@@ -251,33 +282,64 @@ export async function obtenerAgendaDiariaMedico(
     const citasLocales = obtenerCitasLocales();
     const mapaBoxes = mapaBoxesParam || (await cargarMapaBoxes());
 
+    let slots: any = null;
+
+    // 1. Intentar consultar AppointmentsController: GET /api/Appointments/medico/{medicoId}?fecha={fecha}
     try {
-        const slots = await apiClient(`/api/Agenda/medico/${medicoId}?fecha=${fechaStr}`, {
+        const resAppointments = await apiClient(`/api/Appointments/medico/${medicoId}?fecha=${fechaStr}`, {
             method: 'GET'
         });
+        if (Array.isArray(resAppointments) && resAppointments.length > 0) {
+            slots = resAppointments;
+        }
+    } catch {
+        // Fallback a /api/Agenda/medico si no responde
+    }
 
+    // 2. Si no hubo resultados en Appointments, intentar /api/Agenda/medico/{medicoId}?fecha={fecha}
+    if (!slots || !Array.isArray(slots) || slots.length === 0) {
+        try {
+            const resAgenda = await apiClient(`/api/Agenda/medico/${medicoId}?fecha=${fechaStr}`, {
+                method: 'GET'
+            });
+            if (Array.isArray(resAgenda) && resAgenda.length > 0) {
+                slots = resAgenda;
+            }
+        } catch (e) {
+            console.warn('Error al consultar /api/Agenda/medico desde el backend:', e);
+        }
+    }
+
+    try {
         if (Array.isArray(slots) && slots.length > 0) {
             const citasMapeadas: Cita[] = [];
 
-            for (const slot of slots as SlotAgendaBackend[]) {
-                const horaInicio = slot.fechaInicio ? slot.fechaInicio.slice(11, 16) : '08:00';
-                const horaFin = slot.fechaFin ? slot.fechaFin.slice(11, 16) : '09:00';
+            for (const slot of slots) {
+                const horaInicio = slot.fechaInicio 
+                    ? slot.fechaInicio.slice(11, 16) 
+                    : (slot.horaInicio || (slot.timeSlot ? slot.timeSlot.slice(0, 5) : '08:00'));
+                const horaFin = slot.fechaFin 
+                    ? slot.fechaFin.slice(11, 16) 
+                    : (slot.horaFin || '09:00');
                 const horaRango = `${horaInicio} - ${horaFin}`;
-                const boxResuelto = resolverBox(slot.boxId, mapaBoxes);
+                const boxResuelto = resolverBox(slot.boxId || slot.box, mapaBoxes);
+                const pacienteNombre = slot.pacienteNombre || slot.patientName || slot.paciente || null;
+                const motivo = slot.motivoConsulta || slot.reason || slot.motivo || 'Consulta médica agendada';
+                const citaId = slot.citaId || slot.appointmentId || slot.id || slot.scheduleBlockId;
 
                 // 1. Si el backend ya tiene una cita asignada en este slot
-                if (slot.disponibilidad !== 'libre' && slot.pacienteNombre) {
+                if ((slot.disponibilidad !== 'libre' && slot.disponibilidad !== undefined) || pacienteNombre) {
                     citasMapeadas.push({
-                        id: slot.citaId || slot.scheduleBlockId,
+                        id: String(citaId),
                         dia: diaIndice,
                         hora: horaRango,
-                        paciente: slot.pacienteNombre,
-                        motivo: slot.motivoConsulta || 'Consulta médica agendada',
+                        paciente: pacienteNombre || 'Paciente',
+                        motivo: motivo,
                         box: boxResuelto,
                         fecha: fechaStr,
                         disponibilidad: 'ocupado',
-                        citaId: slot.citaId,
-                        medicoId: slot.medicoId
+                        citaId: String(citaId),
+                        medicoId: slot.medicoId || medicoId
                     });
                     continue;
                 }
@@ -285,7 +347,7 @@ export async function obtenerAgendaDiariaMedico(
                 // 2. Si el slot está libre en el backend, verificar si coincide con alguna cita local creada por el usuario
                 const citaLocalCoincidente = citasLocales.find(c => 
                     (c.fecha === fechaStr && c.hora.startsWith(horaInicio)) ||
-                    (c.id === slot.scheduleBlockId)
+                    (c.id === slot.scheduleBlockId || c.id === slot.id)
                 );
 
                 if (citaLocalCoincidente) {
@@ -305,10 +367,12 @@ export async function obtenerAgendaDiariaMedico(
                 }
             }
 
-            return citasMapeadas;
+            if (citasMapeadas.length > 0) {
+                return citasMapeadas;
+            }
         }
-    } catch (e) {
-        console.warn('Error al consultar /api/Agenda/medico desde el backend:', e);
+    } catch (parseErr) {
+        console.warn('Error al mapear slots de agenda:', parseErr);
     }
 
     // Fallback: retornar citas locales que coincidan con la fecha o el día

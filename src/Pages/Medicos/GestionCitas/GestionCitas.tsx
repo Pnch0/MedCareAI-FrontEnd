@@ -5,6 +5,7 @@ import { supabase } from "../../../Services/supabaseClient.ts";
 import {
     obtenerAgendaDiariaMedico,
     obtenerCitasLocales,
+    actualizarEstadoCitaBackend,
     formatearFechaISO,
     obtenerIndiceDia,
     MEDICO_DEFAULT_ID,
@@ -156,8 +157,12 @@ function GestionCitasMedico(){
         [citas]
     );
 
-    const iniciarCita = (id: string) => {
+    const iniciarCita = async (id: string) => {
         try {
+            // 1. Notificar al AppointmentsController en el backend
+            await actualizarEstadoCitaBackend(id, 'en_curso');
+
+            // 2. Persistir en almacenamiento local de respaldo
             let estadosGuardados: Record<string, EstadoCita> = {};
             try {
                 const raw = localStorage.getItem(LOCAL_ESTADOS_CITAS_KEY);
@@ -167,6 +172,7 @@ function GestionCitasMedico(){
             estadosGuardados[id] = 'en-curso';
             localStorage.setItem(LOCAL_ESTADOS_CITAS_KEY, JSON.stringify(estadosGuardados));
 
+            // 3. Actualizar estado visual
             setCitas(prev => prev.map(cita => cita.id === id ? { ...cita, estado: 'en-curso' } : cita));
             toast.info('Cita médica iniciada');
         } catch (err: any) {
@@ -174,8 +180,12 @@ function GestionCitasMedico(){
         }
     };
 
-    const finalizarCita = (id: string) => {
+    const finalizarCita = async (id: string) => {
         try {
+            // 1. Notificar al AppointmentsController en el backend
+            await actualizarEstadoCitaBackend(id, 'finalizada');
+
+            // 2. Persistir en almacenamiento local de respaldo
             let estadosGuardados: Record<string, EstadoCita> = {};
             try {
                 const raw = localStorage.getItem(LOCAL_ESTADOS_CITAS_KEY);
@@ -185,6 +195,7 @@ function GestionCitasMedico(){
             estadosGuardados[id] = 'finalizada';
             localStorage.setItem(LOCAL_ESTADOS_CITAS_KEY, JSON.stringify(estadosGuardados));
 
+            // 3. Remover la cita finalizada de la vista activa
             setCitas(prev => prev.filter(cita => cita.id !== id));
             toast.success('Cita médica finalizada exitosamente');
         } catch (err: any) {
