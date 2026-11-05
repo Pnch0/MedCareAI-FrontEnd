@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./HomePage.css";
+import { supabase } from "../../../Services/supabaseClient.ts";
 import {
     obtenerAgendaDiariaMedico,
     obtenerCitasLocales,
@@ -19,11 +20,40 @@ interface CitaAgendaCard {
     estadoTexto: string;
 }
 
+interface PacienteResumenClinico {
+    nombre: string;
+    edad: number;
+    hora: string;
+    box: string | number;
+    diagnostico: string;
+    resumen: string;
+    estado: string;
+}
+
 const LOCAL_ESTADOS_CITAS_KEY = 'medcare_gestion_estados_citas';
+const LOCAL_FICHAS_KEY = 'medcare_fichas_clinicas';
+
+function calcularEdad(fechaNacimiento?: string): number {
+    if (!fechaNacimiento) return 24;
+    const nac = new Date(fechaNacimiento);
+    if (isNaN(nac.getTime())) return 24;
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - nac.getFullYear();
+    const m = hoy.getMonth() - nac.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) {
+        edad--;
+    }
+    return Math.max(0, edad);
+}
+
+function normalizarTexto(texto: string): string {
+    return (texto || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+}
 
 function HomePageMedico(){
     const nombreUsuario = localStorage.getItem('userName') || 'Médico';
     const [citasDelDia, setCitasDelDia] = useState<CitaAgendaCard[]>([]);
+    const [resumenCercano, setResumenCercano] = useState<PacienteResumenClinico | null>(null);
     const [cargando, setCargando] = useState<boolean>(true);
 
     useEffect(() => {
@@ -44,7 +74,30 @@ function HomePageMedico(){
                     if (raw) estadosGuardados = JSON.parse(raw);
                 } catch {}
 
-                // 2. Cargar citas desde backend y respaldo local
+                // 2. Obtener fichas clínicas guardadas localmente
+                let fichasGuardadas: Record<string, any> = {};
+                try {
+                    const rawFichas = localStorage.getItem(LOCAL_FICHAS_KEY);
+                    if (rawFichas) fichasGuardadas = JSON.parse(rawFichas);
+                } catch {}
+
+                // 3. Consultar edades de pacientes en Supabase
+                const mapaEdades = new Map<string, number>();
+                try {
+                    const { data: dbPacientes } = await supabase
+                        .from('pacientes')
+                        .select('nombre, apellido, fecha_nacimiento');
+                    if (Array.isArray(dbPacientes)) {
+                        for (const p of dbPacientes) {
+                            const nombreCompleto = `${p.nombre || ''} ${p.apellido || ''}`.trim();
+                            const edad = calcularEdad(p.fecha_nacimiento);
+                            if (nombreCompleto) mapaEdades.set(normalizarTexto(nombreCompleto), edad);
+                            if (p.nombre) mapaEdades.set(normalizarTexto(p.nombre), edad);
+                        }
+                    }
+                } catch {}
+
+                // 4. Cargar citas desde backend y respaldo local
                 const citasBackend = await obtenerAgendaDiariaMedico(staffId, hoy);
                 const citasLocales = obtenerCitasLocales();
 
@@ -83,6 +136,76 @@ function HomePageMedico(){
 
                 if (!cancelado) {
                     setCitasDelDia(listaCards);
+
+                    // 5. Determinar la cita más cercana para el Resumen Clínico
+                    if (listaCards.length > 0) {
+                        // Prioridad 1: Cita en curso
+                        let citaCercana = listaCards.find(c => c.estado === 'en-curso');
+
+                        // Prioridad 2: Próxima cita pendiente más cercana al horario actual
+                        if (!citaCercana) {
+                            const ahora = new Date();
+                            const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
+
+                            const pendientes = listaCards.filter(c => c.estado === 'pendiente');
+                            if (pendientes.length > 0) {
+                                citaCercana = pendientes.find(c => {
+                                    const [ini] = c.hora.split('-').map(s => s.trim());
+                                    const [h, m] = (ini || '09:00').split(':').map(Number);
+                                    const minCita = (h || 9) * 60 + (m || 0);
+                                    return minCita >= minutosAhora - 30;
+                                }) || pendientes[0];
+                            }
+                        }
+
+                        // Prioridad 3: Primera cita del día
+                        if (!citaCercana) {
+                            citaCercana = listaCards[0];
+                        }
+
+                        if (citaCercana) {
+                            const pacNorm = normalizarTexto(citaCercana.paciente);
+                            let edad = 24;
+                            if (mapaEdades.has(pacNorm)) {
+                                edad = mapaEdades.get(pacNorm)!;
+                            } else {
+                                for (const [nom, ed] of mapaEdades.entries()) {
+                                    if (pacNorm.includes(nom) || nom.includes(pacNorm)) {
+                                        edad = ed;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // Buscar si tiene ficha clínica previa registrada
+                            const ficha = fichasGuardadas[citaCercana.id] || fichasGuardadas[pacNorm];
+
+                            let diagnostico = 'Consulta en espera';
+                            let resumen = `Motivo de consulta: ${citaCercana.motivo}`;
+
+                            if (ficha) {
+                                diagnostico = ficha.diagnostico || 'Atención registrada';
+                                resumen = ficha.diagnosticoCompleto || ficha.resumen || resumen;
+                            } else if (citaCercana.motivo) {
+                                diagnostico = 'Primera evaluación';
+                                resumen = `Síntomas referidos: "${citaCercana.motivo}". En espera de evaluación clínica.`;
+                            }
+
+                            setResumenCercano({
+                                nombre: citaCercana.paciente,
+                                edad,
+                                hora: citaCercana.hora,
+                                box: citaCercana.box,
+                                diagnostico,
+                                resumen,
+                                estado: citaCercana.estadoTexto
+                            });
+                        } else {
+                            setResumenCercano(null);
+                        }
+                    } else {
+                        setResumenCercano(null);
+                    }
                 }
             } catch (error) {
                 console.error('Error al cargar agenda del día en HomePageMedico:', error);
@@ -147,14 +270,27 @@ function HomePageMedico(){
                         <div className="Titulo-ResumenClinico">
                             <h3>Resumen Clinico</h3>
                         </div>
-                        <div className="ContenedorListado-ResumenClinico">
-                            <h3>Juan Perez</h3>
-                            <p>Edad: 50 años</p>
-                            <div className="ContenedorDiagnostico-ResumenClinico">
-                                
+                        {resumenCercano ? (
+                            <div className="ContenedorListado-ResumenClinico">
+                                <div className="ResumenClinico-Header">
+                                    <h3>{resumenCercano.nombre}</h3>
+                                    <span className="ResumenClinico-Badge">{resumenCercano.hora} (Box {resumenCercano.box})</span>
+                                </div>
+                                <p className="ResumenClinico-Subtitulo">
+                                    Edad: {resumenCercano.edad} años • Estado: <span className="Estado-Texto">{resumenCercano.estado}</span>
+                                </p>
+                                <div className="ContenedorDiagnostico-ResumenClinico">
+                                    <p className="TituloDiagnostico"><strong>Diagnóstico:</strong> {resumenCercano.diagnostico}</p>
+                                    <p className="TextoDiagnostico">{resumenCercano.resumen}</p>
+                                </div>
                             </div>
-                        </div>
-                        
+                        ) : (
+                            <div className="ContenedorListado-ResumenClinico Vacio">
+                                <p className="TextoVacio">
+                                    {cargando ? "Cargando información clínica..." : "No hay citas programadas para el día de hoy."}
+                                </p>
+                            </div>
+                        )}
                     </div>
                     <div className="Contenedor-ControlCita">
                         <div className="Titulo-ControlCita">

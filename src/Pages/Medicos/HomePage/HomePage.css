@@ -210,53 +210,117 @@
     background-color: #F7F8F8;
     border: 1px solid #E1EAEF;
     border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
 }
 
 .Titulo-ResumenClinico{
     width: 100%;
-    height: 10dvh;
+    height: 9dvh;
     border-radius: 15px 15px 0 0;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #1E9CF1;
     font-size: 20px;
+    flex-shrink: 0;
 }
 
 .ContenedorListado-ResumenClinico{
     width: 90%;
-    height: 26dvh;
-    margin: auto;
+    height: 27dvh;
+    margin: 0 auto 15px auto;
     border-radius: 15px;
     border: 1px solid #E1EAEF;
     background-color: #FFFFFF;
-    padding: 20px;
+    padding: 16px 20px;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-.ContenedorListado-ResumenClinico h3{
-    font-size: 20px;
-    margin-top: 0;
+.ResumenClinico-Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
-.ContenedorListado-ResumenClinico p{
-    color: #A2A2A2;
+.ResumenClinico-Header h3 {
+    font-size: 1.15rem;
+    color: #1e293b;
+    margin: 0;
+    font-weight: 600;
+}
+
+.ResumenClinico-Badge {
+    background-color: #E8F4FD;
+    color: #1E9CF1;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.ResumenClinico-Subtitulo {
+    color: #64748b;
+    font-size: 0.88rem;
+    margin: 4px 0 8px 0;
     font-weight: 400;
-    margin-bottom: 10px;
+}
+
+.ResumenClinico-Subtitulo .Estado-Texto {
+    font-weight: 600;
+    color: #1E9CF1;
 }
 
 .ContenedorDiagnostico-ResumenClinico{
     width: 100%;
-    height: 16dvh;
-    background-color: #FFFFFF;
-    border: 1px solid #E1EAEF;
+    height: 14dvh;
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
     border-radius: 10px;
-    padding: 10px;
+    padding: 10px 14px;
     box-sizing: border-box;
+    overflow-y: auto;
 }
 
-.ContenedorDiagnostico-ResumenClinico p{
-    color: black;
+.ContenedorDiagnostico-ResumenClinico::-webkit-scrollbar {
+    width: 5px;
+}
+
+.ContenedorDiagnostico-ResumenClinico::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 3px;
+}
+
+.TituloDiagnostico {
+    margin: 0 0 4px 0;
+    font-size: 0.88rem;
+    color: #0f172a;
+}
+
+.TextoDiagnostico {
+    margin: 0;
+    font-size: 0.84rem;
+    color: #475569;
+    line-height: 1.4;
+    white-space: pre-line;
+}
+
+.ContenedorListado-ResumenClinico.Vacio {
+    justify-content: center;
+    align-items: center;
+}
+
+.ContenedorListado-ResumenClinico .TextoVacio {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    text-align: center;
+    margin: 0;
 }
 
 .Contenedor-ControlCita{
