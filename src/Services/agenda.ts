@@ -31,6 +31,17 @@ export interface SlotAgendaBackend {
 const LOCAL_CITAS_KEY = 'medcare_citas_activas';
 
 /**
+ * Elimina las citas locales almacenadas para sincronización limpia con el backend.
+ */
+export function limpiarCitasLocales(): void {
+    try {
+        localStorage.removeItem(LOCAL_CITAS_KEY);
+    } catch {
+        // Ignorar
+    }
+}
+
+/**
  * Guarda una cita en el almacenamiento local para pruebas y respaldo inmediato.
  */
 export function guardarCitaLocal(cita: Cita): void {
@@ -315,19 +326,33 @@ export async function obtenerAgendaDiariaMedico(
             const citasMapeadas: Cita[] = [];
 
             for (const slot of slots) {
-                const horaInicio = slot.fechaInicio 
-                    ? slot.fechaInicio.slice(11, 16) 
-                    : (slot.horaInicio || (slot.timeSlot ? slot.timeSlot.slice(0, 5) : '08:00'));
-                const horaFin = slot.fechaFin 
-                    ? slot.fechaFin.slice(11, 16) 
-                    : (slot.horaFin || '09:00');
-                const horaRango = `${horaInicio} - ${horaFin}`;
-                const boxResuelto = resolverBox(slot.boxId || slot.box, mapaBoxes);
-                const pacienteNombre = slot.pacienteNombre || slot.patientName || slot.paciente || null;
-                const motivo = slot.motivoConsulta || slot.reason || slot.motivo || 'Consulta médica agendada';
-                const citaId = slot.citaId || slot.appointmentId || slot.id || slot.scheduleBlockId;
+                // 1. Extraer hora de inicio (soporta startTime de AppointmentsController y fechaInicio de AgendaController)
+                const rawStart = slot.startTime || slot.fechaInicio || slot.horaInicio || slot.timeSlot || '';
+                const horaInicio = rawStart.includes('T') 
+                    ? rawStart.slice(11, 16) 
+                    : (rawStart.length >= 5 ? rawStart.slice(0, 5) : '08:00');
 
-                // 1. Si el backend ya tiene una cita asignada en este slot
+                // 2. Extraer hora de fin
+                const rawEnd = slot.endTime || slot.fechaFin || slot.horaFin || '';
+                const horaFin = rawEnd.includes('T') 
+                    ? rawEnd.slice(11, 16) 
+                    : (rawEnd.length >= 5 ? rawEnd.slice(0, 5) : '09:00');
+
+                const horaRango = `${horaInicio} - ${horaFin}`;
+
+                // 3. Extraer Box (soporta boxName, boxId o box)
+                const boxResuelto = resolverBox(slot.boxName || slot.boxId || slot.box, mapaBoxes);
+
+                // 4. Extraer Paciente
+                const pacienteNombre = slot.patientName || slot.pacienteNombre || slot.paciente || null;
+
+                // 5. Extraer Motivo de consulta / Síntomas
+                const motivo = slot.nlpSummary || slot.motivoConsulta || slot.reason || slot.motivo || 'Consulta médica agendada';
+
+                // 6. Extraer Cita ID
+                const citaId = slot.appointmentId || slot.citaId || slot.id || slot.scheduleBlockId;
+
+                // Si el backend ya tiene una cita asignada en este slot (Fuente de la verdad)
                 if ((slot.disponibilidad !== 'libre' && slot.disponibilidad !== undefined) || pacienteNombre) {
                     citasMapeadas.push({
                         id: String(citaId),
@@ -341,43 +366,22 @@ export async function obtenerAgendaDiariaMedico(
                         citaId: String(citaId),
                         medicoId: slot.medicoId || medicoId
                     });
-                    continue;
-                }
-
-                // 2. Si el slot está libre en el backend, verificar si coincide con alguna cita local creada por el usuario
-                const citaLocalCoincidente = citasLocales.find(c => 
-                    (c.fecha === fechaStr && c.hora.startsWith(horaInicio)) ||
-                    (c.id === slot.scheduleBlockId || c.id === slot.id)
-                );
-
-                if (citaLocalCoincidente) {
-                    // Respetar prioritariamente el box de la cita local si es válido (o el box resuelto del bloque)
-                    const boxFinal = (citaLocalCoincidente.box !== undefined && citaLocalCoincidente.box !== null && citaLocalCoincidente.box !== 6)
-                        ? citaLocalCoincidente.box
-                        : boxResuelto;
-
-                    citasMapeadas.push({
-                        ...citaLocalCoincidente,
-                        dia: diaIndice,
-                        hora: horaRango,
-                        box: boxFinal,
-                        fecha: fechaStr,
-                        disponibilidad: 'ocupado'
-                    });
                 }
             }
 
-            if (citasMapeadas.length > 0) {
-                return citasMapeadas;
-            }
+            return citasMapeadas;
         }
     } catch (parseErr) {
         console.warn('Error al mapear slots de agenda:', parseErr);
     }
 
-    // Fallback: retornar citas locales que coincidan con la fecha o el día
-    const localesFiltradas = citasLocales.filter(c => c.fecha === fechaStr || c.dia === diaIndice);
-    return localesFiltradas;
+    // Fallback únicamente si el backend falló o no devolvió slots
+    if (!slots || !Array.isArray(slots) || slots.length === 0) {
+        const localesFiltradas = citasLocales.filter(c => c.fecha === fechaStr || c.dia === diaIndice);
+        return localesFiltradas;
+    }
+
+    return [];
 }
 
 /**
@@ -416,14 +420,14 @@ export async function obtenerAgendaSemanalMedico(
             }
         });
 
-        // Combinar con citas locales creadas que no estén ya en la lista
-        for (const loc of citasLocales) {
-            if (!citasSemanales.some(c => c.id === loc.id)) {
-                citasSemanales.push(loc);
-            }
+        // Si el backend devolvió citas reales, limpiar cualquier residuo local para sincronización limpia
+        if (citasSemanales.length > 0) {
+            limpiarCitasLocales();
+            return citasSemanales;
         }
 
-        return citasSemanales;
+        // Si el backend no devolvió citas pero existen citas locales (modo offline), devolverlas
+        return citasLocales;
     } catch {
         return citasLocales;
     }

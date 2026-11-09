@@ -14,7 +14,7 @@ import {
     type BloqueHorario,
     type SlotHorario
 } from '../../Services/horarios.ts';
-import { guardarCitaLocal } from '../../Services/agenda.ts';
+import { limpiarCitasLocales, formatearFechaISO } from '../../Services/agenda.ts';
 
 interface ReservaModalProps {
     isOpen: boolean;
@@ -127,23 +127,74 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
             return;
         }
 
+        let vigente = true;
         setCargandoHorarios(true);
-        const slots = obtenerHorariosPorMedicoYFecha(bloques, medicoId, selectedDay, 60);
-        setHorariosDisponibles(slots);
+        const fechaStr = formatearFechaISO(selectedDay);
 
-        if (slots.length > 0) {
-            const coincidencia = slots.find(s => s.hora === selectedTime);
-            if (coincidencia) {
-                setSelectedScheduleBlockId(coincidencia.scheduleBlockId);
-            } else {
-                setSelectedTime(slots[0].hora);
-                setSelectedScheduleBlockId(slots[0].scheduleBlockId);
+        const cargarHorarios = async () => {
+            try {
+                // Consultar slots reales de la agenda para este médico y fecha directamente desde Render
+                const resAgenda = await apiClient(`/api/Agenda/medico/${medicoId}?fecha=${fechaStr}`, {
+                    method: 'GET'
+                });
+
+                if (!vigente) return;
+
+                if (Array.isArray(resAgenda) && resAgenda.length > 0) {
+                    // Filtrar solo los slots libres y extraer su scheduleBlockId real
+                    const slotsLibres: SlotHorario[] = resAgenda
+                        .filter((s: any) => s.disponibilidad === 'libre')
+                        .map((s: any) => {
+                            const hora = s.fechaInicio ? s.fechaInicio.slice(11, 16) : '08:00';
+                            return {
+                                hora,
+                                scheduleBlockId: s.scheduleBlockId
+                            };
+                        })
+                        .sort((a, b) => a.hora.localeCompare(b.hora));
+
+                    if (slotsLibres.length > 0) {
+                        setHorariosDisponibles(slotsLibres);
+                        const coincidencia = slotsLibres.find(s => s.hora === selectedTime);
+                        if (coincidencia) {
+                            setSelectedScheduleBlockId(coincidencia.scheduleBlockId);
+                        } else {
+                            setSelectedTime(slotsLibres[0].hora);
+                            setSelectedScheduleBlockId(slotsLibres[0].scheduleBlockId);
+                        }
+                        setCargandoHorarios(false);
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.warn('No se pudo obtener agenda diaria directamente de Render, usando bloques generales:', err);
             }
-        } else {
-            setSelectedTime('');
-            setSelectedScheduleBlockId('');
-        }
-        setCargandoHorarios(false);
+
+            // Fallback: usar bloques generales si la consulta de agenda diaria no devolvió slots
+            if (!vigente) return;
+            const slots = obtenerHorariosPorMedicoYFecha(bloques, medicoId, selectedDay, 60);
+            setHorariosDisponibles(slots);
+
+            if (slots.length > 0) {
+                const coincidencia = slots.find(s => s.hora === selectedTime);
+                if (coincidencia) {
+                    setSelectedScheduleBlockId(coincidencia.scheduleBlockId);
+                } else {
+                    setSelectedTime(slots[0].hora);
+                    setSelectedScheduleBlockId(slots[0].scheduleBlockId);
+                }
+            } else {
+                setSelectedTime('');
+                setSelectedScheduleBlockId('');
+            }
+            setCargandoHorarios(false);
+        };
+
+        cargarHorarios();
+
+        return () => {
+            vigente = false;
+        };
     }, [medicoId, selectedDay, bloques]);
 
     const reiniciarFormulario = () => {
@@ -325,45 +376,22 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
                 schedulingSource: source
             };
 
-            const fechaStr = selectedDay ? selectedDay.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
-            const diaSemanaNum = selectedDay ? (((selectedDay.getDay() + 6) % 7) as any) : 0;
-            const [hIni] = selectedTime.split(':').map(Number);
-            const hFinStr = !isNaN(hIni) ? `${String(hIni + 1).padStart(2, '0')}:00` : '10:00';
+            // Enviar al backend real en Render
+            const resBackend = await apiClient('/api/Appointments', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
 
-            const bloqueSeleccionado = bloques.find(b => b.id === resolvedBlockId);
-            let boxAsignado: number | string = 1;
-            if (bloqueSeleccionado?.box?.nombre) {
-                const matchBox = String(bloqueSeleccionado.box.nombre).match(/\d+/);
-                boxAsignado = matchBox ? parseInt(matchBox[0], 10) : bloqueSeleccionado.box.nombre;
-            }
+            console.log('Respuesta del backend Render al crear cita:', resBackend);
 
-            const citaRespaldo = {
-                id: crypto.randomUUID(),
-                dia: diaSemanaNum,
-                hora: `${selectedTime} - ${hFinStr}`,
-                paciente: resolvedPatientNombre,
-                motivo: sintomas.trim() || 'Consulta médica general',
-                box: boxAsignado,
-                fecha: fechaStr,
-                disponibilidad: 'ocupado' as const,
-                medicoId: medicoId
-            };
+            // Al confirmarse la cita exitosamente en el servidor, limpiar citas locales huérfanas
+            limpiarCitasLocales();
 
-            guardarCitaLocal(citaRespaldo);
-
-            try {
-                await apiClient('/api/Appointments', {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-            } catch (apiErr: any) {
-                console.warn('Backend en Render no pudo persistir (guardado en agenda local):', apiErr.message);
-            }
-
-            toast.success('¡Cita reservada y agendada exitosamente!');
+            toast.success('¡Cita reservada y guardada en el servidor exitosamente!');
             cerrarModal();
         } catch (error: any) {
-            toast.error(`Error al agendar cita: ${error.message}`);
+            console.error('Error al agendar cita en servidor:', error);
+            toast.error(`Error del servidor al reservar: ${error.message}`);
         } finally {
             setGuardando(false);
         }
