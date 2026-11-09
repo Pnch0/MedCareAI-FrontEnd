@@ -3,20 +3,48 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '../../Services/supabaseClient.ts';
 import './MainPage.css';
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { Contador } from '../../Components/Contador/Contador.tsx'
 import { ModalReserva } from '../../Components/ModalReserva/ModalReserva.tsx';
 import medico from '../../Assets/medico.jpg';
+import CENTROMEDICO from '../../assets/CENTRO MEDICO.jfif';
+import SALADEESPERA from '../../assets/SALA DE ESPERA.jfif';
+import BOXATENCION from '../../assets/BOX ATENCION.jfif';
+import SALAESCANER from '../../assets/SALA ESCANER.jfif';
 
+const imagenesCarrusel = [
+    { src: CENTROMEDICO, alt: "Centro Médico", label: "Centro Médico" },
+    { src: SALADEESPERA, alt: "Sala de Espera", label: "Sala de Espera" },
+    { src: BOXATENCION, alt: "Box de Atención", label: "Box de Atención" },
+    { src: SALAESCANER, alt: "Sala de Escáner", label: "Sala de Escáner" },
+];
 
 function MainPage(){
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+    const [slideActual, setSlideActual] = useState<number>(0);
+    const [isPaused, setIsPaused] = useState<boolean>(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
+
+    useEffect(() => {
+        if (isPaused) return;
+        const timer = setInterval(() => {
+            setSlideActual((prev) => (prev + 1) % imagenesCarrusel.length);
+        }, 4500);
+        return () => clearInterval(timer);
+    }, [isPaused]);
+
+    const anteriorSlide = () => {
+        setSlideActual((prev) => (prev === 0 ? imagenesCarrusel.length - 1 : prev - 1));
+    };
+
+    const siguienteSlide = () => {
+        setSlideActual((prev) => (prev + 1) % imagenesCarrusel.length);
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -58,8 +86,49 @@ function MainPage(){
             </div>
         </div>
 
-        <div className="Contenedor-ImagenPrincipal">
+        <div 
+            className="Contenedor-ImagenPrincipal"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+        >
+            {imagenesCarrusel.map((item, index) => (
+                <div 
+                    key={index} 
+                    className={`Carrusel-Slide ${index === slideActual ? 'activo' : ''}`}
+                >
+                    <img src={item.src} alt={item.alt} />
+                    <div className="Carrusel-Label">{item.label}</div>
+                </div>
+            ))}
 
+            <button 
+                type="button" 
+                className="Carrusel-Boton Carrusel-Boton-Prev" 
+                onClick={anteriorSlide}
+                aria-label="Imagen anterior"
+            >
+                <FaChevronLeft />
+            </button>
+            <button 
+                type="button" 
+                className="Carrusel-Boton Carrusel-Boton-Next" 
+                onClick={siguienteSlide}
+                aria-label="Siguiente imagen"
+            >
+                <FaChevronRight />
+            </button>
+
+            <div className="Carrusel-Puntos">
+                {imagenesCarrusel.map((_, index) => (
+                    <button
+                        key={index}
+                        type="button"
+                        className={`Carrusel-Punto ${index === slideActual ? 'activo' : ''}`}
+                        onClick={() => setSlideActual(index)}
+                        aria-label={`Ir a imagen ${index + 1}`}
+                    />
+                ))}
+            </div>
         </div>
 
         <div className="Contenedor-SobreNosotros">
