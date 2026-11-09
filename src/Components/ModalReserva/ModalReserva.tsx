@@ -5,6 +5,7 @@ import { supabase } from '../../Services/supabaseClient.ts';
 import { apiClient } from '../../Services/apiClient.ts';
 import {
     obtenerCatalogoMedicos,
+    obtenerMedicosPorEspecialidad,
     type Especialidad,
     type Medico
 } from '../../Services/catalogoMedico.ts';
@@ -133,17 +134,28 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
 
         const cargarHorarios = async () => {
             try {
-                // Consultar slots reales de la agenda para este médico y fecha directamente desde Render
-                const resAgenda = await apiClient(`/api/Agenda/medico/${medicoId}?fecha=${fechaStr}`, {
-                    method: 'GET'
-                });
+                // Obtener y normalizar la especialidad del médico seleccionado
+                const doc = medicos.find((m) => m.id === medicoId) || todosLosMedicos.find((m) => m.id === medicoId);
+                const rawEsp = doc?.especialidad || especialidades.find((e) => e.id === especialidad)?.nombre || 'Cardiologia';
+                const espSinTildes = rawEsp.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const espQuery = espSinTildes.charAt(0).toUpperCase() + espSinTildes.slice(1);
+
+                // Consultar endpoint de disponibilidad público y seguro (SearchAvailabilityQuery)
+                // GET /api/Agenda/disponibilidad?especialidad={esp}&desde={fecha}&hasta={fecha}
+                const resDisponibilidad = await apiClient(
+                    `/api/Agenda/disponibilidad?especialidad=${encodeURIComponent(espQuery)}&desde=${fechaStr}&hasta=${fechaStr}`,
+                    { method: 'GET' }
+                );
 
                 if (!vigente) return;
 
-                if (Array.isArray(resAgenda) && resAgenda.length > 0) {
-                    // Filtrar solo los slots libres y extraer su scheduleBlockId real
-                    const slotsLibres: SlotHorario[] = resAgenda
-                        .filter((s: any) => s.disponibilidad === 'libre')
+                if (Array.isArray(resDisponibilidad) && resDisponibilidad.length > 0) {
+                    // Filtrar únicamente los bloques libres del médico seleccionado
+                    const slotsLibres: SlotHorario[] = resDisponibilidad
+                        .filter((s: any) => 
+                            String(s.medicoId) === String(medicoId) && 
+                            s.disponibilidad === 'libre'
+                        )
                         .map((s: any) => {
                             const hora = s.fechaInicio ? s.fechaInicio.slice(11, 16) : '08:00';
                             return {
@@ -167,10 +179,10 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
                     }
                 }
             } catch (err) {
-                console.warn('No se pudo obtener agenda diaria directamente de Render, usando bloques generales:', err);
+                console.warn('No se pudo obtener disponibilidad pública de la agenda:', err);
             }
 
-            // Fallback: usar bloques generales si la consulta de agenda diaria no devolvió slots
+            // Fallback: usar bloques generales si la consulta de disponibilidad no devolvió slots
             if (!vigente) return;
             const slots = obtenerHorariosPorMedicoYFecha(bloques, medicoId, selectedDay, 60);
             setHorariosDisponibles(slots);
@@ -195,7 +207,7 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
         return () => {
             vigente = false;
         };
-    }, [medicoId, selectedDay, bloques]);
+    }, [medicoId, selectedDay, especialidad, todosLosMedicos, bloques]);
 
     const reiniciarFormulario = () => {
         setBaseDate(new Date());
@@ -217,17 +229,36 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
         onClose();
     };
 
-    const manejarCambioEspecialidad = (valor: string) => {
+    const manejarCambioEspecialidad = async (valor: string) => {
         setEspecialidad(valor);
         setMedicoId('');
         setSelectedTime('');
         setSelectedScheduleBlockId('');
         setHorariosDisponibles([]);
+
         if (valor) {
             setCargandoMedicos(true);
-            const filtrados = todosLosMedicos.filter((m) => m.especialidadId === valor);
-            setMedicos(filtrados);
-            setCargandoMedicos(false);
+            const espObj = especialidades.find((e) => e.id === valor);
+            const nombreEsp = espObj?.nombre || valor;
+
+            try {
+                const medicosFiltrados = await obtenerMedicosPorEspecialidad(nombreEsp, valor);
+                setMedicos(medicosFiltrados);
+
+                // Sincronizar con todosLosMedicos para asegurar que la búsqueda de horarios y el resumen reconozcan al doctor
+                setTodosLosMedicos((prev) => {
+                    const map = new Map(prev.map((m) => [m.id, m]));
+                    medicosFiltrados.forEach((m) => map.set(m.id, m));
+                    return Array.from(map.values());
+                });
+            } catch (error) {
+                console.error('Error al obtener médicos por especialidad:', error);
+                // Fallback seguro en memoria si ocurre un error inesperado
+                const filtrados = todosLosMedicos.filter((m) => m.especialidadId === valor);
+                setMedicos(filtrados);
+            } finally {
+                setCargandoMedicos(false);
+            }
         } else {
             setMedicos([]);
             setCargandoMedicos(false);
@@ -274,7 +305,7 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
     };
 
     const especialidadNombre = especialidades.find((item) => item.id === especialidad)?.nombre ?? '';
-    const medicoSeleccionado = todosLosMedicos.find((medico) => medico.id === medicoId) ?? null;
+    const medicoSeleccionado = medicos.find((medico) => medico.id === medicoId) ?? todosLosMedicos.find((medico) => medico.id === medicoId) ?? null;
     const puedeReservar = Boolean(
         especialidad &&
         medicoSeleccionado &&
