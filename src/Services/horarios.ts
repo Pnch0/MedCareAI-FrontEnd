@@ -109,8 +109,20 @@ export async function obtenerBloquesHorarios(): Promise<BloqueHorario[]> {
         ]);
 
         const data = blocksRes.status === 'fulfilled' ? blocksRes.value : null;
-        const staffList = staffRes.status === 'fulfilled' && Array.isArray(staffRes.value) ? staffRes.value : [];
+        let staffList = staffRes.status === 'fulfilled' && Array.isArray(staffRes.value) ? staffRes.value : [];
         const boxesList = boxesRes.status === 'fulfilled' && Array.isArray(boxesRes.value) ? boxesRes.value : [];
+
+        // Si staffList vino vacío, intentar con /api/Staff?role=2 para garantizar resolución de médicos
+        if (staffList.length === 0) {
+            try {
+                const altStaff = await apiClient('/api/Staff?role=2', { method: 'GET' });
+                if (Array.isArray(altStaff)) {
+                    staffList = altStaff;
+                }
+            } catch {
+                // Silencioso
+            }
+        }
 
         const listaCruda = Array.isArray(data)
             ? data
@@ -130,6 +142,23 @@ export async function obtenerBloquesHorarios(): Promise<BloqueHorario[]> {
                 const medico = staffList.find((s: any) => String(s.id || s.staffId) === staffId);
                 const boxObj = boxesList.find((b: any) => String(b.id || b.boxId) === boxId);
 
+                let nombre = medico?.firstName || item.staffFirstName || item.StaffFirstName || '';
+                let apellido = medico?.lastName || item.staffLastName || item.StaffLastName || '';
+
+                if (!nombre && (medico?.name || item.staffName || item.StaffName || item.doctorName || item.DoctorName || item.name)) {
+                    const rawName = String(medico?.name || item.staffName || item.StaffName || item.doctorName || item.DoctorName || item.name || '').trim();
+                    const partes = rawName.split(/\s+/);
+                    nombre = partes[0] || 'Médico';
+                    apellido = partes.slice(1).join(' ') || '';
+                }
+
+                if (!nombre) {
+                    nombre = 'Médico';
+                }
+
+                const especialidad = medico?.specialty || item.specialty || item.Specialty || item.medicalSpecialty || 'Medicina General';
+                const cargo = medico?.roleName || item.roleName || item.RoleName || 'Médico';
+
                 return {
                     id: String(item.id || item.Id || item.ruleGroupId || item.RuleGroupId || crypto.randomUUID()),
                     horaInicio: String(rawStartTime).substring(0, 5),
@@ -146,10 +175,10 @@ export async function obtenerBloquesHorarios(): Promise<BloqueHorario[]> {
                     },
                     profesional: {
                         id: staffId,
-                        nombre: medico?.firstName || item.staffFirstName || item.StaffFirstName || 'Médico',
-                        apellido: medico?.lastName || item.staffLastName || item.StaffLastName || '',
-                        especialidad: medico?.specialty || item.specialty || item.Specialty || 'Medicina General',
-                        cargo: medico?.roleName || item.roleName || item.RoleName || 'Médico'
+                        nombre,
+                        apellido,
+                        especialidad,
+                        cargo
                     }
                 };
             });

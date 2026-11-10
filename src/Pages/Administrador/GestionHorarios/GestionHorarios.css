@@ -78,6 +78,9 @@
     flex-direction: column;
     border: 1px solid #E1EAEF;
     gap: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 12px;
 }
 
 
@@ -90,6 +93,9 @@
     border: 1px solid #E1EAEF;
     border-radius: 15px 0px 0px 15px;
     gap: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 12px;
 }
 
 
@@ -102,34 +108,120 @@
     border: 1px solid #E1EAEF;
     border-radius: 0px 15px 15px 0px;
     gap: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 12px;
+}
+
+.Listado-GestionHorarios::-webkit-scrollbar,
+.Listado-GestionHorarios-1::-webkit-scrollbar,
+.Listado-GestionHorarios-7::-webkit-scrollbar {
+    width: 4px;
+}
+
+.Listado-GestionHorarios::-webkit-scrollbar-thumb,
+.Listado-GestionHorarios-1::-webkit-scrollbar-thumb,
+.Listado-GestionHorarios-7::-webkit-scrollbar-thumb {
+    background-color: #D1D5DB;
+    border-radius: 4px;
 }
 
 
 .EncabezadoListado-GestionHorarios{
     width: 100%;
     height: 15dvh;
+    min-height: 15dvh;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #1E9CF1;
     font-size: 22px;
+    position: sticky;
+    top: 0;
+    background-color: #F7F8F8;
+    z-index: 2;
+    flex-shrink: 0;
 }
 
 
 .BloqueHorario-GestionHorarios{
-    width: 98%;
-    height: 12dvh;
+    width: 94%;
+    min-height: 11dvh;
+    height: auto;
     background-color: #FFFFFF;
     border: 1px solid #E1EAEF;
     border-radius: 10px;
-    font-weight: bold;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    padding: 8px 6px;
+    gap: 5px;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 .BloqueHorario-GestionHorarios:hover{
     border-color: #1E9CF1;
+    box-shadow: 0 4px 10px rgba(30, 156, 241, 0.12);
+    transform: translateY(-2px);
+}
+
+.BloqueHorario-Hora{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1E9CF1;
+    background-color: #F0F8FF;
+    padding: 3px 6px;
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.Icono-Hora-GestionHorarios{
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.BloqueHorario-Medico{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #2C3E50;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.Icono-Medico-GestionHorarios{
+    font-size: 11px;
+    color: #7F8C8D;
+    flex-shrink: 0;
+}
+
+.BloqueHorario-Especialidad{
+    font-size: 11px;
+    color: #64748B;
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
 }

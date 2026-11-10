@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./GestionHorarios.css";
 import { toast } from "sonner";
+import { FaClock, FaUserMd } from "react-icons/fa";
 import { ModalDetalleHorario } from "../../../Components/ModalDetalleHorario/ModalDetalleHorario.tsx";
 import { ModalAsignarHorario } from "../../../Components/ModalAsignarHorario/ModalAsignarHorario.tsx";
 import { type BloqueHorario, obtenerBloquesHorarios } from "../../../Services/horarios.ts";
@@ -60,6 +61,19 @@ function GestionHorariosAdministrador(){
         setModalAsignarAbierto(false);
     };
 
+    const formatearNombreMedico = (nombre?: string, apellido?: string): string => {
+        const nom = (nombre || '').trim();
+        const ape = (apellido || '').trim();
+        const completo = `${nom} ${ape}`.trim();
+        if (!completo || completo.toLowerCase() === 'médico' || completo.toLowerCase() === 'medico') {
+            return 'Médico Asignado';
+        }
+        if (completo.toLowerCase().startsWith('dr')) {
+            return completo;
+        }
+        return `Dr. ${completo}`;
+    };
+
     return(
         <>
         <div className="ContenedorPrincipal-GestionHorarios">
@@ -85,22 +99,40 @@ function GestionHorariosAdministrador(){
                                 <div className="EncabezadoListado-GestionHorarios">
                                     <h2>{columna.letra}</h2>
                                 </div>
-                                {bloquesDelDia.map((bloque) => (
-                                    <div
-                                        key={`${bloque.id}-${columna.id}`}
-                                        className="BloqueHorario-GestionHorarios"
-                                        onClick={() => abrirDetalleBloque(bloque)}
-                                        role="button"
-                                        tabIndex={0}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                abrirDetalleBloque(bloque);
-                                            }
-                                        }}
-                                    >
-                                        <p>{bloque.horaInicio} - {bloque.horaFin}</p>
-                                    </div>
-                                ))}
+                                {bloquesDelDia.map((bloque) => {
+                                    const nombreMedico = formatearNombreMedico(
+                                        bloque.profesional?.nombre,
+                                        bloque.profesional?.apellido
+                                    );
+                                    const especialidad = bloque.profesional?.especialidad || 'Medicina General';
+
+                                    return (
+                                        <div
+                                            key={`${bloque.id}-${columna.id}`}
+                                            className="BloqueHorario-GestionHorarios"
+                                            onClick={() => abrirDetalleBloque(bloque)}
+                                            role="button"
+                                            tabIndex={0}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    abrirDetalleBloque(bloque);
+                                                }
+                                            }}
+                                        >
+                                            <div className="BloqueHorario-Hora">
+                                                <FaClock className="Icono-Hora-GestionHorarios" aria-hidden="true" />
+                                                <span>{bloque.horaInicio} - {bloque.horaFin}</span>
+                                            </div>
+                                            <div className="BloqueHorario-Medico" title={nombreMedico}>
+                                                <FaUserMd className="Icono-Medico-GestionHorarios" aria-hidden="true" />
+                                                <span>{nombreMedico}</span>
+                                            </div>
+                                            <div className="BloqueHorario-Especialidad" title={especialidad}>
+                                                {especialidad}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         );
                     })}
