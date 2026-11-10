@@ -9,17 +9,18 @@ const haySesionActiva = () => {
 };
 
 export const ProtectedRoute = () => {
-  return haySesionActiva() ? <Outlet /> : <Navigate to="/" replace />;
+  return haySesionActiva() ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 export const PublicRoute = () => {
   const { pathname } = useLocation();
 
   if (haySesionActiva()) {
-    const destino = getHomePorRol();
+    const role = getUserRole();
+    const esRutaAuth = pathname === '/login' || pathname === '/login-page' || pathname === '/register-page';
 
-    if (pathname !== destino) {
-      return <Navigate to={destino} replace />;
+    if (esRutaAuth) {
+      return <Navigate to={getHomePorRol(role)} replace />;
     }
   }
 

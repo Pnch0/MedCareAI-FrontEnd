@@ -123,7 +123,7 @@ function LoginPage() {
 
         toast.success('Inicio de sesión exitoso');
 
-        if (userRole === 'paciente') navigate('/main-page-paciente');
+        if (userRole === 'paciente') navigate('/');
         else if (userRole === 'medico') navigate('/home-page-medico');
         else if (userRole === 'recepcionista') navigate('/home-page-recepcionista');
         else if (userRole === 'administrador') navigate('/home-page-administrador');
@@ -192,6 +192,10 @@ function LoginPage() {
                         >
                             {loading ? 'Iniciando...' : 'Iniciar Sesión'}
                         </button>
+
+                        <p className="Texto-VolverHome">
+                            <Link to="/">← Volver al Centro Médico</Link>
+                        </p>
                     </form>
                 </div>
             </div>
@@ -203,7 +207,7 @@ function LoginPage() {
                         <p>Solo desarrollo - simula un rol sin autenticación</p>
                     </div>
                     <div className="ContenedorBotones-AccesoRapido">
-                        <button className="Boton-AccesoRapido" onClick={() => simularAcceso('paciente', '/main-page-paciente')}>Paciente</button>
+                        <button className="Boton-AccesoRapido" onClick={() => simularAcceso('paciente', '/')}>Paciente</button>
                         <button className="Boton-AccesoRapido" onClick={() => simularAcceso('medico', '/home-page-medico')}>Médico</button>
                         <button className="Boton-AccesoRapido" onClick={() => simularAcceso('recepcionista', '/home-page-recepcionista')}>Recepcionista</button>
                         <button className="Boton-AccesoRapido" onClick={() => simularAcceso('administrador', '/home-page-administrador')}>Administrador</button>

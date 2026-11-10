@@ -158,6 +158,41 @@ body {
     background-color: #4dabe9;
 }
 
+.Texto-Login {
+    width: 100%;
+    text-align: center;
+    margin-top: 18px;
+    font-size: 14px;
+}
+
+.Texto-Login a {
+    color: #1E9CF1;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.Texto-Login a:hover {
+    text-decoration: underline;
+}
+
+.Texto-VolverHome {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.Texto-VolverHome a {
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.Texto-VolverHome a:hover {
+    color: #1E9CF1;
+    text-decoration: underline;
+}
+
 .ContenedorFormulario-RegisterPage .ContenedorInput-Password {
     position: relative;
     width: 100%;

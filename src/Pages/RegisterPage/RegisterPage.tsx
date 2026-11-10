@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from 'sonner';
 import { supabase } from '../../Services/supabaseClient.ts';
@@ -67,12 +67,12 @@ function RegisterPage() {
                 localStorage.setItem('token', authData.session.access_token);
                 localStorage.setItem('userRole', 'paciente');
                 toast.success('Cuenta creada e inicio de sesión exitoso');
-                navigate('/main-page-paciente');
+                navigate('/');
                 return;
             }
 
             toast.success('Registro exitoso. Inicia sesión para continuar.');
-            navigate('/');
+            navigate('/login');
         }
     };
 
@@ -202,6 +202,14 @@ function RegisterPage() {
                         <button className='Boton-RegisterPage' disabled={loading}>
                             {loading ? 'Registrando...' : 'Crear Cuenta'}
                         </button>
+
+                        <p className="Texto-Login">
+                            ¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link>
+                        </p>
+
+                        <p className="Texto-VolverHome">
+                            <Link to="/">← Volver al Centro Médico</Link>
+                        </p>
                     </form>
                 </div>
             </div>

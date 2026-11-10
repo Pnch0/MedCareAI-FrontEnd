@@ -38,7 +38,9 @@ function App() {
       <Router>
         <Routes>
           <Route element={<PublicRoute />}>
-            <Route path="/" element={<LoginPage />} />
+            <Route path="/" element={<MainPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login-page" element={<LoginPage />} />
             <Route path="/register-page" element={<RegisterPage />} />
             <Route path="/main-page-paciente" element={<MainPage />} />
           </Route>

@@ -1,7 +1,7 @@
 export type UserRole = 'paciente' | 'medico' | 'recepcionista' | 'administrador';
 
 export const HOME_POR_ROL: Record<UserRole, string> = {
-    paciente: '/main-page-paciente',
+    paciente: '/',
     medico: '/home-page-medico',
     recepcionista: '/home-page-recepcionista',
     administrador: '/home-page-administrador',

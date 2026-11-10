@@ -67,11 +67,76 @@ body {
     border: 1px solid #E1EAEF;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    min-width: 150px;
+    min-width: 170px;
     z-index: 1000;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+}
+
+.Dropdown-Usuario-Info {
+    padding: 12px 18px 8px 18px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    background-color: #f8fafc;
+}
+
+.Dropdown-Usuario-Saludo {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.Dropdown-Usuario-Nombre {
+    font-size: 15px;
+    color: #1e293b;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.Dropdown-Divider {
+    height: 1px;
+    background-color: #E1EAEF;
+    width: 100%;
+}
+
+.Dropdown-Item-Login {
+    background-color: transparent;
+    border: none;
+    padding: 12px 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 15px;
+    color: #1E9CF1;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.Dropdown-Item-Login:hover {
+    background-color: #f0f8ff;
+}
+
+.Dropdown-Item-Register {
+    background-color: transparent;
+    border: none;
+    border-top: 1px solid #E1EAEF;
+    padding: 12px 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 15px;
+    color: #475569;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.Dropdown-Item-Register:hover {
+    background-color: #f8fafc;
+    color: #1E9CF1;
 }
 
 .Dropdown-Item-Logout {
@@ -330,6 +395,140 @@ body {
 
 .Contenedor-AgendaHoras button:hover {
     background-color: #4dabe9;
+}
+
+/* MODAL DE AUTENTICACIÓN REQUERIDA PARA RESERVA */
+.ModalAuth-Overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+    animation: fadeInModalAuth 0.2s ease-out;
+}
+
+.ModalAuth-Contenedor {
+    background-color: #FFFFFF;
+    border: 1px solid #E1EAEF;
+    border-radius: 16px;
+    padding: 35px 30px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    animation: scaleUpModalAuth 0.25s ease-out;
+    box-sizing: border-box;
+}
+
+.ModalAuth-BotonCerrar {
+    position: absolute;
+    top: 15px;
+    right: 18px;
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    color: #94a3b8;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.ModalAuth-BotonCerrar:hover {
+    background-color: #f1f5f9;
+    color: #334155;
+}
+
+.ModalAuth-Icono {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: #E8F4FD;
+    color: #1E9CF1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    margin-bottom: 18px;
+}
+
+.ModalAuth-Contenedor h2 {
+    font-size: 22px;
+    color: #1e293b;
+    margin: 0 0 10px 0;
+    font-weight: 700;
+}
+
+.ModalAuth-Contenedor p {
+    font-size: 14.5px;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0 0 25px 0;
+}
+
+.ModalAuth-Botones {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+}
+
+.ModalAuth-BotonLogin {
+    flex: 1;
+    height: 46px;
+    background-color: #1E9CF1;
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.ModalAuth-BotonLogin:hover {
+    background-color: #1886cf;
+    transform: translateY(-1px);
+}
+
+.ModalAuth-BotonRegister {
+    flex: 1;
+    height: 46px;
+    background-color: #FFFFFF;
+    color: #1E9CF1;
+    border: 1.5px solid #1E9CF1;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ModalAuth-BotonRegister:hover {
+    background-color: #f0f8ff;
+    transform: translateY(-1px);
+}
+
+@keyframes fadeInModalAuth {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleUpModalAuth {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 /* MEDIA QUERIES */

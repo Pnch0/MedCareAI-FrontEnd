@@ -125,6 +125,24 @@ body {
     text-decoration: underline;
 }
 
+.Texto-VolverHome {
+    width: 75%;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 13px;
+}
+
+.Texto-VolverHome a {
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.Texto-VolverHome a:hover {
+    color: #1E9CF1;
+    text-decoration: underline;
+}
+
 .Contenedor-AccesoRapido {
     position: fixed;
     bottom: 20px;
