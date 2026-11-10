@@ -63,186 +63,158 @@ body{
     width: 100%;
     height: 85dvh;
     display: flex;
-    flex-direction: column;
-}
-
-
-.ContenedorInferiorSuperior-HomePageRecepcionista{
-    width: 100%;
-    height: 35dvh;
-    display: flex;
     flex-direction: row;
-    justify-content: center;
-    padding: 0px 25px 0px 25px;
-    gap: 20px;
+    align-items: center;
+    justify-content: space-around;
 }
 
 
 .ContenedorIzquierda-HomePageRecepcionista{
     width: 50%;
-    height: 32dvh;
+    height: 78dvh;
     background-color: #F7F8F8;
     border: 1px solid #E1EAEF;
     border-radius: 15px;
 }
 
-.EncabezadoListado-CitasRecepcionista, .EncabezadoListado-InformacionBoxes{
+.EncabezadoContenedorIzquierda-HomePageRecepcionista{
     width: 100%;
-    height: 8dvh;
+    height: 10dvh;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding-left: 20px;
     color: #1E9CF1;
-    font-size: 22px;
+    font-size: 24px;
+    padding-left: 25px;
     border-bottom: 1px solid #E1EAEF;
 }
 
-.Listado-CitasRecepcionista{
+.ListadoCitas-HomePageRecepcionista{
     width: 100%;
-    height: 24dvh;
+    height: 68dvh;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
 }
 
-.Listado-InformacionBoxes{
+.Card-ListadoCitas{
     width: 100%;
-    height: 24dvh;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    padding-left: 25px;
-    font-size: 25px;
-}
-
-.Card-CitasRecepcionista{
-    width: 100%;
-    height: 8dvh;
+    height: 12dvh;
     display: flex;
     flex-direction: row;
     border-bottom: 1px solid #E1EAEF;
+
 }
 
-.Card-CitasRecepcionista-Izquierda{
+.CardIzquierda-ListadoCitas{
     width: 50%;
-    height: 8dvh;
+    height: 12dvh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     padding-left: 20px;
+    gap: 5px;
 }
 
-.Card-CitasRecepcionista-Izquierda p{
+.CardIzquierda-ListadoCitas h3{
+    color: black;
+    font-size: 20px;
+}
+
+.CardIzquierda-ListadoCitas p{
     color: #A1A1A1;
+    font-weight: 400;
 }
 
-.Card-CitasRecepcionista-Derecha{
+.CardDerecha-ListadoCitas{
     width: 50%;
-    height: 8dvh;
+    height: 12dvh;
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: flex-end;
-    padding-right: 20px;
-    gap: 20px;
+    padding-right: 25px;
+    gap: 25px;
 }
 
-.Card-CitasRecepcionista-Derecha .Btn-Asistio{
+.BTN-Asistio{
     padding: 10px 25px;
+    font-size: 16px;
+    color: #FFFFFF;
     background-color: #17BF63;
-    color: #FFFFFF;
-    border-radius: 10px;
+    border-radius: 8px;
     border: none;
     outline: none;
-    font-size: 16px;
     cursor: pointer;
 }
 
-.Card-CitasRecepcionista-Derecha .Btn-Asistio:hover{
-    background-color: #17bf63ce;
-}
-
-.Card-CitasRecepcionista-Derecha .Btn-NoAsistio{
+.BTN-NoAsistio{
     padding: 10px 25px;
-    background-color: #F4212E;
-    color: #FFFFFF;
-    border-radius: 10px;
     font-size: 16px;
+    color: #FFFFFF;
+    background-color: #F4212E;
+    border-radius: 8px;
     border: none;
     outline: none;
     cursor: pointer;
 }
 
-.Card-CitasRecepcionista-Derecha .Btn-NoAsistio:hover{
-    background-color: #f4212fd2;
+.BTN-Asistio:hover{
+    background-color: #17bf63e0;
+    
+}
+
+.BTN-NoAsistio:hover{
+    background-color: #f4212fe1;
 }
 
 .ContenedorDerecha-HomePageRecepcionista{
-    width: 50%;
-    height: 32dvh;
-    background-color: #F7F8F8;
-    border: 1px solid #E1EAEF;
-    border-radius: 15px;
-}
-
-.ContenedorInferiorInferior-HomePageRecepcionista{
-    width: 100%;
-    height: 50dvh;
+    width: 45%;
+    height: 78dvh;
     display: flex;
-    flex-direction: row;
-    justify-content: center;
-    padding: 0px 25px 0px 25px;
+    flex-direction: column;
     gap: 20px;
 }
 
-.ContenedorInferiorInferior-Izquierda{
-    width: 70%;
-    height: 48dvh;
-    background-color: #F7F8F8;
-    border: 1px solid #E1EAEF;
-    border-radius: 15px;
-
-}
-
-.ContenedorInferiorInferior-Derecha{
-    width: 30%;
-    height: 48dvh;
-    background-color: #F7F8F8;
-    border: 1px solid #E1EAEF;
-    border-radius: 15px;
-}
-
-
-.ContenedorEncabezado-IzquierdaHome{
+.ContenedorDerecha-SuperiorRecepcionista{
     width: 100%;
-    height: 10dvh;
-    display: flex;
-    align-items: center;
-    color: #1E9CF1;
-    padding-left: 20px;
-}
-
-.ContenedorListado-IzquierdaHome{
-    width: 100%;
-    height: 38dvh;
+    height: 45dvh;
+    background-color: #F7F8F8;
+    border-radius: 15px;
+    border: 1px solid #E1EAEF;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
 }
 
-.Card-ListadoOMRO{
+.EncabezadoContenedor-SuperiorDerecha{
+    width: 100%;
+    height: 10dvh;
+    color: #1E9CF1;
+    font-size: 24px;
+    padding-left: 25px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #E1EAEF;
+    
+}
+
+
+.Card-ListadoOMRO-Recepcionista{
     width: 100%;
     height: 10dvh;
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding-left: 10px;
-    border: 1px solid #E1EAEF;
+    padding: 0 15px;
+    border-bottom: 1px solid #E1EAEF;
     gap: 15px;
+    box-sizing: border-box;
 }
 
 .ContenedorIcono-CardOMRO{
-    width: 6%;
-    height: 8dvh;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -252,12 +224,12 @@ body{
 }
 
 .Icono-OMRO{
-    font-size: 38px;
+    font-size: 26px;
     color: #1E9CF1;
 }
 
 .ContenedorDatos-CardOMRO{
-    width: 84%;
+    flex: 1;
     height: 10dvh;
     display: flex;
     flex-direction: column;
@@ -265,13 +237,20 @@ body{
     gap: 5px;
 }
 
+.ContenedorDatos-CardOMRO h3{
+    margin: 0;
+    font-size: 18px;
+    color: black;
+}
+
 .ContenedorDatos-CardOMRO p{
+    margin: 0;
     color: #989898;
     font-weight: bold;
 }
 
 .ContenedorEstado-CardOMRO{
-    width: 10%;
+    width: 50px;
     height: 10dvh;
     display: flex;
     align-items: center;
@@ -279,8 +258,8 @@ body{
 }
 
 .ContenedorLetra-CardOMRO{
-    width: 60%;
-    height: 8dvh;
+    width: 42px;
+    height: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -288,45 +267,109 @@ body{
     background-color: #17bf638c;
     color: #17BF63;
     border: 1px solid #FFFFFF;
+}
+
+.ContenedorLetra-CardOMRO h1{
+    margin: 0;
     font-size: 22px;
 }
 
-
-.ContenedorTitulo-DerechaHome{
+.ContenedorDerecha-InferiorRecepcionista{
     width: 100%;
-    height: 24dvh;
+    height: 32dvh;
+    display: flex;
+    flex-direction: row;
+    gap: 25px;
+
+}
+
+
+.Contenedor-InfoBoxes{
+    width: calc(50% - 12.5px);
+    height: 32dvh;
+    display: flex;
+    flex-direction: column;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+    box-sizing: border-box;
+}
+
+.Encabezado-InfoBoxes{
+    width: 100%;
+    height: 10dvh;
+    display: flex;
+    align-items: center;
+    color: #1E9CF1;
+    font-size: 20px;
+    padding-left: 20px;
+    border-bottom: 1px solid #E1EAEF;
+}
+
+.InfoBoxes-Recepcionista{
+    width: 100%;
+    height: 22dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    font-size: 20px;
+    padding-left: 20px;
+}
+
+.Contenedor-AccionesOMRO{
+    width: calc(50% - 12.5px);
+    height: 32dvh;
+    display: flex;
+    flex-direction: column;
+    background-color: #F7F8F8;
+    border: 1px solid #E1EAEF;
+    border-radius: 15px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.ContenedorTitulo-AccionesOMRO{
+    width: 100%;
+    height: 14dvh;
     display: flex;
     align-items: flex-end;
     justify-content: center;
+    text-align: center;
     color: #1E9CF1;
-    font-size: 20px;
-    padding-bottom: 20px;
+    padding: 0 15px 12px 15px;
     box-sizing: border-box;
 }
 
-.ContenedorBotones-DerechaHome{
+.ContenedorTitulo-AccionesOMRO h2{
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.ContenedorBotones-AccionesOMRO{
     width: 100%;
-    height: 24dvh;
+    height: 18dvh;
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    gap: 30px;
-    padding-top: 20px;
+    gap: 15px;
+    padding-top: 10px;
     box-sizing: border-box;
 }
 
-.ContenedorBotones-DerechaHome button{
+.Btn-AccionOMRO{
     background-color: #1E9CF1;
     outline: none;
     border: none;
     cursor: pointer;
-    padding: 15px 30px;
+    padding: 10px 20px;
     color: #FFFFFF;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 500;
     border-radius: 10px;
+    transition: background-color 0.2s ease;
 }
 
-.ContenedorBotones-DerechaHome button:hover{
+.Btn-AccionOMRO:hover{
     background-color: #1e9df1e3;
 }
