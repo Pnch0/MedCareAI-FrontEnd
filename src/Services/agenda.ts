@@ -1,4 +1,5 @@
 import { apiClient } from './apiClient.ts';
+import { obtenerCatalogoMedicos } from './catalogoMedico.ts';
 
 export type DiaSemana = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0=Lunes, 1=Martes, 2=Miércoles, 3=Jueves, 4=Viernes, 5=Sábado, 6=Domingo
 export type Box = 1 | 2 | 3 | 4 | 5 | 6 | 7 | string | number;
@@ -255,7 +256,7 @@ export function resolverBox(boxId: string | number | undefined, mapaBoxes?: Map<
  */
 export async function actualizarEstadoCitaBackend(
     citaId: string, 
-    estado: 'en_curso' | 'finalizada'
+    estado: 'en_curso' | 'finalizada' | 'presente' | 'asistio' | 'no_asistio' | string
 ): Promise<boolean> {
     if (!citaId) return false;
 
@@ -431,4 +432,178 @@ export async function obtenerAgendaSemanalMedico(
     } catch {
         return citasLocales;
     }
+}
+
+export type EstadoAsistencia = 'pendiente' | 'asistio' | 'no_asistio';
+
+export interface CitaRecepcion {
+    id: string;
+    citaId?: string;
+    paciente: string;
+    hora: string;          // ej: "10:00 - 11:00" o "10:00"
+    box: Box;              // ej: 1 o "Box 1"
+    medicoNombre: string;  // ej: "Dr. Gonzalo Yáñez"
+    especialidad: string;  // ej: "Medicina General"
+    fecha: string;         // "YYYY-MM-DD"
+    estadoAsistencia: EstadoAsistencia;
+    horaMarcada?: string;  // ej: "10:05"
+}
+
+export const LOCAL_ASISTENCIA_CITAS_KEY = 'medcare_asistencia_citas';
+
+/**
+ * Obtiene el registro de asistencias de citas marcado por la recepcionista.
+ */
+export function obtenerMapaAsistencias(): Record<string, { estado: EstadoAsistencia; horaMarcada?: string }> {
+    try {
+        const raw = localStorage.getItem(LOCAL_ASISTENCIA_CITAS_KEY);
+        if (!raw) return {};
+        return JSON.parse(raw);
+    } catch {
+        return {};
+    }
+}
+
+/**
+ * Registra o actualiza la asistencia de una cita en recepción.
+ */
+export async function guardarAsistenciaCita(
+    citaId: string, 
+    estado: EstadoAsistencia
+): Promise<void> {
+    try {
+        const mapa = obtenerMapaAsistencias();
+        const ahora = new Date();
+        const horaStr = `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
+        
+        mapa[citaId] = {
+            estado,
+            horaMarcada: horaStr
+        };
+        localStorage.setItem(LOCAL_ASISTENCIA_CITAS_KEY, JSON.stringify(mapa));
+
+        // Sincronizar con el panel del médico
+        try {
+            const rawGestion = localStorage.getItem('medcare_gestion_estados_citas');
+            let mapaGestion: Record<string, string> = rawGestion ? JSON.parse(rawGestion) : {};
+            if (estado === 'asistio') {
+                if (mapaGestion[citaId] !== 'finalizada' && mapaGestion[citaId] !== 'en-curso') {
+                    mapaGestion[citaId] = 'presente';
+                }
+            } else if (estado === 'no_asistio') {
+                mapaGestion[citaId] = 'no_asistio';
+            } else {
+                delete mapaGestion[citaId];
+            }
+            localStorage.setItem('medcare_gestion_estados_citas', JSON.stringify(mapaGestion));
+        } catch {}
+
+        // Notificar al backend en segundo plano
+        if (estado === 'asistio') {
+            await actualizarEstadoCitaBackend(citaId, 'presente');
+        } else if (estado === 'no_asistio') {
+            await actualizarEstadoCitaBackend(citaId, 'no_asistio');
+        }
+    } catch (e) {
+        console.warn('Error al guardar asistencia de cita:', e);
+    }
+}
+
+/**
+ * Consulta todas las citas médicas programadas para la fecha indicada (por defecto hoy)
+ * en la clínica, consolidando médicos, boxes, estados de asistencia y citas locales.
+ */
+export async function obtenerCitasDelDiaRecepcion(
+    fecha: Date = new Date()
+): Promise<CitaRecepcion[]> {
+    const fechaStr = formatearFechaISO(fecha);
+    const mapaAsistencias = obtenerMapaAsistencias();
+    const mapaBoxes = await cargarMapaBoxes();
+
+    // 1. Obtener médicos de la clínica
+    const medicosMap = new Map<string, { nombre: string; especialidad: string }>();
+    try {
+        const catalogo = await obtenerCatalogoMedicos();
+        if (catalogo?.medicos?.length) {
+            for (const m of catalogo.medicos) {
+                medicosMap.set(String(m.id), {
+                    nombre: `Dr(a). ${m.nombre} ${m.apellido}`.trim(),
+                    especialidad: m.especialidad || 'Medicina General'
+                });
+            }
+        }
+    } catch {
+        // Fallback
+    }
+
+    if (!medicosMap.has(MEDICO_DEFAULT_ID)) {
+        medicosMap.set(MEDICO_DEFAULT_ID, {
+            nombre: 'Dr. Gonzalo Yáñez',
+            especialidad: 'Medicina General'
+        });
+    }
+
+    const mapaCitas = new Map<string, CitaRecepcion>();
+
+    // 2. Consultar agenda de cada médico en paralelo
+    const promesas = Array.from(medicosMap.keys()).map(async (medicoId) => {
+        try {
+            const citasMedico = await obtenerAgendaDiariaMedico(medicoId, fecha, mapaBoxes);
+            const medInfo = medicosMap.get(medicoId);
+            for (const c of citasMedico) {
+                const asistenciaInfo = mapaAsistencias[c.id] || mapaAsistencias[c.citaId || ''];
+                mapaCitas.set(c.id, {
+                    id: c.id,
+                    citaId: c.citaId || c.id,
+                    paciente: c.paciente || 'Paciente',
+                    hora: c.hora || '10:00 - 11:00',
+                    box: c.box || 1,
+                    medicoNombre: medInfo?.nombre || 'Dr. Gonzalo Yáñez',
+                    especialidad: medInfo?.especialidad || 'Medicina General',
+                    fecha: fechaStr,
+                    estadoAsistencia: asistenciaInfo?.estado || 'pendiente',
+                    horaMarcada: asistenciaInfo?.horaMarcada
+                });
+            }
+        } catch {
+            // Ignorar errores de médico individual
+        }
+    });
+
+    await Promise.allSettled(promesas);
+
+    // 3. Integrar citas guardadas localmente (solo las que coincidan estrictamente con la fecha de hoy)
+    const citasLocales = obtenerCitasLocales();
+    for (const c of citasLocales) {
+        const coincideFecha = c.fecha === fechaStr;
+        if (coincideFecha && !mapaCitas.has(c.id)) {
+            const medInfo = (c.medicoId && medicosMap.get(String(c.medicoId))) || {
+                nombre: 'Dr. Gonzalo Yáñez',
+                especialidad: 'Medicina General'
+            };
+            const asistenciaInfo = mapaAsistencias[c.id] || mapaAsistencias[c.citaId || ''];
+            mapaCitas.set(c.id, {
+                id: c.id,
+                citaId: c.citaId || c.id,
+                paciente: c.paciente || 'Paciente',
+                hora: c.hora || '11:00 - 12:00',
+                box: c.box || 1,
+                medicoNombre: medInfo.nombre,
+                especialidad: medInfo.especialidad,
+                fecha: fechaStr,
+                estadoAsistencia: asistenciaInfo?.estado || 'pendiente',
+                horaMarcada: asistenciaInfo?.horaMarcada
+            });
+        }
+    }
+
+    // 4. Convertir a arreglo y ordenar cronológicamente de más temprano a más tarde
+    const lista = Array.from(mapaCitas.values());
+    lista.sort((a, b) => {
+        const horaA = (a.hora || '').slice(0, 5);
+        const horaB = (b.hora || '').slice(0, 5);
+        return horaA.localeCompare(horaB);
+    });
+
+    return lista;
 }

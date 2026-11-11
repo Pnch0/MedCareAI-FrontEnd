@@ -86,7 +86,39 @@ body{
     color: #1E9CF1;
     font-size: 24px;
     padding-left: 25px;
+    padding-right: 25px;
+    box-sizing: border-box;
     border-bottom: 1px solid #E1EAEF;
+}
+
+.EncabezadoCitas-TituloRow{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.EncabezadoCitas-TituloRow h2{
+    margin: 0;
+    font-size: 24px;
+    color: #1E9CF1;
+}
+
+.EncabezadoCitas-Pill{
+    font-size: 13px;
+    font-weight: 600;
+    color: #1E9CF1;
+    background-color: #E8F5FD;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.EncabezadoCitas-Fecha{
+    margin: 4px 0 0 0;
+    font-size: 13px;
+    color: #718096;
+    font-weight: 500;
 }
 
 .ListadoCitas-HomePageRecepcionista{
@@ -95,20 +127,32 @@ body{
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.ListadoCitas-HomePageRecepcionista::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ListadoCitas-HomePageRecepcionista::-webkit-scrollbar-thumb {
+    background-color: #cbd5e0;
+    border-radius: 4px;
 }
 
 .Card-ListadoCitas{
     width: 100%;
     height: 12dvh;
+    min-height: 80px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: row;
     border-bottom: 1px solid #E1EAEF;
-
 }
 
 .CardIzquierda-ListadoCitas{
     width: 50%;
-    height: 12dvh;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -118,23 +162,111 @@ body{
 
 .CardIzquierda-ListadoCitas h3{
     color: black;
-    font-size: 20px;
+    font-size: 19px;
+    margin: 0;
 }
 
 .CardIzquierda-ListadoCitas p{
-    color: #A1A1A1;
+    color: #718096;
     font-weight: 400;
+    font-size: 13px;
+    margin: 0;
 }
 
 .CardDerecha-ListadoCitas{
     width: 50%;
-    height: 12dvh;
+    height: 100%;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
     padding-right: 25px;
-    gap: 25px;
+    gap: 15px;
+}
+
+.ContenedorEstado-Asistencia{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.Badge-Asistencia-Asistio{
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #17BF63;
+    background-color: #E8F8F0;
+    border: 1px solid #17BF63;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.Badge-Asistencia-NoAsistio{
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #F4212E;
+    background-color: #FDECEE;
+    border: 1px solid #F4212E;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.BTN-CambiarAsistencia{
+    background: transparent;
+    border: none;
+    color: #718096;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+    transition: color 0.2s ease;
+}
+
+.BTN-CambiarAsistencia:hover{
+    color: #1E9CF1;
+}
+
+.ListadoCitas-EstadoMensaje{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #718096;
+    font-size: 15px;
+    text-align: center;
+    padding: 30px;
+    box-sizing: border-box;
+    gap: 8px;
+}
+
+.EstadoVacio-Icono{
+    font-size: 42px;
+    color: #A0AEC0;
+    margin-bottom: 4px;
+    opacity: 0.8;
+}
+
+.ListadoCitas-EstadoMensaje h3{
+    margin: 0;
+    font-size: 18px;
+    color: #4A5568;
+    font-weight: 600;
+}
+
+.ListadoCitas-EstadoMensaje p{
+    margin: 0;
+    font-size: 14px;
+    color: #A0AEC0;
+    max-width: 340px;
+    line-height: 1.4;
 }
 
 .BTN-Asistio{
