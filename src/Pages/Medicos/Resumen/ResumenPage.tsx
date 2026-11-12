@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "../../../Services/supabaseClient.ts";
 import { 
     obtenerAgendaDiariaMedico,
-    obtenerCitasLocales,
+    limpiarCitasLocales,
     MEDICO_DEFAULT_ID,
     type Cita 
 } from "../../../Services/agenda.ts";
@@ -68,7 +68,7 @@ function ResumenPageMedico(){
                 console.warn('Error al consultar tabla pacientes:', error.message);
             }
 
-            // 2. Obtener citas activas de la agenda médica (backend + local)
+            // 2. Obtener citas activas de la agenda médica exclusivamente desde el backend (Render)
             const staffId = localStorage.getItem('staffId') || localStorage.getItem('medicoId') || MEDICO_DEFAULT_ID;
             let citasBackend: Cita[] = [];
             try {
@@ -89,18 +89,11 @@ function ResumenPageMedico(){
             } catch {
                 // Fallback silencioso
             }
-            const citasLocales = obtenerCitasLocales();
 
-            const mapaCitas = new Map<string, Cita>();
-            for (const c of citasBackend) {
-                mapaCitas.set(c.id, c);
-            }
-            for (const c of citasLocales) {
-                if (!mapaCitas.has(c.id)) {
-                    mapaCitas.set(c.id, c);
-                }
-            }
-            const todasLasCitas = Array.from(mapaCitas.values());
+            // Purgar citas locales residuales para no mezclar datos falsos o antiguos
+            limpiarCitasLocales();
+
+            const todasLasCitas = citasBackend;
 
             // 3. Obtener fichas clínicas guardadas localmente
             let fichasGuardadas: Record<string, any> = {};
@@ -206,62 +199,6 @@ function ResumenPageMedico(){
                             tieneCita: false
                         });
                     }
-                }
-            }
-
-            // Procesar citas de pacientes (backend o locales) que no estén en la base de datos
-            for (const c of todasLasCitas) {
-                const cNom = normalizarTexto(c.paciente || '');
-                if (!cNom || nombresProcesados.has(cNom)) continue;
-
-                const yaExiste = listaPacientes.some(lp => normalizarTexto(lp.nombre) === cNom);
-                if (yaExiste) continue;
-
-                nombresProcesados.add(cNom);
-                const idStr = String(c.id);
-                const fichaGuardada = fichasGuardadas[idStr] || fichasGuardadas[cNom];
-                const resumenIA = c.nlpSummary || null;
-                const sintomasRaw = c.symptomsRaw || c.motivo || null;
-
-                if (fichaGuardada) {
-                    const resumenCorto = fichaGuardada.resumen
-                        ? (fichaGuardada.resumen.length > 55 ? `${fichaGuardada.resumen.slice(0, 55).trim()}...` : fichaGuardada.resumen)
-                        : (resumenIA || 'Ficha clínica actualizada.');
-                    listaPacientes.push({
-                        id: c.id,
-                        nombre: c.paciente,
-                        edad: 28,
-                        diagnostico: fichaGuardada.diagnostico || 'Atención Realizada',
-                        resumen: resumenCorto,
-                        diagnosticoCompleto: fichaGuardada.diagnosticoCompleto,
-                        resumenSintomasIA: resumenIA,
-                        sintomasOriginales: sintomasRaw,
-                        tieneAtencion: true,
-                        tieneCita: true
-                    });
-                } else {
-                    const motivo = c.motivo || 'Consulta médica general';
-                    const sintomasCortos = resumenIA || (motivo.length > 55 ? `${motivo.slice(0, 55).trim()}...` : motivo);
-                    const detalleIA = resumenIA ? `• Resumen Clínico Inteligente (IA): "${resumenIA}"\n` : '';
-                    const detalleSintomas = sintomasRaw ? `• Síntomas Reportados por Paciente: "${sintomasRaw}"\n` : `• Motivo de Consulta: "${motivo}"\n`;
-
-                    listaPacientes.push({
-                        id: c.id,
-                        nombre: c.paciente,
-                        edad: 28,
-                        diagnostico: 'Pendiente de atención',
-                        resumen: resumenIA ? `Resumen IA: ${sintomasCortos}` : `Síntomas: ${sintomasCortos}`,
-                        diagnosticoCompleto: `Paciente agendado para consulta médica en MedCareAI.\n\n` +
-                            `• Cita Programada: ${c.fecha || 'Fecha programada'} a las ${c.hora || ''} (Box ${c.box || 1})\n` +
-                            detalleIA +
-                            detalleSintomas +
-                            `\nEstado de Atención: En espera de primera evaluación clínica.\n` +
-                            `El paciente aún no cuenta con diagnósticos médicos previos finalizados en el sistema. Presione "Registrar Diagnóstico" para ingresar la evolución médica correspondiente.`,
-                        resumenSintomasIA: resumenIA,
-                        sintomasOriginales: sintomasRaw,
-                        tieneAtencion: false,
-                        tieneCita: true
-                    });
                 }
             }
 

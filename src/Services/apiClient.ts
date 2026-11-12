@@ -70,9 +70,16 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}) => 
         } catch {
             
         }
-        throw new Error(errorMsg || `Error en la petición: ${response.status}`);
+        const err = new Error(errorMsg || `Error en la petición: ${response.status}`);
+        (err as any).status = response.status;
+        throw err;
     }
 
     const text = await response.text();
-    return text ? JSON.parse(text) : {};
+    if (!text) return {};
+    try {
+        return JSON.parse(text);
+    } catch {
+        return text;
+    }
 };

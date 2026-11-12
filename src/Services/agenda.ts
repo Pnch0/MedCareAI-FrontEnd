@@ -54,6 +54,7 @@ export function guardarCitaLocal(cita: Cita): void {
         const filtradas = guardadas.filter(c => c.id !== cita.id);
         filtradas.push(cita);
         localStorage.setItem(LOCAL_CITAS_KEY, JSON.stringify(filtradas));
+        window.dispatchEvent(new CustomEvent('medcare_cita_guardada', { detail: cita }));
     } catch (e) {
         console.warn('Error al guardar cita localmente:', e);
     }
