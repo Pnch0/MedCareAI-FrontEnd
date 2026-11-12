@@ -110,11 +110,18 @@ function AsignarHorariosRecepcionista() {
                         </thead>
                         <tbody>
                             {cargando ? (
-                                <tr>
-                                    <td colSpan={6} className="AsignarHorarios-NoResults">
-                                        Cargando pacientes desde el sistema...
-                                    </td>
-                                </tr>
+                                <>
+                                    {[1, 2, 3, 4, 5].map((row) => (
+                                        <tr key={`skel-row-${row}`} className="AsignarHorarios-SkeletonRow">
+                                            <td><div className="Skeleton-Tabla Skeleton-Rut"></div></td>
+                                            <td><div className="Skeleton-Tabla Skeleton-Nombre"></div></td>
+                                            <td><div className="Skeleton-Tabla Skeleton-Apellido"></div></td>
+                                            <td><div className="Skeleton-Tabla Skeleton-Email"></div></td>
+                                            <td><div className="Skeleton-Tabla Skeleton-Telefono"></div></td>
+                                            <td><div className="Skeleton-Tabla Skeleton-BotonAccion"></div></td>
+                                        </tr>
+                                    ))}
+                                </>
                             ) : pacientesFiltrados.length > 0 ? (
                                 pacientesFiltrados.map((paciente) => (
                                     <tr key={paciente.id}>

@@ -126,3 +126,64 @@
     color: #777;
     padding: 2rem !important;
 }
+
+/* ========================================================
+   SKELETON SHIMMER - ASIGNAR HORARIOS TABLA
+   ======================================================== */
+@keyframes skeleton-shimmer-tabla {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.AsignarHorarios-SkeletonRow {
+    pointer-events: none;
+    user-select: none;
+}
+
+.Skeleton-Tabla {
+    background: linear-gradient(
+        90deg,
+        #E2E8F0 0%,
+        #F1F5F9 50%,
+        #E2E8F0 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer-tabla 1.6s ease-in-out infinite;
+    border-radius: 6px;
+    margin: 0 auto;
+}
+
+.Skeleton-Rut {
+    width: 90px;
+    height: 16px;
+}
+
+.Skeleton-Nombre {
+    width: 80px;
+    height: 16px;
+}
+
+.Skeleton-Apellido {
+    width: 90px;
+    height: 16px;
+}
+
+.Skeleton-Email {
+    width: 140px;
+    height: 16px;
+}
+
+.Skeleton-Telefono {
+    width: 100px;
+    height: 16px;
+}
+
+.Skeleton-BotonAccion {
+    width: 100px;
+    height: 32px;
+    border-radius: 5px;
+}

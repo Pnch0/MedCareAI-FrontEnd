@@ -112,9 +112,20 @@ function HomePageRecepcionista() {
                     </div>
                     <div className="ListadoCitas-HomePageRecepcionista">
                         {cargando ? (
-                            <div className="ListadoCitas-EstadoMensaje">
-                                <p>Cargando citas del día...</p>
-                            </div>
+                            <>
+                                {[1, 2, 3, 4].map((item) => (
+                                    <div className="Card-ListadoCitas Card-ListadoCitas-Skeleton" key={`skeleton-${item}`}>
+                                        <div className="CardIzquierda-ListadoCitas">
+                                            <div className="Skeleton-Elemento Skeleton-Titulo"></div>
+                                            <div className="Skeleton-Elemento Skeleton-Subtitulo"></div>
+                                        </div>
+                                        <div className="CardDerecha-ListadoCitas">
+                                            <div className="Skeleton-Elemento Skeleton-Boton"></div>
+                                            <div className="Skeleton-Elemento Skeleton-Boton"></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </>
                         ) : citas.length === 0 ? (
                             <div className="ListadoCitas-EstadoMensaje">
                                 <div className="EstadoVacio-Icono">

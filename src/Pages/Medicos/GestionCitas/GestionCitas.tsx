@@ -211,8 +211,15 @@ function GestionCitasMedico(){
             </div>
             <div className="ContenedorListado-GestionCitas">
                 {cargando ? (
-                    <div className="ContenedorVacio-GestionCitas">
-                        <p className="ListadoVacio-GestionCitas">Cargando citas del día...</p>
+                    <div className="Tarjetas-GestionCitas">
+                        {[1, 2, 3, 4, 5, 6].map((item) => (
+                            <div key={`skel-${item}`} className="Tarjeta-GestionCitas Tarjeta-GestionCitas-Skeleton">
+                                <div className="Skeleton-Elemento-Gestion Skeleton-Nombre-Gestion"></div>
+                                <div className="Skeleton-Elemento-Gestion Skeleton-Edad-Gestion"></div>
+                                <div className="Skeleton-Elemento-Gestion Skeleton-Hora-Gestion"></div>
+                                <div className="Skeleton-Elemento-Gestion Skeleton-Boton-Gestion"></div>
+                            </div>
+                        ))}
                     </div>
                 ) : citasOrdenadas.length === 0 ? (
                     <div className="ContenedorVacio-GestionCitas">

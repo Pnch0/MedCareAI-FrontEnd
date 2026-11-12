@@ -296,9 +296,23 @@ function HomePageMedico(){
                         </div>
                         <div className="Contenedor-ListadoAgenda">
                             {cargando ? (
-                                <div className="Agenda-Vacia">
-                                    <p>Cargando citas del día...</p>
-                                </div>
+                                <>
+                                    {[1, 2, 3, 4].map((item) => (
+                                        <div key={`agenda-skel-${item}`} className="Card-ListadoAgenda Card-ListadoAgenda-Skeleton">
+                                            <div className="Card-ListadoAgenda-Izquierda">
+                                                <div className="Card-PacienteHeader">
+                                                    <div className="Skeleton-Elemento-Medico Skeleton-Agenda-Nombre"></div>
+                                                    <div className="Skeleton-Elemento-Medico Skeleton-Agenda-Box"></div>
+                                                </div>
+                                                <div className="Skeleton-Elemento-Medico Skeleton-Agenda-Motivo"></div>
+                                            </div>
+                                            <div className="Card-ListadoAgenda-Derecha">
+                                                <div className="Skeleton-Elemento-Medico Skeleton-Agenda-Hora"></div>
+                                                <div className="Skeleton-Elemento-Medico Skeleton-Agenda-Estado"></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </>
                             ) : citasDelDia.length === 0 ? (
                                 <div className="Agenda-Vacia">
                                     <p>No tienes citas programadas para el día de hoy.</p>
@@ -332,7 +346,19 @@ function HomePageMedico(){
                         <div className="Titulo-ResumenClinico">
                             <h3>Resumen Clinico</h3>
                         </div>
-                        {resumenCercano ? (
+                        {cargando ? (
+                            <div className="ContenedorListado-ResumenClinico Card-ListadoAgenda-Skeleton">
+                                <div className="ResumenClinico-Header">
+                                    <div className="Skeleton-Elemento-Medico Skeleton-Resumen-Nombre"></div>
+                                    <div className="Skeleton-Elemento-Medico Skeleton-Resumen-Badge"></div>
+                                </div>
+                                <div className="Skeleton-Elemento-Medico Skeleton-Resumen-Subtitulo"></div>
+                                <div className="ContenedorDiagnostico-ResumenClinico" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <div className="Skeleton-Elemento-Medico Skeleton-Resumen-DiagTitulo"></div>
+                                    <div className="Skeleton-Elemento-Medico Skeleton-Resumen-DiagTexto"></div>
+                                </div>
+                            </div>
+                        ) : resumenCercano ? (
                             <div className="ContenedorListado-ResumenClinico">
                                 <div className="ResumenClinico-Header">
                                     <h3>{resumenCercano.nombre}</h3>
@@ -349,7 +375,7 @@ function HomePageMedico(){
                         ) : (
                             <div className="ContenedorListado-ResumenClinico Vacio">
                                 <p className="TextoVacio">
-                                    {cargando ? "Cargando información clínica..." : "No hay citas programadas para el día de hoy."}
+                                    No hay citas programadas para el día de hoy.
                                 </p>
                             </div>
                         )}
@@ -358,7 +384,22 @@ function HomePageMedico(){
                         <div className="Titulo-ControlCita">
                             <h3>Control Gestion de Cita</h3>
                         </div>
-                        {citaControlActiva ? (
+                        {cargando ? (
+                            <div className="ContenedorListado-ControlCita Card-ListadoAgenda-Skeleton">
+                                <div className="ControlCita-Header">
+                                    <div className="Skeleton-Elemento-Medico Skeleton-Control-Nombre"></div>
+                                    <div className="Skeleton-Elemento-Medico Skeleton-Control-Box"></div>
+                                </div>
+                                <div className="ControlCita-InfoRow">
+                                    <div className="Skeleton-Elemento-Medico Skeleton-Control-Hora"></div>
+                                    <div className="Skeleton-Elemento-Medico Skeleton-Control-Motivo"></div>
+                                </div>
+                                <div className="ControlCita-AccionRow">
+                                    <div className="Skeleton-Elemento-Medico Skeleton-Control-Estado"></div>
+                                    <div className="Skeleton-Elemento-Medico Skeleton-Control-Boton"></div>
+                                </div>
+                            </div>
+                        ) : citaControlActiva ? (
                             <div className="ContenedorListado-ControlCita">
                                 <div className="ControlCita-Header">
                                     <h3>{citaControlActiva.paciente}</h3>
@@ -401,7 +442,7 @@ function HomePageMedico(){
                         ) : (
                             <div className="ContenedorListado-ControlCita Vacio">
                                 <p className="TextoVacio">
-                                    {cargando ? "Cargando control de citas..." : "No hay citas pendientes por gestionar hoy."}
+                                    No hay citas pendientes por gestionar hoy.
                                 </p>
                             </div>
                         )}

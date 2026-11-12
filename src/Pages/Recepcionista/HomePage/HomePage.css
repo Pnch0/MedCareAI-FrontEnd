@@ -150,6 +150,52 @@ body{
     border-bottom: 1px solid #E1EAEF;
 }
 
+/* ========================================================
+   SKELETON SHIMMER (ESTADO DE CARGA ELEGANTE)
+   ======================================================== */
+@keyframes skeleton-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.Card-ListadoCitas-Skeleton {
+    pointer-events: none;
+    user-select: none;
+}
+
+.Skeleton-Elemento {
+    background: linear-gradient(
+        90deg,
+        #E2E8F0 0%,
+        #F1F5F9 50%,
+        #E2E8F0 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+    border-radius: 6px;
+}
+
+.Skeleton-Titulo {
+    width: 170px;
+    height: 18px;
+    margin-bottom: 6px;
+}
+
+.Skeleton-Subtitulo {
+    width: 230px;
+    height: 13px;
+}
+
+.Skeleton-Boton {
+    width: 85px;
+    height: 38px;
+    border-radius: 8px;
+}
+
 .CardIzquierda-ListadoCitas{
     width: 50%;
     height: 100%;

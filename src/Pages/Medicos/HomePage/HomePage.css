@@ -478,3 +478,128 @@
     text-align: center;
     margin: 0;
 }
+
+/* ========================================================
+   SKELETON SHIMMER - HOME MEDICO
+   ======================================================== */
+@keyframes skeleton-shimmer-medico {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.Card-ListadoAgenda-Skeleton {
+    pointer-events: none;
+    user-select: none;
+}
+
+.Skeleton-Elemento-Medico {
+    background: linear-gradient(
+        90deg,
+        #E2E8F0 0%,
+        #F1F5F9 50%,
+        #E2E8F0 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer-medico 1.6s ease-in-out infinite;
+    border-radius: 6px;
+}
+
+/* Agenda Skeletons */
+.Skeleton-Agenda-Nombre {
+    width: 160px;
+    height: 18px;
+}
+
+.Skeleton-Agenda-Box {
+    width: 60px;
+    height: 20px;
+    border-radius: 6px;
+}
+
+.Skeleton-Agenda-Motivo {
+    width: 260px;
+    height: 14px;
+    margin-top: 8px;
+}
+
+.Skeleton-Agenda-Hora {
+    width: 90px;
+    height: 22px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+
+.Skeleton-Agenda-Estado {
+    width: 80px;
+    height: 22px;
+    border-radius: 6px;
+}
+
+/* Resumen Clínico Skeleton */
+.Skeleton-Resumen-Nombre {
+    width: 150px;
+    height: 20px;
+}
+
+.Skeleton-Resumen-Badge {
+    width: 110px;
+    height: 20px;
+    border-radius: 6px;
+}
+
+.Skeleton-Resumen-Subtitulo {
+    width: 200px;
+    height: 14px;
+    margin: 8px 0;
+}
+
+.Skeleton-Resumen-DiagTitulo {
+    width: 140px;
+    height: 14px;
+    margin-bottom: 4px;
+}
+
+.Skeleton-Resumen-DiagTexto {
+    width: 100%;
+    height: 48px;
+    border-radius: 6px;
+}
+
+/* Control Cita Skeleton */
+.Skeleton-Control-Nombre {
+    width: 150px;
+    height: 20px;
+}
+
+.Skeleton-Control-Box {
+    width: 60px;
+    height: 20px;
+    border-radius: 6px;
+}
+
+.Skeleton-Control-Hora {
+    width: 120px;
+    height: 14px;
+    margin-bottom: 6px;
+}
+
+.Skeleton-Control-Motivo {
+    width: 220px;
+    height: 14px;
+}
+
+.Skeleton-Control-Estado {
+    width: 90px;
+    height: 22px;
+    border-radius: 6px;
+}
+
+.Skeleton-Control-Boton {
+    width: 110px;
+    height: 38px;
+    border-radius: 8px;
+}
