@@ -15,7 +15,12 @@ import {
     type BloqueHorario,
     type SlotHorario
 } from '../../Services/horarios.ts';
-import { limpiarCitasLocales, formatearFechaISO } from '../../Services/agenda.ts';
+import { 
+    guardarCitaLocal, 
+    formatearFechaISO, 
+    obtenerIndiceDia, 
+    type Cita 
+} from '../../Services/agenda.ts';
 
 interface ReservaModalProps {
     isOpen: boolean;
@@ -415,8 +420,33 @@ export const ModalReserva: React.FC<ReservaModalProps> = ({
 
             console.log('Respuesta del backend Render al crear cita:', resBackend);
 
-            // Al confirmarse la cita exitosamente en el servidor, limpiar citas locales huérfanas
-            limpiarCitasLocales();
+            const idReal = typeof resBackend === 'string'
+                ? resBackend
+                : (resBackend?.appointmentId || resBackend?.id);
+
+            const nlpResumen = typeof resBackend === 'object' && (resBackend?.nlpSummary || resBackend?.summary)
+                ? (resBackend.nlpSummary || resBackend.summary)
+                : null;
+
+            const fechaFormateada = selectedDay ? formatearFechaISO(selectedDay) : formatearFechaISO(new Date());
+
+            const nuevaCita: Cita = {
+                id: String(idReal || resolvedBlockId),
+                dia: selectedDay ? obtenerIndiceDia(selectedDay) : 0,
+                hora: selectedTime || '10:00 - 11:00',
+                paciente: resolvedPatientNombre,
+                motivo: nlpResumen || sintomas.trim(),
+                nlpSummary: nlpResumen,
+                symptomsRaw: sintomas.trim(),
+                box: 1,
+                fecha: fechaFormateada,
+                disponibilidad: 'ocupado',
+                citaId: String(idReal || resolvedBlockId),
+                medicoId: medicoSeleccionado?.id ? String(medicoSeleccionado.id) : undefined,
+                patientId: resolvedPatientId
+            };
+
+            guardarCitaLocal(nuevaCita);
 
             toast.success('¡Cita reservada y guardada en el servidor exitosamente!');
             cerrarModal();

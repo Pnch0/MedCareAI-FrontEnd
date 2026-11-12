@@ -1,9 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import "./ResumenPage.css";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaBrain } from "react-icons/fa";
 import { toast } from "sonner";
 import { supabase } from "../../../Services/supabaseClient.ts";
-import { obtenerCitasLocales, type Cita } from "../../../Services/agenda.ts";
+import { 
+    obtenerAgendaDiariaMedico,
+    obtenerCitasLocales,
+    MEDICO_DEFAULT_ID,
+    type Cita 
+} from "../../../Services/agenda.ts";
 
 export type Paciente = {
     id: string | number;
@@ -13,6 +18,8 @@ export type Paciente = {
     diagnostico: string;
     resumen: string;
     diagnosticoCompleto: string;
+    resumenSintomasIA?: string | null;
+    sintomasOriginales?: string | null;
     tieneAtencion: boolean;
     tieneCita: boolean;
 };
@@ -61,8 +68,39 @@ function ResumenPageMedico(){
                 console.warn('Error al consultar tabla pacientes:', error.message);
             }
 
-            // 2. Obtener citas activas de la agenda
+            // 2. Obtener citas activas de la agenda médica (backend + local)
+            const staffId = localStorage.getItem('staffId') || localStorage.getItem('medicoId') || MEDICO_DEFAULT_ID;
+            let citasBackend: Cita[] = [];
+            try {
+                // Consultar agenda del médico (semana actual y próximos días)
+                const hoy = new Date();
+                const promesasAgenda = [];
+                for (let i = -1; i <= 7; i++) {
+                    const d = new Date(hoy);
+                    d.setDate(hoy.getDate() + i);
+                    promesasAgenda.push(obtenerAgendaDiariaMedico(staffId, d));
+                }
+                const resAgenda = await Promise.allSettled(promesasAgenda);
+                for (const r of resAgenda) {
+                    if (r.status === 'fulfilled' && Array.isArray(r.value)) {
+                        citasBackend.push(...r.value);
+                    }
+                }
+            } catch {
+                // Fallback silencioso
+            }
             const citasLocales = obtenerCitasLocales();
+
+            const mapaCitas = new Map<string, Cita>();
+            for (const c of citasBackend) {
+                mapaCitas.set(c.id, c);
+            }
+            for (const c of citasLocales) {
+                if (!mapaCitas.has(c.id)) {
+                    mapaCitas.set(c.id, c);
+                }
+            }
+            const todasLasCitas = Array.from(mapaCitas.values());
 
             // 3. Obtener fichas clínicas guardadas localmente
             let fichasGuardadas: Record<string, any> = {};
@@ -87,19 +125,30 @@ function ResumenPageMedico(){
                     // Buscar si tiene una ficha clínica registrada
                     const fichaGuardada = fichasGuardadas[idStr] || fichasGuardadas[nomNorm];
 
-                    // Buscar cita médica activa correspondiente
-                    const citaCoincidente = citasLocales.find((c: Cita) => {
+                    // Buscar cita médica activa correspondiente (con nlpSummary de IA)
+                    const citaCoincidente = todasLasCitas.find((c: Cita) => {
                         const cNom = normalizarTexto(c.paciente || '');
                         const pNomSolo = normalizarTexto(p.nombre || '');
-                        return cNom.includes(nomNorm) || nomNorm.includes(cNom) || (pNomSolo.length > 3 && cNom.includes(pNomSolo));
+                        const pApeSolo = normalizarTexto(p.apellido || '');
+                        const coincideId = c.patientId && (
+                            String(c.patientId) === String(p.id) || 
+                            String(c.patientId) === String(p.usuario_id)
+                        );
+                        return coincideId ||
+                               cNom.includes(nomNorm) || 
+                               nomNorm.includes(cNom) || 
+                               (pNomSolo.length > 2 && cNom.includes(pNomSolo)) ||
+                               (pApeSolo.length > 2 && cNom.includes(pApeSolo));
                     });
 
                     const edad = calcularEdad(p.fecha_nacimiento);
+                    const resumenIA = citaCoincidente?.nlpSummary || null;
+                    const sintomasRaw = citaCoincidente?.symptomsRaw || citaCoincidente?.motivo || null;
 
                     if (fichaGuardada) {
                         const resumenCorto = fichaGuardada.resumen
                             ? (fichaGuardada.resumen.length > 55 ? `${fichaGuardada.resumen.slice(0, 55).trim()}...` : fichaGuardada.resumen)
-                            : 'Ficha clínica actualizada.';
+                            : (resumenIA || 'Ficha clínica actualizada.');
 
                         listaPacientes.push({
                             id: p.id,
@@ -109,12 +158,16 @@ function ResumenPageMedico(){
                             diagnostico: fichaGuardada.diagnostico || 'Atención Realizada',
                             resumen: resumenCorto,
                             diagnosticoCompleto: fichaGuardada.diagnosticoCompleto || 'Evolución y diagnóstico registrados en ficha.',
+                            resumenSintomasIA: resumenIA,
+                            sintomasOriginales: sintomasRaw,
                             tieneAtencion: true,
                             tieneCita: !!citaCoincidente
                         });
                     } else if (citaCoincidente) {
                         const motivo = citaCoincidente.motivo || 'Consulta médica general';
-                        const sintomasCortos = motivo.length > 55 ? `${motivo.slice(0, 55).trim()}...` : motivo;
+                        const sintomasCortos = resumenIA || (motivo.length > 55 ? `${motivo.slice(0, 55).trim()}...` : motivo);
+                        const detalleIA = resumenIA ? `• Resumen Clínico Inteligente (IA): "${resumenIA}"\n` : '';
+                        const detalleSintomas = sintomasRaw ? `• Síntomas Reportados por Paciente: "${sintomasRaw}"\n` : `• Motivo de Consulta: "${motivo}"\n`;
 
                         listaPacientes.push({
                             id: p.id,
@@ -122,12 +175,15 @@ function ResumenPageMedico(){
                             edad,
                             rut: p.rut,
                             diagnostico: 'Pendiente de atención',
-                            resumen: `Síntomas: ${sintomasCortos}`,
+                            resumen: resumenIA ? `Resumen IA: ${sintomasCortos}` : `Síntomas: ${sintomasCortos}`,
                             diagnosticoCompleto: `Paciente agendado para consulta médica en MedCareAI.\n\n` +
                                 `• Cita Programada: ${citaCoincidente.fecha || 'Fecha programada'} a las ${citaCoincidente.hora || ''} (Box ${citaCoincidente.box || 1})\n` +
-                                `• Motivo / Síntomas completos: "${motivo}"\n\n` +
-                                `Estado de Atención: En espera de primera evaluación clínica.\n` +
+                                detalleIA +
+                                detalleSintomas +
+                                `\nEstado de Atención: En espera de primera evaluación clínica.\n` +
                                 `El paciente aún no cuenta con diagnósticos médicos previos finalizados en el sistema. Presione "Registrar Diagnóstico" para ingresar la evolución médica correspondiente.`,
+                            resumenSintomasIA: resumenIA,
+                            sintomasOriginales: sintomasRaw,
                             tieneAtencion: false,
                             tieneCita: true
                         });
@@ -144,6 +200,8 @@ function ResumenPageMedico(){
                                 `• Teléfono: ${p.telefono || 'No informado'}\n` +
                                 `• Email: ${p.email || 'No informado'}\n\n` +
                                 `Estado de Ficha: Sin atenciones médicas previas registradas. Cuando el paciente asista a una consulta, se podrá registrar su evolución médica correspondiente.`,
+                            resumenSintomasIA: null,
+                            sintomasOriginales: null,
                             tieneAtencion: false,
                             tieneCita: false
                         });
@@ -151,8 +209,8 @@ function ResumenPageMedico(){
                 }
             }
 
-            // Procesar citas de pacientes locales que no estén en la base de datos
-            for (const c of citasLocales) {
+            // Procesar citas de pacientes (backend o locales) que no estén en la base de datos
+            for (const c of todasLasCitas) {
                 const cNom = normalizarTexto(c.paciente || '');
                 if (!cNom || nombresProcesados.has(cNom)) continue;
 
@@ -162,11 +220,13 @@ function ResumenPageMedico(){
                 nombresProcesados.add(cNom);
                 const idStr = String(c.id);
                 const fichaGuardada = fichasGuardadas[idStr] || fichasGuardadas[cNom];
+                const resumenIA = c.nlpSummary || null;
+                const sintomasRaw = c.symptomsRaw || c.motivo || null;
 
                 if (fichaGuardada) {
                     const resumenCorto = fichaGuardada.resumen
                         ? (fichaGuardada.resumen.length > 55 ? `${fichaGuardada.resumen.slice(0, 55).trim()}...` : fichaGuardada.resumen)
-                        : 'Ficha clínica actualizada.';
+                        : (resumenIA || 'Ficha clínica actualizada.');
                     listaPacientes.push({
                         id: c.id,
                         nombre: c.paciente,
@@ -174,24 +234,31 @@ function ResumenPageMedico(){
                         diagnostico: fichaGuardada.diagnostico || 'Atención Realizada',
                         resumen: resumenCorto,
                         diagnosticoCompleto: fichaGuardada.diagnosticoCompleto,
+                        resumenSintomasIA: resumenIA,
+                        sintomasOriginales: sintomasRaw,
                         tieneAtencion: true,
                         tieneCita: true
                     });
                 } else {
                     const motivo = c.motivo || 'Consulta médica general';
-                    const sintomasCortos = motivo.length > 55 ? `${motivo.slice(0, 55).trim()}...` : motivo;
+                    const sintomasCortos = resumenIA || (motivo.length > 55 ? `${motivo.slice(0, 55).trim()}...` : motivo);
+                    const detalleIA = resumenIA ? `• Resumen Clínico Inteligente (IA): "${resumenIA}"\n` : '';
+                    const detalleSintomas = sintomasRaw ? `• Síntomas Reportados por Paciente: "${sintomasRaw}"\n` : `• Motivo de Consulta: "${motivo}"\n`;
 
                     listaPacientes.push({
                         id: c.id,
                         nombre: c.paciente,
                         edad: 28,
                         diagnostico: 'Pendiente de atención',
-                        resumen: `Síntomas: ${sintomasCortos}`,
+                        resumen: resumenIA ? `Resumen IA: ${sintomasCortos}` : `Síntomas: ${sintomasCortos}`,
                         diagnosticoCompleto: `Paciente agendado para consulta médica en MedCareAI.\n\n` +
                             `• Cita Programada: ${c.fecha || 'Fecha programada'} a las ${c.hora || ''} (Box ${c.box || 1})\n` +
-                            `• Motivo / Síntomas completos: "${motivo}"\n\n` +
-                            `Estado de Atención: En espera de primera evaluación clínica.\n` +
+                            detalleIA +
+                            detalleSintomas +
+                            `\nEstado de Atención: En espera de primera evaluación clínica.\n` +
                             `El paciente aún no cuenta con diagnósticos médicos previos finalizados en el sistema. Presione "Registrar Diagnóstico" para ingresar la evolución médica correspondiente.`,
+                        resumenSintomasIA: resumenIA,
+                        sintomasOriginales: sintomasRaw,
                         tieneAtencion: false,
                         tieneCita: true
                     });
@@ -338,9 +405,20 @@ function ResumenPageMedico(){
             <div className="ContenedorInferior-ResumenMedico">
                 <div className="Contenedor-ListadoResumen">
                     {cargando ? (
-                        <div className="Listado-Resumen-Vacio">
-                            <p>Cargando información de pacientes...</p>
-                        </div>
+                        <>
+                            {[1, 2, 3, 4, 5, 6].map((item) => (
+                                <div className="Tarjeta-Resumen Tarjeta-Resumen-Skeleton" key={`resumen-skel-${item}`}>
+                                    <div className="Skeleton-Elemento-Resumen Skeleton-Nombre-Resumen"></div>
+                                    <div className="Skeleton-Elemento-Resumen Skeleton-Edad-Resumen"></div>
+                                    <div className="Contenedor-InformacionPaciente Skeleton-InfoBox-Resumen">
+                                        <div className="Skeleton-Elemento-Resumen Skeleton-Badge-Mini"></div>
+                                        <div className="Skeleton-Elemento-Resumen Skeleton-Texto-Resumen"></div>
+                                        <div className="Skeleton-Elemento-Resumen Skeleton-Texto-Resumen-Corto"></div>
+                                    </div>
+                                    <div className="Skeleton-Elemento-Resumen Skeleton-Boton-Resumen"></div>
+                                </div>
+                            ))}
+                        </>
                     ) : pacientesFiltrados.length === 0 ? (
                         <div className="Listado-Resumen-Vacio">
                             <p>No se encontraron pacientes que coincidan con la búsqueda o filtro.</p>
@@ -351,7 +429,14 @@ function ResumenPageMedico(){
                                 <h3>{paciente.nombre}</h3>
                                 <p className="Edad-Paciente">Edad: {paciente.edad} años</p>
                                 <div className="Contenedor-InformacionPaciente">
-                                    <span className="Diagnostico">{paciente.diagnostico}</span>
+                                    <div className="Header-DiagnosticoRow">
+                                        <span className="Diagnostico">{paciente.diagnostico}</span>
+                                        {paciente.resumenSintomasIA && (
+                                            <span className="Badge-ResumenIA" title="Resumen procesado por IA">
+                                                ✨ Resumen IA
+                                            </span>
+                                        )}
+                                    </div>
                                     <p>{paciente.resumen}</p>
                                 </div>
                                 <button className="Btn-VerMas" onClick={() => abrirModal(paciente)}>
@@ -377,6 +462,22 @@ function ResumenPageMedico(){
                         <p><strong>Edad:</strong> {pacienteSeleccionado.edad} años</p>
                         {pacienteSeleccionado.rut && <p><strong>RUT:</strong> {pacienteSeleccionado.rut}</p>}
                         
+                        {pacienteSeleccionado.resumenSintomasIA && (
+                            <div className="Caja-ResumenIA">
+                                <div className="Caja-ResumenIA-Header">
+                                    <FaBrain className="Icono-IA" />
+                                    <h4>Resumen de Síntomas Procesado por IA</h4>
+                                </div>
+                                <p className="Texto-ResumenIA">{pacienteSeleccionado.resumenSintomasIA}</p>
+                                {pacienteSeleccionado.sintomasOriginales && (
+                                    <div className="Caja-SintomasOriginales">
+                                        <span className="Label-SintomasOriginales">Descripción original reportada por el paciente:</span>
+                                        <p>"{pacienteSeleccionado.sintomasOriginales}"</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {!modoEdicion ? (
                             <>
                                 <p><strong>Diagnóstico Principal:</strong> {pacienteSeleccionado.diagnostico}</p>

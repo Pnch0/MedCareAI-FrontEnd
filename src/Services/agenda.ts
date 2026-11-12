@@ -15,6 +15,9 @@ export interface Cita {
     disponibilidad?: 'libre' | 'ocupado';
     citaId?: string | null;
     medicoId?: string;
+    nlpSummary?: string | null;
+    symptomsRaw?: string | null;
+    patientId?: string | null;
 }
 
 export interface SlotAgendaBackend {
@@ -347,8 +350,10 @@ export async function obtenerAgendaDiariaMedico(
                 // 4. Extraer Paciente
                 const pacienteNombre = slot.patientName || slot.pacienteNombre || slot.paciente || null;
 
-                // 5. Extraer Motivo de consulta / Síntomas
-                const motivo = slot.nlpSummary || slot.motivoConsulta || slot.reason || slot.motivo || 'Consulta médica agendada';
+                // 5. Extraer Motivo de consulta / Síntomas procesados por IA
+                const nlpSummary = slot.nlpSummary || slot.nlp_summary || slot.summary || null;
+                const symptomsRaw = slot.symptomsRaw || slot.symptoms_raw || slot.motivoConsulta || slot.reason || null;
+                const motivo = nlpSummary || symptomsRaw || slot.motivo || 'Consulta médica agendada';
 
                 // 6. Extraer Cita ID
                 const citaId = slot.appointmentId || slot.citaId || slot.id || slot.scheduleBlockId;
@@ -365,7 +370,10 @@ export async function obtenerAgendaDiariaMedico(
                         fecha: fechaStr,
                         disponibilidad: 'ocupado',
                         citaId: String(citaId),
-                        medicoId: slot.medicoId || medicoId
+                        medicoId: slot.medicoId || medicoId,
+                        nlpSummary,
+                        symptomsRaw,
+                        patientId: slot.patientId || slot.pacienteId || null
                     });
                 }
             }

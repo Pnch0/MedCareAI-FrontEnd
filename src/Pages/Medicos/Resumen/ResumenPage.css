@@ -168,6 +168,7 @@
     font-size: 0.9rem;
     line-height: 1.45;
     display: -webkit-box;
+    line-clamp: 3;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -209,7 +210,8 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(3px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -218,65 +220,104 @@
 
 .Modal-Caja {
     background-color: #ffffff;
-    width: 800px;
-    max-width: 90%;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 580px;
+    max-width: 90vw;
+    max-height: 80vh;
+    border-radius: 14px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    animation: modal-aparecer 0.2s ease-out;
+}
+
+@keyframes modal-aparecer {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .Modal-Cabecera {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 25px;
+    padding: 16px 24px;
     border-bottom: 1px solid #E1EAEF;
+    flex-shrink: 0;
 }
 
 .Modal-Cabecera h2 {
     margin: 0;
     color: #1E9CF1;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
+    font-weight: 700;
 }
 
 .Btn-CerrarModal {
     background: transparent;
     border: none;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     color: #9CA3AF;
     cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.Btn-CerrarModal:hover {
+    color: #4B5563;
 }
 
 .Modal-Cuerpo {
-    padding: 25px;
+    padding: 20px 24px;
     color: #4B5563;
-    font-size: 1rem;
+    font-size: 0.95rem;
+    overflow-y: auto;
+    flex: 1;
+    scrollbar-width: thin;
 }
 
-.Modal-Cuerpo p {
-    margin-bottom: 10px;
+.Modal-Cuerpo::-webkit-scrollbar {
+    width: 6px;
 }
 
-.Diagnostico-Completo-Caja {
-    background-color: #F7F8F8;
-    border-left: 4px solid #1E9CF1;
-    padding: 15px;
-    margin-top: 20px;
+.Modal-Cuerpo::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
     border-radius: 4px;
 }
 
+.Modal-Cuerpo p {
+    margin-bottom: 8px;
+    line-height: 1.45;
+}
+
+.Diagnostico-Completo-Caja {
+    background-color: #F8FAFC;
+    border-left: 4px solid #1E9CF1;
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-top: 14px;
+}
+
 .Diagnostico-Completo-Caja h4 {
-    margin: 0 0 10px 0;
+    margin: 0 0 6px 0;
     color: #1E9CF1;
+    font-size: 0.95rem;
 }
 
 .Modal-Pie {
-    padding: 15px 25px;
+    padding: 14px 24px;
     border-top: 1px solid #E1EAEF;
     display: flex;
     justify-content: flex-end;
     gap: 12px;
+    flex-shrink: 0;
+    background-color: #FAFAFA;
 }
 
 .Btn-Accion {
@@ -357,4 +398,158 @@
     padding: 60px 20px;
     color: #9CA3AF;
     font-size: 1.1rem;
+}
+
+/* ========================================================
+   BADGE Y CAJA DE RESUMEN DE SÍNTOMAS IA (NLP)
+   ======================================================== */
+.Header-DiagnosticoRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
+.Badge-ResumenIA {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #0284C7;
+    background-color: #E0F2FE;
+    border: 1px solid #BAE6FD;
+    padding: 2px 7px;
+    border-radius: 12px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.Caja-ResumenIA {
+    background-color: #F0F9FF;
+    border: 1px solid #BAE6FD;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 12px 0 16px 0;
+    box-sizing: border-box;
+}
+
+.Caja-ResumenIA-Header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #0369A1;
+    margin-bottom: 6px;
+}
+
+.Caja-ResumenIA-Header h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.Caja-ResumenIA-Header .Icono-IA {
+    font-size: 1.1rem;
+    color: #0284C7;
+}
+
+.Texto-ResumenIA {
+    margin: 0 0 10px 0 !important;
+    font-size: 0.92rem !important;
+    color: #1E293B !important;
+    line-height: 1.45;
+}
+
+.Caja-SintomasOriginales {
+    background-color: #FFFFFF;
+    border: 1px solid #E0F2FE;
+    border-radius: 6px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+}
+
+.Label-SintomasOriginales {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #64748B;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.Caja-SintomasOriginales p {
+    margin: 0 !important;
+    font-size: 0.85rem !important;
+    color: #475569 !important;
+    font-style: italic;
+    line-height: 1.4;
+}
+
+/* ========================================================
+   SKELETON SHIMMER - RESUMEN PAGE
+   ======================================================== */
+@keyframes skeleton-shimmer-resumen {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.Tarjeta-Resumen-Skeleton {
+    pointer-events: none;
+    user-select: none;
+}
+
+.Skeleton-Elemento-Resumen {
+    background: linear-gradient(
+        90deg,
+        #E2E8F0 0%,
+        #F1F5F9 50%,
+        #E2E8F0 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer-resumen 1.6s ease-in-out infinite;
+    border-radius: 6px;
+}
+
+.Skeleton-Nombre-Resumen {
+    width: 170px;
+    height: 22px;
+}
+
+.Skeleton-Edad-Resumen {
+    width: 90px;
+    height: 16px;
+}
+
+.Skeleton-InfoBox-Resumen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    background-color: #FFFFFF;
+}
+
+.Skeleton-Badge-Mini {
+    width: 100px;
+    height: 16px;
+    border-radius: 20px;
+}
+
+.Skeleton-Texto-Resumen {
+    width: 100%;
+    height: 14px;
+}
+
+.Skeleton-Texto-Resumen-Corto {
+    width: 70%;
+    height: 14px;
+}
+
+.Skeleton-Boton-Resumen {
+    margin-top: auto;
+    width: 100%;
+    height: 38px;
+    border-radius: 8px;
 }
