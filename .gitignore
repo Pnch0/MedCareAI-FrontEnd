@@ -25,3 +25,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# Antigravity (skills locales y configuraciones de agente)
+.antigravity/
