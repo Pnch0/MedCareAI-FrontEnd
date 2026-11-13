@@ -46,6 +46,35 @@ export function limpiarCitasLocales(): void {
 }
 
 /**
+ * Sanitiza el texto del resumen generado por IA eliminando identificadores
+ * técnicos internos (UUIDs de citas médicas: "Cita <guid>" o "— Cita <guid>").
+ *
+ * @param texto Cadena sin procesar proveniente del backend o servicio NLP
+ * @param soloSintomas Si es true, remueve también el prefijo "Ficha clínica preliminar — "
+ * @returns Cadena limpia y normalizada para presentación médica
+ */
+export function sanitizarResumenIA(texto: string | null | undefined, soloSintomas: boolean = false): string {
+    if (!texto) return '';
+
+    let limpio = texto
+        // Eliminar "— Cita <UUID>" o "- Cita <UUID>" o "Cita <UUID>"
+        .replace(/\s*(?:—|-)?\s*Cita\s+[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\s*(?:—|-)?\s*/gi, ' — ')
+        .replace(/\s*(?:—|-)?\s*Cita\s+[0-9a-fA-F-]{16,}\s*(?:—|-)?\s*/gi, ' — ');
+
+    if (soloSintomas) {
+        limpio = limpio.replace(/^Ficha clínica preliminar\s*(?:—|-)?\s*/i, '');
+    }
+
+    // Normalizar guiones duplicados, espacios y extremos
+    return limpio
+        .replace(/\s*—\s*—\s*/g, ' — ')
+        .replace(/\s+/g, ' ')
+        .replace(/^[\s—–-]+/, '')
+        .replace(/[\s—–-]+$/, '')
+        .trim();
+}
+
+/**
  * Guarda una cita en el almacenamiento local para pruebas y respaldo inmediato.
  */
 export function guardarCitaLocal(cita: Cita): void {
@@ -352,9 +381,32 @@ export async function obtenerAgendaDiariaMedico(
                 const pacienteNombre = slot.patientName || slot.pacienteNombre || slot.paciente || null;
 
                 // 5. Extraer Motivo de consulta / Síntomas procesados por IA
-                const nlpSummary = slot.nlpSummary || slot.nlp_summary || slot.summary || null;
-                const symptomsRaw = slot.symptomsRaw || slot.symptoms_raw || slot.motivoConsulta || slot.reason || null;
-                const motivo = nlpSummary || symptomsRaw || slot.motivo || 'Consulta médica agendada';
+                const rawNlpSummary: string | null = slot.nlpSummary || slot.nlp_summary || slot.summary || null;
+                const nlpSummary: string | null = rawNlpSummary ? sanitizarResumenIA(rawNlpSummary) : null;
+
+                // Extraer síntomas originales soportando múltiples claves del DTO
+                let symptomsRaw: string | null =
+                    slot.symptomsRaw ||
+                    slot.symptoms_raw ||
+                    slot.symptoms ||
+                    slot.sintomas ||
+                    slot.motivoConsulta ||
+                    slot.motivo_consulta ||
+                    slot.reason ||
+                    slot.motivo ||
+                    null;
+
+                // Si los síntomas originales coinciden con el resumen IA o tienen prefijo técnico, anularlos para evitar duplicidad
+                if (
+                    symptomsRaw &&
+                    (symptomsRaw === rawNlpSummary ||
+                        symptomsRaw === nlpSummary ||
+                        symptomsRaw.startsWith('Ficha clínica preliminar'))
+                ) {
+                    symptomsRaw = null;
+                }
+
+                const motivo: string = symptomsRaw || nlpSummary || 'Consulta médica agendada';
 
                 // 6. Extraer Cita ID
                 const citaId = slot.appointmentId || slot.citaId || slot.id || slot.scheduleBlockId;

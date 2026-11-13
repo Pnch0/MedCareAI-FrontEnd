@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import "./ResumenPage.css";
-import { FaSearch, FaBrain } from "react-icons/fa";
+import { FaSearch, FaBrain, FaClipboardList } from "react-icons/fa";
 import { toast } from "sonner";
 import { supabase } from "../../../Services/supabaseClient.ts";
 import { 
     obtenerAgendaDiariaMedico,
     limpiarCitasLocales,
+    sanitizarResumenIA,
     MEDICO_DEFAULT_ID,
     type Cita 
 } from "../../../Services/agenda.ts";
@@ -41,6 +42,64 @@ function calcularEdad(fechaNacimiento?: string): number {
 
 function normalizarTexto(texto: string): string {
     return (texto || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+}
+
+interface ResumenIAParseado {
+    subtitulo: string;
+    contador: number;
+    items: string[];
+}
+
+function parsearResumenIA(raw: string | null | undefined): ResumenIAParseado {
+    if (!raw) return { subtitulo: '', contador: 0, items: [] };
+
+    let texto = raw.trim();
+    let subtitulo = '';
+    if (/^Ficha clínica preliminar/i.test(texto)) {
+        subtitulo = 'Ficha clínica preliminar';
+        texto = texto.replace(/^Ficha clínica preliminar\s*(?:—|-)?\s*/i, '').trim();
+    }
+
+    let contador: number | null = null;
+    const matchCount = texto.match(/Síntomas\s*\((\d+)\)/i);
+    if (matchCount) {
+        contador = parseInt(matchCount[1], 10);
+    }
+
+    let cuerpo = texto;
+    const idxSintomas = texto.search(/Síntomas\s*(?:\(\d+\))?:/i);
+    if (idxSintomas !== -1) {
+        const colonIdx = texto.indexOf(':', idxSintomas);
+        cuerpo = texto.slice(colonIdx + 1).trim();
+    }
+
+    let items = cuerpo
+        .split(/(?:\r?\n|(?<=\s|^)[-•*]\s+)/g)
+        .map(s => {
+            const limpio = s.trim().replace(/^[-•*]\s*/, '').trim();
+            return limpio ? limpio.charAt(0).toUpperCase() + limpio.slice(1) : '';
+        })
+        .filter(s => s.length > 0 && !/^Ficha clínica preliminar/i.test(s));
+
+    if (items.length === 0 && cuerpo) {
+        const cuerpoLimpio = cuerpo.trim();
+        items = [cuerpoLimpio ? cuerpoLimpio.charAt(0).toUpperCase() + cuerpoLimpio.slice(1) : ''];
+    }
+
+    return { subtitulo, contador: contador ?? items.length, items };
+}
+
+function formatearEvolucionIA(resumenIA: string | null | undefined): string {
+    if (!resumenIA) return '';
+    const data = parsearResumenIA(resumenIA);
+    if (data.items.length === 0) return '';
+
+    const contadorStr = data.contador > 0
+        ? ` (${data.contador} ${data.contador === 1 ? 'síntoma detectado' : 'síntomas detectados'})`
+        : '';
+    const lineasSintomas = data.items.map(item => `   - ${item}`).join('\n');
+
+    return `• Evaluación de Triaje Clínico (IA)${contadorStr}:\n${lineasSintomas}\n`;
 }
 
 function ResumenPageMedico(){
@@ -135,8 +194,26 @@ function ResumenPageMedico(){
                     });
 
                     const edad = calcularEdad(p.fecha_nacimiento);
-                    const resumenIA = citaCoincidente?.nlpSummary || null;
-                    const sintomasRaw = citaCoincidente?.symptomsRaw || citaCoincidente?.motivo || null;
+                    const rawIA: string | null = citaCoincidente?.nlpSummary || null;
+                    const resumenIA: string | null = rawIA ? sanitizarResumenIA(rawIA) : null;
+
+                    let sintomasRaw: string | null = citaCoincidente?.symptomsRaw || null;
+                    if (
+                        !sintomasRaw &&
+                        citaCoincidente?.motivo &&
+                        citaCoincidente.motivo !== rawIA &&
+                        citaCoincidente.motivo !== resumenIA
+                    ) {
+                        sintomasRaw = citaCoincidente.motivo;
+                    }
+                    if (
+                        sintomasRaw &&
+                        (sintomasRaw.trim() === resumenIA?.trim() ||
+                            sintomasRaw.trim() === rawIA?.trim() ||
+                            sintomasRaw.startsWith('Ficha clínica preliminar'))
+                    ) {
+                        sintomasRaw = null;
+                    }
 
                     if (fichaGuardada) {
                         const resumenCorto = fichaGuardada.resumen
@@ -159,8 +236,10 @@ function ResumenPageMedico(){
                     } else if (citaCoincidente) {
                         const motivo = citaCoincidente.motivo || 'Consulta médica general';
                         const sintomasCortos = resumenIA || (motivo.length > 55 ? `${motivo.slice(0, 55).trim()}...` : motivo);
-                        const detalleIA = resumenIA ? `• Resumen Clínico Inteligente (IA): "${resumenIA}"\n` : '';
-                        const detalleSintomas = sintomasRaw ? `• Síntomas Reportados por Paciente: "${sintomasRaw}"\n` : `• Motivo de Consulta: "${motivo}"\n`;
+                        const detalleIA = resumenIA ? `\n${formatearEvolucionIA(resumenIA)}` : '';
+                        const detalleSintomas = (sintomasRaw && sintomasRaw.trim() !== resumenIA?.trim())
+                            ? `• Síntomas Reportados por Paciente: "${sintomasRaw}"\n`
+                            : (!resumenIA ? `• Motivo de Consulta: "${motivo}"\n` : '');
 
                         listaPacientes.push({
                             id: p.id,
@@ -399,20 +478,79 @@ function ResumenPageMedico(){
                         <p><strong>Edad:</strong> {pacienteSeleccionado.edad} años</p>
                         {pacienteSeleccionado.rut && <p><strong>RUT:</strong> {pacienteSeleccionado.rut}</p>}
                         
-                        {pacienteSeleccionado.resumenSintomasIA && (
-                            <div className="Caja-ResumenIA">
-                                <div className="Caja-ResumenIA-Header">
-                                    <FaBrain className="Icono-IA" />
-                                    <h4>Resumen de Síntomas Procesado por IA</h4>
-                                </div>
-                                <p className="Texto-ResumenIA">{pacienteSeleccionado.resumenSintomasIA}</p>
-                                {pacienteSeleccionado.sintomasOriginales && (
-                                    <div className="Caja-SintomasOriginales">
-                                        <span className="Label-SintomasOriginales">Descripción original reportada por el paciente:</span>
-                                        <p>"{pacienteSeleccionado.sintomasOriginales}"</p>
+                        {pacienteSeleccionado.resumenSintomasIA ? (() => {
+                            const dataIA = parsearResumenIA(pacienteSeleccionado.resumenSintomasIA);
+                            return (
+                                <section className="Caja-ResumenIA" aria-label="Resumen de síntomas procesado por inteligencia artificial">
+                                    <header className="Caja-ResumenIA-Header">
+                                        <div className="Header-Izquierda-IA">
+                                            <div className="Icono-Wrapper-IA" aria-hidden="true">
+                                                <FaBrain className="Icono-IA" />
+                                            </div>
+                                            <div>
+                                                <h4>Resumen de Síntomas Procesado por IA</h4>
+                                                {dataIA.subtitulo && (
+                                                    <span className="Subtitulo-IA">{dataIA.subtitulo}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="Header-Badges-IA">
+                                            <span className="Badge-TriajeIA">✨ Triaje IA</span>
+                                            {dataIA.contador > 0 && (
+                                                <span className="Badge-ContadorSintomas">
+                                                    {dataIA.contador} {dataIA.contador === 1 ? 'síntoma' : 'síntomas'}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </header>
+
+                                    <div className="Cuerpo-ResumenIA">
+                                        {dataIA.items.length > 1 ? (
+                                            <ul className="Lista-SintomasIA">
+                                                {dataIA.items.map((item, idx) => (
+                                                    <li key={idx} className="Item-SintomaIA">
+                                                        <span className="Bullet-Sintoma" aria-hidden="true" />
+                                                        <span className="Texto-Sintoma">{item}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="Texto-ResumenIA-Plano">
+                                                {dataIA.items[0] || pacienteSeleccionado.resumenSintomasIA}
+                                            </p>
+                                        )}
                                     </div>
-                                )}
-                            </div>
+
+                                    {pacienteSeleccionado.sintomasOriginales &&
+                                        pacienteSeleccionado.sintomasOriginales.trim() !== pacienteSeleccionado.resumenSintomasIA.trim() && (
+                                        <div className="Caja-SintomasOriginales">
+                                            <span className="Label-SintomasOriginales">Descripción original reportada por el paciente:</span>
+                                            <p className="Texto-SintomasOriginales">"{pacienteSeleccionado.sintomasOriginales}"</p>
+                                        </div>
+                                    )}
+                                </section>
+                            );
+                        })() : (
+                            (pacienteSeleccionado.sintomasOriginales || (pacienteSeleccionado.tieneCita && pacienteSeleccionado.resumen)) && (
+                                <section className="Caja-ResumenIA Caja-ResumenFallback" aria-label="Motivo de consulta y síntomas reportados">
+                                    <header className="Caja-ResumenIA-Header">
+                                        <div className="Header-Izquierda-IA">
+                                            <div className="Icono-Wrapper-IA Icono-Wrapper-Fallback" aria-hidden="true">
+                                                <FaClipboardList className="Icono-IA" />
+                                            </div>
+                                            <div>
+                                                <h4>Motivo de Consulta y Síntomas Reportados</h4>
+                                                <span className="Subtitulo-IA">Declaración directa del paciente</span>
+                                            </div>
+                                        </div>
+                                    </header>
+                                    <div className="Cuerpo-ResumenIA">
+                                        <p className="Texto-ResumenIA-Plano">
+                                            {pacienteSeleccionado.sintomasOriginales || pacienteSeleccionado.resumen.replace(/^Síntomas:\s*/i, '')}
+                                        </p>
+                                    </div>
+                                </section>
+                            )
                         )}
 
                         {!modoEdicion ? (

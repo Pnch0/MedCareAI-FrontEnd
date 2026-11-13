@@ -297,17 +297,26 @@
 }
 
 .Diagnostico-Completo-Caja {
-    background-color: #F8FAFC;
-    border-left: 4px solid #1E9CF1;
-    border-radius: 6px;
-    padding: 12px 14px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-left: 4px solid #0284C7;
+    border-radius: 10px;
+    padding: 14px 16px;
     margin-top: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .Diagnostico-Completo-Caja h4 {
-    margin: 0 0 6px 0;
-    color: #1E9CF1;
+    margin: 0 0 8px 0;
+    color: #0369A1;
     font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.Diagnostico-Completo-Caja p {
+    color: #334155;
+    font-size: 0.9rem;
+    line-height: 1.6;
 }
 
 .Modal-Pie {
@@ -426,62 +435,198 @@
 }
 
 .Caja-ResumenIA {
-    background-color: #F0F9FF;
+    background: linear-gradient(135deg, #F0F9FF 0%, #F8FAFC 100%);
     border: 1px solid #BAE6FD;
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin: 12px 0 16px 0;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 12px 0 18px 0;
     box-sizing: border-box;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.06);
+}
+
+.Caja-ResumenFallback {
+    background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
+    border-color: #CBD5E1;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
 }
 
 .Caja-ResumenIA-Header {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
     color: #0369A1;
-    margin-bottom: 6px;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #E0F2FE;
+}
+
+.Caja-ResumenFallback .Caja-ResumenIA-Header {
+    color: #334155;
+    border-bottom-color: #E2E8F0;
+}
+
+.Header-Izquierda-IA {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.Icono-Wrapper-IA {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background-color: #E0F2FE;
+    color: #0284C7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.Icono-Wrapper-Fallback {
+    background-color: #E2E8F0;
+    color: #475569;
+}
+
+.Caja-ResumenIA-Header .Icono-IA {
+    font-size: 1.05rem;
 }
 
 .Caja-ResumenIA-Header h4 {
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 0.96rem;
     font-weight: 700;
+    line-height: 1.25;
 }
 
-.Caja-ResumenIA-Header .Icono-IA {
-    font-size: 1.1rem;
-    color: #0284C7;
+.Subtitulo-IA {
+    display: block;
+    font-size: 0.78rem;
+    color: #64748B;
+    font-weight: 500;
+    margin-top: 2px;
 }
 
-.Texto-ResumenIA {
-    margin: 0 0 10px 0 !important;
+.Header-Badges-IA {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.Badge-TriajeIA {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #0369A1;
+    background-color: #E0F2FE;
+    border: 1px solid #BAE6FD;
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.Badge-ContadorSintomas {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #0F172A;
+    background-color: #FFFFFF;
+    border: 1px solid #CBD5E1;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.Cuerpo-ResumenIA {
+    margin: 0;
+}
+
+.Lista-SintomasIA {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.Item-SintomaIA {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    border-bottom: 1px dashed #E2E8F0;
+    transition: background-color 0.15s ease;
+}
+
+.Item-SintomaIA:last-child {
+    border-bottom: none;
+}
+
+.Item-SintomaIA:hover {
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+.Bullet-Sintoma {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: #0284C7;
+    margin-top: 7px;
+    flex-shrink: 0;
+}
+
+.Texto-Sintoma {
+    font-size: 0.9rem;
+    color: #1E293B;
+    line-height: 1.48;
+    word-break: break-word;
+}
+
+.Texto-Sintoma::first-letter {
+    text-transform: uppercase;
+}
+
+.Texto-ResumenIA-Plano {
+    margin: 0 !important;
     font-size: 0.92rem !important;
     color: #1E293B !important;
-    line-height: 1.45;
+    line-height: 1.5;
+}
+
+.Texto-ResumenIA-Plano::first-letter {
+    text-transform: uppercase;
 }
 
 .Caja-SintomasOriginales {
+    margin-top: 12px;
     background-color: #FFFFFF;
-    border: 1px solid #E0F2FE;
-    border-radius: 6px;
-    padding: 8px 12px;
+    border: 1px solid #E2E8F0;
+    border-left: 3px solid #0284C7;
+    border-radius: 8px;
+    padding: 10px 14px;
     box-sizing: border-box;
 }
 
 .Label-SintomasOriginales {
-    font-size: 0.78rem;
-    font-weight: 600;
+    font-size: 0.76rem;
+    font-weight: 700;
     color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
     display: block;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
 }
 
+.Texto-SintomasOriginales,
 .Caja-SintomasOriginales p {
     margin: 0 !important;
-    font-size: 0.85rem !important;
+    font-size: 0.88rem !important;
     color: #475569 !important;
     font-style: italic;
-    line-height: 1.4;
+    line-height: 1.45;
 }
 
 /* ========================================================
