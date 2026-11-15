@@ -7,10 +7,10 @@ import { FaUserCircle, FaChevronLeft, FaChevronRight, FaCalendarCheck } from "re
 import { Contador } from '../../Components/Contador/Contador.tsx'
 import { ModalReserva } from '../../Components/ModalReserva/ModalReserva.tsx';
 import medico from '../../Assets/medico.jpg';
-import CENTROMEDICO from '../../assets/CENTRO MEDICO.jfif';
-import SALADEESPERA from '../../assets/SALA DE ESPERA.jfif';
-import BOXATENCION from '../../assets/BOX ATENCION.jfif';
-import SALAESCANER from '../../assets/SALA ESCANER.jfif';
+import CENTROMEDICO from '../../assets/centro-medico.jfif';
+import SALADEESPERA from '../../assets/sala-de-espera.jfif';
+import BOXATENCION from '../../assets/box-atencion.jfif';
+import SALAESCANER from '../../assets/sala-escaner.jfif';
 
 const imagenesCarrusel = [
     { src: CENTROMEDICO, alt: "Centro Médico", label: "Centro Médico" },

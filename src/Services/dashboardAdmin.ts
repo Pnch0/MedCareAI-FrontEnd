@@ -550,6 +550,7 @@ export async function obtenerMetricasAusentismo(
         const respuesta: unknown = await apiClient('/api/Dashboard/metrics', {
             method: 'GET'
         });
+        console.log('[Dashboard] Datos recibidos de GET /api/Dashboard/metrics:', respuesta);
         const normalizado = normalizarDashboardAusentismo(respuesta);
         return {
             ...normalizado,
