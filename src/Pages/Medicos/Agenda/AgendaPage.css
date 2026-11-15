@@ -145,13 +145,19 @@
     border-radius: 15px;
     display: flex;
     flex-direction: row;
+    overflow: hidden;
 }
 
 .Citas-AgendaMedico, .Citas-AgendaMedico-1, .Citas-AgendaMedico-7{
-    width: 20%;
+    flex: 1;
+    min-width: 0;
     height: 80dvh;
     background-color: #F7F8F8;
-    border: 1px solid #E1EAEF;
+    border-right: 1px solid #E1EAEF;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .Citas-AgendaMedico-1{
@@ -160,34 +166,80 @@
 
 .Citas-AgendaMedico-7{
     border-radius: 0px 15px 15px 0px;
+    border-right: none;
 }
 
 .EncabezadoCitas-AgendaMedico{
     width: 100%;
     height: 12dvh;
+    min-height: 50px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #2F9BFF;
+    border-bottom: 1px solid #E1EAEF;
+    box-sizing: border-box;
+}
+
+.ListaCitasColumna-AgendaMedico{
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.ListaCitasColumna-AgendaMedico::-webkit-scrollbar{
+    width: 4px;
+}
+
+.ListaCitasColumna-AgendaMedico::-webkit-scrollbar-thumb{
+    background-color: #CBD5E1;
+    border-radius: 4px;
+}
+
+.ListaCitasColumna-AgendaMedico::-webkit-scrollbar-thumb:hover{
+    background-color: #94A3B8;
 }
 
 .Bloque-CitaMedica{
     width: 100%;
-    height: 60px;
+    min-height: 60px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
-    border-top: 1px solid #E1EAEF;
     border-bottom: 1px solid #E1EAEF;
+    padding: 6px 4px;
+    box-sizing: border-box;
+    transition: background-color 0.15s ease;
+}
+
+.Bloque-CitaMedica:hover{
+    background-color: #EDF6FF;
 }
 
 .Bloque-CitaMedica p{
-    color: #979797
+    margin: 0;
+    color: #979797;
+    font-size: 0.78rem;
+    font-weight: 500;
 }
 
 .Bloque-CitaMedica h4{
+    margin: 0;
     text-align: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #0F172A;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 92%;
 }
 
 /* DISEÑO CALENDARIOS */

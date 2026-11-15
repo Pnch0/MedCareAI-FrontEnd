@@ -169,17 +169,19 @@ function AgendaPageMedico(){
                                 <div className="EncabezadoCitas-AgendaMedico">
                                     <h1>{dia}</h1>
                                 </div>
-                                {citasDelDia.map((cita) => (
-                                    <div
-                                        key={cita.id}
-                                        className="Bloque-CitaMedica"
-                                        onClick={() => abrirModalCita(cita)}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        <p>{cita.hora}</p>
-                                        <h4>{cita.paciente}</h4>
-                                    </div>
-                                ))}
+                                <div className="ListaCitasColumna-AgendaMedico">
+                                    {citasDelDia.map((cita) => (
+                                        <div
+                                            key={cita.id}
+                                            className="Bloque-CitaMedica"
+                                            onClick={() => abrirModalCita(cita)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <p>{cita.hora}</p>
+                                            <h4>{cita.paciente}</h4>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         );
                     })}
