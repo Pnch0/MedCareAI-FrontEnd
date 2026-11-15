@@ -1,0 +1,605 @@
+.ContenedorPrincipal-DashboardAdmin {
+    width: 100%;
+    height: 100dvh;
+    overflow-y: auto;
+    padding: 24px 32px;
+    background-color: #F4F7FA;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #0F172A;
+}
+
+/* Header */
+.Header-DashboardAdmin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.Header-TitulosDashboard h1 {
+    margin: 0;
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+.Header-TitulosDashboard p {
+    margin: 4px 0 0 0;
+    font-size: 0.92rem;
+    color: #475569;
+}
+
+.Controles-DashboardAdmin {
+    display: flex;
+    gap: 8px;
+    background-color: #E2E8F0;
+    padding: 4px;
+    border-radius: 10px;
+}
+
+.Btn-Periodo {
+    border: none;
+    background: transparent;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.Btn-Periodo:hover {
+    color: #0F172A;
+}
+
+.Btn-Periodo.activo {
+    background-color: #FFFFFF;
+    color: #0284C7;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+/* Error State */
+.EstadoError-Dashboard {
+    background-color: #FEF2F2;
+    border: 1px solid #FECACA;
+    color: #991B1B;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.Icono-ErrorDash {
+    font-size: 2rem;
+    color: #DC2626;
+}
+
+.Btn-ReintentarDash {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #DC2626;
+    color: #FFFFFF;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Shimmer Skeletons */
+@keyframes shimmer-dash {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+}
+
+.Card-KPI-Skeleton {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #E2E8F0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.Skeleton-Line-Short,
+.Skeleton-Line-Big,
+.Skeleton-Line-Medium {
+    background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+    background-size: 800px 100%;
+    animation: shimmer-dash 1.4s infinite linear;
+    border-radius: 6px;
+}
+
+.Skeleton-Line-Short { height: 14px; width: 45%; }
+.Skeleton-Line-Big { height: 32px; width: 65%; }
+.Skeleton-Line-Medium { height: 14px; width: 80%; }
+
+/* Nivel 1: KPIs */
+.Grid-KPIs-Dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.Card-KPI {
+    background-color: #FFFFFF;
+    border-radius: 14px;
+    padding: 18px 20px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.Card-KPI:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+.KPI-Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.KPI-Titulo {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.KPI-Icono-Wrapper {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+}
+
+.KPI-Icono-Wrapper.verde { background-color: #ECFDF5; color: #059669; }
+.KPI-Icono-Wrapper.rojo { background-color: #FEF2F2; color: #DC2626; }
+.KPI-Icono-Wrapper.azul { background-color: #E0F2FE; color: #0284C7; }
+.KPI-Icono-Wrapper.ambar { background-color: #FFFBEB; color: #D97706; }
+
+.KPI-Valor {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1.2;
+}
+
+.KPI-Subtitulo {
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: #64748B;
+    font-weight: 500;
+}
+
+.KPI-Subtitulo.positivo { color: #047857; font-weight: 600; }
+.KPI-Subtitulo.mejora { color: #0284C7; font-weight: 600; }
+
+/* Nivel 2: Gráficos Principales */
+.Grid-Graficos-Principales {
+    display: grid;
+    grid-template-columns: 1.45fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.Panel-Grafico {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    box-sizing: border-box;
+}
+
+.Panel-Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.Panel-Header h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0F172A;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.Panel-Header p {
+    margin: 4px 0 0 0;
+    font-size: 0.82rem;
+    color: #64748B;
+}
+
+.Leyenda-Inline {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 0.78rem;
+    color: #475569;
+    font-weight: 600;
+}
+
+.Punto-Leyenda {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    margin-right: 4px;
+}
+
+.Punto-Leyenda.verde { background-color: #10B981; }
+.Punto-Leyenda.rojo { background-color: #EF4444; }
+.Punto-Leyenda.azul { background-color: #0284C7; }
+
+/* Tendencia Barras Apiladas */
+.Contenedor-Barras-Tendencia {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    height: 210px;
+    padding-top: 16px;
+    border-bottom: 1px solid #E2E8F0;
+    gap: 10px;
+}
+
+.Columna-Tendencia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.Barra-Apilada-Wrapper {
+    width: 34px;
+    height: 155px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: #F1F5F9;
+}
+
+.Segmento-Barra {
+    width: 100%;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+.Segmento-Barra:hover {
+    opacity: 0.85;
+}
+
+.Segmento-Barra.asistida { background-color: #10B981; }
+.Segmento-Barra.inasistencia { background-color: #EF4444; }
+.Segmento-Barra.cancelada { background-color: #0284C7; }
+
+.Label-Periodo-Barra {
+    margin-top: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #334155;
+}
+
+.Badge-Tasa-Mini {
+    font-size: 0.7rem;
+    color: #DC2626;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+/* Donut Chart */
+.Contenedor-Donut-Flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.Donut-SVG {
+    width: 175px;
+    height: 175px;
+    flex-shrink: 0;
+}
+
+.Donut-Segmento {
+    transition: stroke-width 0.2s ease, opacity 0.2s ease;
+    cursor: pointer;
+}
+
+.Donut-Texto-Centro-Valor {
+    font-size: 1.4rem;
+    font-weight: 800;
+    fill: #0F172A;
+}
+
+.Donut-Texto-Centro-Label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    fill: #64748B;
+}
+
+.Lista-Leyenda-Donut {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    min-width: 170px;
+}
+
+.Item-Leyenda-Donut {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.Item-Leyenda-Donut.resaltado,
+.Item-Leyenda-Donut:hover {
+    background-color: #F1F5F9;
+}
+
+.Color-Box-Donut {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.Estado-Nombre-Donut {
+    flex: 1;
+    color: #334155;
+    font-weight: 500;
+}
+
+.Estado-Pct-Donut {
+    color: #0F172A;
+}
+
+/* Nivel 3: Gráficos Secundarios */
+.Grid-Graficos-Secundarios {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.Lista-Barras-Horizontales {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.Fila-Barra-Info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+}
+
+.Nombre-Esp {
+    font-weight: 600;
+    color: #334155;
+}
+
+.Valor-Esp {
+    font-weight: 700;
+    color: #475569;
+}
+
+.Valor-Esp.critico {
+    color: #DC2626;
+}
+
+.Track-Barra {
+    width: 100%;
+    height: 9px;
+    background-color: #E2E8F0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.Fill-Barra {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+.Fill-Barra.azul { background-color: #0284C7; }
+.Fill-Barra.rojo { background-color: #EF4444; }
+.Fill-Barra.verde { background-color: #10B981; }
+.Fill-Barra.ambar { background-color: #F59E0B; }
+
+/* Efectividad OMRO */
+.Comparativa-OMRO {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.Metrica-OMRO-Label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    color: #334155;
+    font-weight: 600;
+}
+
+.texto-verde { color: #059669; }
+.texto-rojo { color: #DC2626; }
+
+.Resumen-OMRO-Stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    margin-top: 4px;
+}
+
+.Resumen-OMRO-Stats span {
+    display: block;
+    font-size: 0.75rem;
+    color: #64748B;
+}
+
+.Resumen-OMRO-Stats strong {
+    font-size: 1.05rem;
+    color: #0284C7;
+}
+
+/* Nivel 4: Tabla de Riesgo */
+.Panel-Tabla-Riesgo {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.Tabla-Responsive-Wrapper {
+    overflow-x: auto;
+}
+
+.Tabla-Riesgo {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.Tabla-Riesgo th {
+    text-align: left;
+    padding: 12px 14px;
+    background-color: #F8FAFC;
+    color: #475569;
+    font-weight: 700;
+    border-bottom: 2px solid #E2E8F0;
+    white-space: nowrap;
+}
+
+.Tabla-Riesgo td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #F1F5F9;
+    color: #1E293B;
+    vertical-align: middle;
+}
+
+.Tabla-Riesgo tr:hover td {
+    background-color: #F8FAFC;
+}
+
+.Celda-Paciente {
+    display: flex;
+    flex-direction: column;
+}
+
+.Celda-Paciente span {
+    font-size: 0.78rem;
+    color: #64748B;
+}
+
+.Celda-Factor {
+    max-width: 280px;
+    color: #475569;
+}
+
+.Badge-Riesgo {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.Badge-Riesgo.alto { background-color: #FEE2E2; color: #B91C1C; }
+.Badge-Riesgo.medio { background-color: #FEF3C7; color: #B45309; }
+.Badge-Riesgo.bajo { background-color: #D1FAE5; color: #047857; }
+
+.Badge-Aviso {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.Badge-Aviso.pendiente { background-color: #FFF7ED; color: #C2410C; border: 1px solid #FED7AA; }
+.Badge-Aviso.enviado { background-color: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD; }
+.Badge-Aviso.confirmado { background-color: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
+
+.Btn-Accion-OMRO {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #0284C7;
+    color: #FFFFFF;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.Btn-Accion-OMRO:hover {
+    background-color: #0369A1;
+}
+
+.Texto-Gestionado {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #059669;
+    font-weight: 600;
+    font-size: 0.82rem;
+}
+
+/* Responsividad */
+@media (max-width: 960px) {
+    .ContenedorPrincipal-DashboardAdmin {
+        padding: 16px;
+    }
+
+    .Grid-Graficos-Principales {
+        grid-template-columns: 1fr;
+    }
+}

@@ -19,6 +19,7 @@ import AsignarHorariosRecepcionista from './Pages/Recepcionista/AsginarHorarios/
 
 {/* IMPORTACION VISTA AMDINISTRADOR */}
 import HomePageAdministrador from './Pages/Administrador/HomePage/HomePage.tsx';
+import DashboardAdministrador from './Pages/Administrador/Dashboard/DashboardAdministrador.tsx';
 import GestionUsuariosAdministrador from './Pages/Administrador/GestionUsuarios/GestionUsuarios.tsx';
 import GestionBoxesAdminitrador from './Pages/Administrador/GestionBoxes/GestionBoxes.tsx';
 import GestionHorariosAdministrador from './Pages/Administrador/GestionHorarios/GestionHorarios.tsx';
@@ -65,6 +66,7 @@ function App() {
             {/* VISTAS ADMINISTRADOR */}
             <Route element={<RoleRoute role="administrador" />}>
               <Route path="/home-page-administrador" element={<HomePageAdministrador />} />
+              <Route path="/dashboard-administrador" element={<DashboardAdministrador />} />
               <Route path="/gestion-usuarios-page-administrador" element={<GestionUsuariosAdministrador />} />
               <Route path="/gestion-boxes-page-administrador" element={<GestionBoxesAdminitrador />} />
               <Route path="/gestion-horarios-page-administrador" element={<GestionHorariosAdministrador />} />

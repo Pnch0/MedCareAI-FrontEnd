@@ -1,9 +1,14 @@
 .Contenedor-NavbarPrincipal{
     width: 14%;
+    min-width: 200px;
     height: 100dvh;
     background-color: #1E9CF1;
     display: flex;
     flex-direction: column;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    flex-shrink: 0;
 }
 
 
