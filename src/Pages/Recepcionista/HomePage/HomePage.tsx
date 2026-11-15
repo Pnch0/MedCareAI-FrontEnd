@@ -1,20 +1,64 @@
 import { useState, useEffect, useMemo } from "react";
 import "./HomePage.css";
-import { FaClipboardList, FaCalendarTimes } from "react-icons/fa";
+import {
+    FaClipboardList,
+    FaCalendarTimes,
+    FaCheckCircle,
+    FaBell,
+    FaUserPlus,
+    FaExchangeAlt,
+    FaInfoCircle
+} from "react-icons/fa";
 import { toast } from "sonner";
 import RegisterPatientModal from "../../../Components/ModalRegistro/ModalRegistro";
+import { ModalDetalleOMRO } from "../../../Components/ModalDetalleOMRO/ModalDetalleOMRO.tsx";
 import {
     obtenerCitasDelDiaRecepcion,
     guardarAsistenciaCita,
     type CitaRecepcion,
     type EstadoAsistencia
 } from "../../../Services/agenda.ts";
+import {
+    obtenerConfiguracionAccion,
+    obtenerHistorialOMRO,
+    resolverTareaOMRO,
+    type ResolutionTask,
+    type TipoAccionOMRO
+} from "../../../Services/omroService.ts";
+
+function renderizarIconoAccionOMRO(tipo: TipoAccionOMRO) {
+    switch (tipo) {
+        case "Sobrecupo":
+            return <FaUserPlus className="Icono-OMRO" />;
+        case "Recordatorio":
+            return <FaBell className="Icono-OMRO" />;
+        case "Reasignacion":
+            return <FaExchangeAlt className="Icono-OMRO" />;
+        default:
+            return <FaClipboardList className="Icono-OMRO" />;
+    }
+}
+
+function traducirEstadoOMRO(status: string): string {
+    const lower = status.toLowerCase();
+    if (lower === "pending") return "Pendiente";
+    if (lower === "approved") return "Aprobada";
+    if (lower === "rejected") return "Rechazada";
+    if (lower === "executed") return "Ejecutada";
+    return status;
+}
 
 function HomePageRecepcionista() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [citas, setCitas] = useState<CitaRecepcion[]>([]);
     const [cargando, setCargando] = useState<boolean>(true);
     const nombreUsuario = localStorage.getItem('userName') || 'Recepcionista';
+
+    const [tareasOMRO, setTareasOMRO] = useState<ResolutionTask[]>([]);
+    const [cargandoOMRO, setCargandoOMRO] = useState<boolean>(true);
+    const [tareaSeleccionadaId, setTareaSeleccionadaId] = useState<string | null>(null);
+    const [procesandoOMRO, setProcesandoOMRO] = useState<boolean>(false);
+    const [tareaModalOMRO, setTareaModalOMRO] = useState<ResolutionTask | null>(null);
 
     const fechaHoyTexto = useMemo(() => {
         const hoy = new Date();
@@ -49,6 +93,64 @@ function HomePageRecepcionista() {
     useEffect(() => {
         cargarCitas();
     }, []);
+
+    useEffect(() => {
+        let montado = true;
+        const cargarOMRO = async (): Promise<void> => {
+            setCargandoOMRO(true);
+            try {
+                const tareas = await obtenerHistorialOMRO();
+                if (!montado) return;
+                setTareasOMRO(tareas);
+                const primeraPendiente = tareas.find((t) => t.status.toLowerCase() === "pending");
+                if (primeraPendiente) {
+                    setTareaSeleccionadaId(primeraPendiente.id);
+                } else if (tareas.length > 0) {
+                    setTareaSeleccionadaId(tareas[0].id);
+                }
+            } catch (err: unknown) {
+                console.error("Error al cargar resoluciones OMRO en Recepcionista:", err);
+            } finally {
+                if (montado) setCargandoOMRO(false);
+            }
+        };
+
+        void cargarOMRO();
+        return () => {
+            montado = false;
+        };
+    }, []);
+
+    const tareasPendientesOMRO = tareasOMRO.filter((t) => t.status.toLowerCase() === "pending");
+    const tareaActivaOMRO =
+        tareasPendientesOMRO.find((t) => t.id === tareaSeleccionadaId) ||
+        tareasPendientesOMRO[0] ||
+        null;
+
+    const manejarDecisionOMRO = async (decision: "Approved" | "Rejected"): Promise<void> => {
+        if (!tareaActivaOMRO || procesandoOMRO) return;
+        setProcesandoOMRO(true);
+        try {
+            const exito = await resolverTareaOMRO(tareaActivaOMRO.id, decision);
+            if (exito) {
+                setTareasOMRO((prev) =>
+                    prev.map((t) => (t.id === tareaActivaOMRO.id ? { ...t, status: decision } : t))
+                );
+                toast.success(
+                    decision === "Approved"
+                        ? "Acción OMRO aprobada y registrada"
+                        : "Acción OMRO rechazada"
+                );
+            } else {
+                toast.error("No se pudo registrar la decisión en OMRO");
+            }
+        } catch (err: unknown) {
+            console.error("Error al resolver tarea OMRO:", err);
+            toast.error("Error al procesar la acción OMRO");
+        } finally {
+            setProcesandoOMRO(false);
+        }
+    };
 
     const handleMarcarAsistencia = async (citaId: string, nuevoEstado: EstadoAsistencia) => {
         const cita = citas.find(c => c.id === citaId);
@@ -199,19 +301,79 @@ function HomePageRecepcionista() {
                         <div className="EncabezadoContenedor-SuperiorDerecha">
                             <h2>Historial OMRO</h2>
                         </div>
-                        <div className="Card-ListadoOMRO-Recepcionista">
-                            <div className="ContenedorIcono-CardOMRO">
-                                <FaClipboardList className="Icono-OMRO"/>
-                            </div>
-                            <div className="ContenedorDatos-CardOMRO">
-                                <h3>Enviar Recordatorio</h3>
-                                <p>28-08-2026</p>
-                            </div>
-                            <div className="ContenedorEstado-CardOMRO">
-                                <div className="ContenedorLetra-CardOMRO">
-                                    <h1>R</h1>
+                        <div className="ContenedorListado-OMRO-Recepcionista">
+                            {cargandoOMRO ? (
+                                [1, 2].map((idx) => (
+                                    <div key={idx} className="Card-ListadoOMRO-Recepcionista Card-OMRO-Skeleton-Recepcionista">
+                                        <div className="Skeleton-OMRO-Circle" />
+                                        <div className="Skeleton-OMRO-Text">
+                                            <div className="Skeleton-OMRO-Line1" />
+                                            <div className="Skeleton-OMRO-Line2" />
+                                        </div>
+                                    </div>
+                                ))
+                            ) : tareasOMRO.length === 0 ? (
+                                <div className="EmptyState-OMRO-Recepcionista">
+                                    <p>No hay registros recientes en el historial OMRO.</p>
                                 </div>
-                            </div>
+                            ) : (
+                                tareasOMRO.map((tarea) => {
+                                    const esSeleccionada = tarea.id === tareaActivaOMRO?.id;
+                                    const estadoLower = tarea.status.toLowerCase();
+                                    const configAccion = obtenerConfiguracionAccion(tarea.aiPlan.tipoAccion);
+                                    return (
+                                        <div
+                                            key={tarea.id}
+                                            className={`Card-ListadoOMRO-Recepcionista ${esSeleccionada ? "seleccionada" : ""}`}
+                                            onClick={() => {
+                                                if (estadoLower === "pending") {
+                                                    setTareaSeleccionadaId(tarea.id);
+                                                }
+                                            }}
+                                            style={{ cursor: estadoLower === "pending" ? "pointer" : "default" }}
+                                        >
+                                            <div className="ContenedorIcono-CardOMRO">
+                                                {renderizarIconoAccionOMRO(tarea.aiPlan.tipoAccion)}
+                                            </div>
+                                            <div className="ContenedorDatos-CardOMRO">
+                                                <h3>{tarea.aiPlan.titulo}</h3>
+                                                <p className="Resumen-CardOMRO" title={tarea.aiPlan.descripcion}>
+                                                    {tarea.aiPlan.descripcion}
+                                                </p>
+                                                <div className="MetaDatos-CardOMRO">
+                                                    <p>{tarea.createdAt}</p>
+                                                    <span className={`Badge-RiesgoOMRO ${tarea.riskProbability >= 70 ? "alto" : "medio"}`}>
+                                                        Riesgo {tarea.riskProbability}%
+                                                    </span>
+                                                    <span className={`Badge-EstadoOMRO ${estadoLower}`}>
+                                                        {traducirEstadoOMRO(tarea.status)}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        className="Btn-VerJustificacionOMRO"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setTareaModalOMRO(tarea);
+                                                        }}
+                                                    >
+                                                        <FaInfoCircle aria-hidden="true" />
+                                                        Ver justificación
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="ContenedorEstado-CardOMRO">
+                                                <div
+                                                    className={`ContenedorLetra-CardOMRO ${configAccion.claseCss}`}
+                                                    title={configAccion.nombreCompleto}
+                                                    aria-label={`Acción de tipo ${configAccion.nombreCompleto}`}
+                                                >
+                                                    <h1>{configAccion.letra}</h1>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
                     </div>
                     <div className="ContenedorDerecha-InferiorRecepcionista">
@@ -225,13 +387,52 @@ function HomePageRecepcionista() {
                             </div>
                         </div>
                         <div className="Contenedor-AccionesOMRO">
-                            <div className="ContenedorTitulo-AccionesOMRO">
-                                <h2>¿Desea generar sobrecupo?</h2>
-                            </div>
-                            <div className="ContenedorBotones-AccionesOMRO">
-                                <button type="button" className="Btn-AccionOMRO">Rechazar</button>
-                                <button type="button" className="Btn-AccionOMRO">Aprobar</button>
-                            </div>
+                            {cargandoOMRO ? (
+                                <div className="EstadoVacio-AccionesOMRO">
+                                    <p>Consultando OMRO...</p>
+                                </div>
+                            ) : tareaActivaOMRO ? (
+                                <>
+                                    <div className="ContenedorTitulo-AccionesOMRO">
+                                        <span className="Pill-RiesgoDecision-Recepcionista">
+                                            Riesgo: {tareaActivaOMRO.riskProbability}%
+                                        </span>
+                                        <h2>{tareaActivaOMRO.aiPlan.titulo}</h2>
+                                        <button
+                                            type="button"
+                                            className="Btn-VerAnalisisCompleto-Recepcionista"
+                                            onClick={() => setTareaModalOMRO(tareaActivaOMRO)}
+                                        >
+                                            <FaInfoCircle aria-hidden="true" />
+                                            Ver análisis completo
+                                        </button>
+                                    </div>
+                                    <div className="ContenedorBotones-AccionesOMRO">
+                                        <button
+                                            type="button"
+                                            className="Btn-AccionOMRO"
+                                            disabled={procesandoOMRO}
+                                            onClick={() => void manejarDecisionOMRO("Rejected")}
+                                        >
+                                            Rechazar
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="Btn-AccionOMRO"
+                                            disabled={procesandoOMRO}
+                                            onClick={() => void manejarDecisionOMRO("Approved")}
+                                        >
+                                            {procesandoOMRO ? "..." : "Aprobar"}
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="EstadoVacio-AccionesOMRO">
+                                    <FaCheckCircle className="Icono-SinPendientes-Recepcionista" />
+                                    <h3>Sin decisiones pendientes</h3>
+                                    <p>OMRO no tiene acciones por aprobar.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -240,6 +441,11 @@ function HomePageRecepcionista() {
         {isModalOpen && (
             <RegisterPatientModal onClose={() => setIsModalOpen(false)} />
         )}
+        <ModalDetalleOMRO
+            isOpen={tareaModalOMRO !== null}
+            tarea={tareaModalOMRO}
+            onClose={() => setTareaModalOMRO(null)}
+        />
         </>
     );
 }
