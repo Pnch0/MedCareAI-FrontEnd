@@ -148,8 +148,15 @@ function Navbar(){
                     <ul>
                         {enlaces.map(({ to, label, icon: Icono }) => (
                             <li key={to}>
-                                <NavLink to={to} className = "nav-item" onClick={() => setMenuAbierto(false)}>
-                                    <Icono className='Icono-NavbarPrincipal'/> {label}
+                                <NavLink
+                                    to={to}
+                                    className={({ isActive }) => `nav-item ${isActive ? 'activo' : ''}`}
+                                    onClick={() => setMenuAbierto(false)}
+                                >
+                                    <span className="nav-item-icon-wrapper" aria-hidden="true">
+                                        <Icono className="Icono-NavbarPrincipal" />
+                                    </span>
+                                    <span className="nav-item-label">{label}</span>
                                 </NavLink>
                             </li>
                         ))}

@@ -1,6 +1,6 @@
 .Contenedor-NavbarPrincipal{
-    width: 14%;
-    min-width: 200px;
+    width: 16%;
+    min-width: 280px;
     height: 100dvh;
     background-color: #1E9CF1;
     display: flex;
@@ -14,26 +14,27 @@
 
 .Contenedor-PaginasNavbar{
     width: 100%;
-    height: 85dvh;
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
-    padding-left: 20px;
+    padding: 24px 10px;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .Contenedor-PaginasNavbar ul{
     margin: 0;
-    padding: 20px 0;
+    padding: 0;
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
-    height: 100%;
-    box-sizing: border-box;
+    gap: 8px;
+    list-style: none;
 }
 
 .Contenedor-PaginasNavbar li{
     list-style: none;
-    width: 100%; 
+    width: 100%;
     display: flex;
     align-items: center;
 }
@@ -42,58 +43,95 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    padding-left: 20px;
-    width: 85%;
-    margin: 0 auto;
-    line-height: 1.1;
+    padding: 12px 14px;
+    width: 100%;
+    line-height: 1.25;
     border-radius: 12px;
-    transition: transform 0.3s ease, background-color 0.3s ease;
+    transition: background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
     text-decoration: none;
     color: #FFFFFF;
-    font-size: 22px;
-    font-weight: bold;
-    gap: 15px;
+    font-size: 19px;
+    font-weight: 600;
+    gap: 12px;
+    box-sizing: border-box;
 }
 
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(3px);
+}
+
+.nav-item.activo {
+    background-color: rgba(255, 255, 255, 0.25);
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.nav-item:focus-visible {
+    outline: 2px solid #FFFFFF;
+    outline-offset: 2px;
+}
+
+.nav-item-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
 
 .Icono-NavbarPrincipal{
-    font-size: 50px;
+    font-size: 30px;
     color: #FFFFFF;
 }
 
+.nav-item-label {
+    white-space: normal;
+    word-break: normal;
+    line-height: 1.2;
+}
 
 .Contenedor-NombreNavbar{
     position: relative;
     width: 100%;
-    height: 15dvh;
+    height: auto;
+    min-height: 78px;
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 10px;
-    gap: 20px;
+    padding: 14px 18px;
+    gap: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    box-sizing: border-box;
+    cursor: pointer;
 }
 
 .Contenedor-InicialesNombre{
-    width: 80px;
-    height: 80px;
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
     background-color: #FFFFFF;
-    border-radius: 100%;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #1E9CF1;
-    font-size: 30px;
-    font-weight: bold;
+    font-size: 20px;
+    font-weight: 700;
 }
 
 .Contenedor-Nombre{
-    width: 100%;
-    height: 15dvh;
-    display: flex;
-    align-items: center;
+    flex: 1;
+    min-width: 0;
+    height: auto;
+    display: block;
     color: #FFFFFF;
-    font-size: 24px;
-    font-weight: bold;
+    font-size: 17.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 
