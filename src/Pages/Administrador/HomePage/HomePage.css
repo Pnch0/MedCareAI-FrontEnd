@@ -98,18 +98,23 @@
 
 .Card-ListadoOMRO{
     width: 100%;
-    height: 10dvh;
+    height: auto;
+    min-height: 10dvh;
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding-left: 10px;
+    padding: 12px 14px;
     border: 1px solid #E1EAEF;
+    border-radius: 10px;
     gap: 15px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .ContenedorIcono-CardOMRO{
-    width: 6%;
-    height: 8dvh;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -119,22 +124,68 @@
 }
 
 .Icono-OMRO{
-    font-size: 38px;
+    font-size: 26px;
     color: #1E9CF1;
 }
 
 .ContenedorDatos-CardOMRO{
-    width: 84%;
-    height: 10dvh;
+    flex: 1;
+    min-width: 0;
+    height: auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 5px;
+    gap: 4px;
+}
+
+.ContenedorDatos-CardOMRO h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #0F172A;
 }
 
 .ContenedorDatos-CardOMRO p{
     color: #989898;
     font-weight: bold;
+    margin: 0;
+}
+
+.ContenedorDatos-CardOMRO .Resumen-CardOMRO {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 400;
+    color: #475569;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.Btn-VerJustificacionOMRO,
+.Btn-VerAnalisisCompleto {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0369A1;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.Btn-VerJustificacionOMRO:hover,
+.Btn-VerAnalisisCompleto:hover {
+    background-color: #E0F2FE;
+    color: #0284C7;
+}
+
+.Btn-VerJustificacionOMRO:focus-visible,
+.Btn-VerAnalisisCompleto:focus-visible {
+    outline: 2px solid #1E9CF1;
+    outline-offset: 2px;
 }
 
 .ContenedorEstado-CardOMRO{
@@ -158,6 +209,146 @@
     font-size: 22px;
 }
 
+.Card-ListadoOMRO {
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.Card-ListadoOMRO:hover {
+    border-color: #1E9CF1;
+}
+
+.Card-ListadoOMRO.seleccionada {
+    border-color: #1E9CF1;
+    background-color: #F0F8FF;
+    box-shadow: 0 2px 8px rgba(30, 156, 241, 0.12);
+}
+
+.MetaDatos-CardOMRO {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+.Badge-RiesgoOMRO,
+.Badge-EstadoOMRO {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.Badge-RiesgoOMRO.alto {
+    background-color: #FEE2E2;
+    color: #B91C1C;
+}
+
+.Badge-RiesgoOMRO.medio {
+    background-color: #FEF3C7;
+    color: #B45309;
+}
+
+.Badge-EstadoOMRO.pending {
+    background-color: #E0F2FE;
+    color: #0369A1;
+}
+
+.Badge-EstadoOMRO.approved {
+    background-color: #DCFCE7;
+    color: #15803D;
+}
+
+.Badge-EstadoOMRO.rejected {
+    background-color: #F1F5F9;
+    color: #475569;
+}
+
+/* Letra S - Fondo azul para Sobrecupo */
+.ContenedorLetra-CardOMRO.accion-sobrecupo {
+    background-color: #E0F2FE;
+    color: #0369A1;
+    border: 1px solid #BAE6FD;
+}
+
+/* Letra R - Fondo verde para Recordatorio */
+.ContenedorLetra-CardOMRO.accion-recordatorio {
+    background-color: #DCFCE7;
+    color: #15803D;
+    border: 1px solid #BBF7D0;
+}
+
+/* Letra C - Fondo ámbar para Cambio / Reasignación */
+.ContenedorLetra-CardOMRO.accion-reasignacion {
+    background-color: #FEF3C7;
+    color: #B45309;
+    border: 1px solid #FDE68A;
+}
+
+/* Fallback neutro para acciones no catalogadas */
+.ContenedorLetra-CardOMRO.accion-otro {
+    background-color: #F1F5F9;
+    color: #475569;
+    border: 1px solid #CBD5E1;
+}
+
+@keyframes omroShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.Card-OMRO-Skeleton {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid #E1EAEF;
+    border-radius: 10px;
+    background-color: #FFFFFF;
+}
+
+.Skeleton-OMRO-Circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, #EEF2F6 25%, #F8FAFC 50%, #EEF2F6 75%);
+    background-size: 200% 100%;
+    animation: omroShimmer 1.4s infinite linear;
+    flex-shrink: 0;
+}
+
+.Skeleton-OMRO-Text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.Skeleton-OMRO-Line1 {
+    height: 14px;
+    width: 65%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #EEF2F6 25%, #F8FAFC 50%, #EEF2F6 75%);
+    background-size: 200% 100%;
+    animation: omroShimmer 1.4s infinite linear;
+}
+
+.Skeleton-OMRO-Line2 {
+    height: 11px;
+    width: 40%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #EEF2F6 25%, #F8FAFC 50%, #EEF2F6 75%);
+    background-size: 200% 100%;
+    animation: omroShimmer 1.4s infinite linear;
+}
+
+.EmptyState-OMRO {
+    text-align: center;
+    padding: 30px 15px;
+    color: #64748B;
+    font-size: 14px;
+}
+
 .ContenedorDerecha-DerechaHome{
     width: 30%;
     height: 50dvh;
@@ -166,26 +357,102 @@
     border-radius: 10px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
+    padding-bottom: 20px;
 }
 
 .ContenedorTitulo-DerechaHome{
     width: 100%;
-    height: 25dvh;
+    flex: 1;
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    text-align: center;
+    padding: 20px 20px 0 20px;
+    gap: 8px;
     color: #1E9CF1;
     font-size: 20px;
 }
 
+.Decision-ConDetalle h2,
+.Decision-ConDetalle h3 {
+    margin: 4px 0;
+    font-size: 25px;
+    font-weight: 700;
+    color: #1E9CF1;
+    line-height: 1.25;
+}
+
+.Btn-VerAnalisisCompleto {
+    margin-top: 8px;
+    padding: 7px 16px;
+    background-color: #E0F2FE;
+    color: #0369A1;
+    border: 1px solid #BAE6FD;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.Btn-VerAnalisisCompleto:hover {
+    background-color: #BAE6FD;
+    color: #0284C7;
+    border-color: #7DD3FC;
+}
+
+.Btn-VerAnalisisCompleto:focus-visible {
+    outline: 2px solid #1E9CF1;
+    outline-offset: 2px;
+}
+
+.Pill-RiesgoDecision {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background-color: #FEE2E2;
+    color: #B91C1C;
+}
+
+.Detalle-PlanIA {
+    margin: 4px 0 0 0;
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.45;
+    max-height: 110px;
+    overflow-y: auto;
+}
+
+.EstadoVacio-DecisionOMRO {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #64748B;
+}
+
+.EstadoVacio-DecisionOMRO p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.Icono-SinPendientes {
+    font-size: 36px;
+    color: #17BF63;
+}
+
 .ContenedorBotones-DerechaHome{
     width: 100%;
-    height: 25dvh;
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    gap: 30px;
+    gap: 24px;
 }
 
 .ContenedorBotones-DerechaHome button{
@@ -198,9 +465,14 @@
     font-size: 18px;
     font-weight: 500;
     border-radius: 10px;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
 }
 
-
-.ContenedorBotones-DerechaHome button:hover{
+.ContenedorBotones-DerechaHome button:hover:not(:disabled){
     background-color: #1e9df1e3;
+}
+
+.ContenedorBotones-DerechaHome button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
