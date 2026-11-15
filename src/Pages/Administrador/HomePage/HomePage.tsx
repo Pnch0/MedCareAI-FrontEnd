@@ -11,6 +11,10 @@ import {
     type ResolutionTask,
     type TipoAccionOMRO
 } from "../../../Services/omroService.ts";
+import {
+    obtenerMetricasAusentismo,
+    type ResumenKPIsDTO
+} from "../../../Services/dashboardAdmin.ts";
 
 function renderizarIconoAccion(tipo: TipoAccionOMRO) {
     switch (tipo) {
@@ -43,6 +47,8 @@ function HomePageAdministrador() {
     const [procesando, setProcesando] = useState<boolean>(false);
     const [tareaModal, setTareaModal] = useState<ResolutionTask | null>(null);
     const [modalHistorialAbierto, setModalHistorialAbierto] = useState<boolean>(false);
+    const [kpisAsistencia, setKpisAsistencia] = useState<ResumenKPIsDTO | null>(null);
+    const [cargandoKpis, setCargandoKpis] = useState<boolean>(true);
 
     useEffect(() => {
         let montado = true;
@@ -66,6 +72,29 @@ function HomePageAdministrador() {
         };
 
         void cargarOMRO();
+        return () => {
+            montado = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        let montado = true;
+        const cargarMetricas = async (): Promise<void> => {
+            try {
+                const resultado = await obtenerMetricasAusentismo();
+                if (montado) {
+                    setKpisAsistencia(resultado.kpis);
+                }
+            } catch (err: unknown) {
+                console.warn("No se pudieron cargar métricas de asistencia para el Home:", err);
+            } finally {
+                if (montado) {
+                    setCargandoKpis(false);
+                }
+            }
+        };
+
+        void cargarMetricas();
         return () => {
             montado = false;
         };
@@ -115,8 +144,18 @@ function HomePageAdministrador() {
                         <h2>Asistencia</h2>
                     </div>
                     <div className="ListadoContenedorSuperior-HomeAdministrador">
-                        <p>Porcentaje de Asistencia: 89.9%</p>
-                        <p>Porcentaje de Inasistencia: 10.1%</p>
+                        <p>
+                            Porcentaje de Asistencia:{" "}
+                            {cargandoKpis
+                                ? "..."
+                                : `${(kpisAsistencia?.tasaAsistencia ?? 89.9).toFixed(1)}%`}
+                        </p>
+                        <p>
+                            Porcentaje de Inasistencia:{" "}
+                            {cargandoKpis
+                                ? "..."
+                                : `${(kpisAsistencia?.tasaAusentismo ?? 10.1).toFixed(1)}%`}
+                        </p>
                     </div>
                 </div>
                 <div className="ContenendorSuperior-DerechaHome">

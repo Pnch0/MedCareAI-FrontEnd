@@ -25,7 +25,7 @@ export const NAV_CONFIG: Record<UserRole, NavLinkConfig[]> = {
     ],
     recepcionista: [
         { to: '/home-page-recepcionista', label: 'Home', icon: FaHome },
-        { to: '/asignar-horarios-recepcionista', label: 'Asignar Horarios', icon: FaClock },
+        { to: '/asignar-horarios-recepcionista', label: 'Agendar Cita', icon: FaClock },
     ],
     paciente: [],
 };
