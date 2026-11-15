@@ -150,7 +150,10 @@ function DashboardAdministrador() {
                             </div>
                             <div className="KPI-Valor">{datos.kpis.tasaAusentismo.toFixed(1)}%</div>
                             <div className="KPI-Subtitulo mejora">
-                                {datos.kpis.deltaAusentismoVsPeriodoAnterior}% vs período anterior
+                                {datos.kpis.deltaAusentismoVsPeriodoAnterior > 0
+                                    ? `+${datos.kpis.deltaAusentismoVsPeriodoAnterior}%`
+                                    : `${datos.kpis.deltaAusentismoVsPeriodoAnterior}%`}{" "}
+                                vs período anterior
                             </div>
                         </article>
 

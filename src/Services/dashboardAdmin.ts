@@ -539,7 +539,7 @@ export function normalizarDashboardAusentismo(raw: unknown): DashboardAusentismo
 }
 
 /**
- * Obtiene las métricas del dashboard de ausentismo desde GET /api/dashboard/metrics.
+ * Obtiene las métricas del dashboard de ausentismo desde GET /api/Dashboard/metrics.
  * Si hay un error de conexión, timeout o listado inválido, recurre automáticamente
  * a la mockdata tipada de respaldo (MOCK_DASHBOARD_POR_PERIODO).
  */
@@ -547,7 +547,7 @@ export async function obtenerMetricasAusentismo(
     periodo: PeriodoDashboard = 'mes'
 ): Promise<DashboardAusentismoDTO> {
     try {
-        const respuesta: unknown = await apiClient('/api/dashboard/metrics', {
+        const respuesta: unknown = await apiClient('/api/Dashboard/metrics', {
             method: 'GET'
         });
         const normalizado = normalizarDashboardAusentismo(respuesta);
@@ -557,7 +557,7 @@ export async function obtenerMetricasAusentismo(
         };
     } catch (error: unknown) {
         console.warn(
-            'Error al consultar GET /api/dashboard/metrics; usando mockdata de respaldo:',
+            'Error al consultar GET /api/Dashboard/metrics; usando mockdata de respaldo:',
             error
         );
         const datosMock = MOCK_DASHBOARD_POR_PERIODO[periodo];
