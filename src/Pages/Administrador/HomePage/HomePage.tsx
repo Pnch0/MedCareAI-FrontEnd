@@ -3,6 +3,7 @@ import "./HomePage.css";
 import { FaClipboardList, FaCheckCircle, FaBell, FaUserPlus, FaExchangeAlt, FaInfoCircle } from "react-icons/fa";
 import { toast } from "sonner";
 import { ModalDetalleOMRO } from "../../../Components/ModalDetalleOMRO/ModalDetalleOMRO.tsx";
+import { ModalHistorialOMRO } from "../../../Components/ModalHistorialOMRO/ModalHistorialOMRO.tsx";
 import {
     obtenerConfiguracionAccion,
     obtenerHistorialOMRO,
@@ -41,6 +42,7 @@ function HomePageAdministrador() {
     const [tareaSeleccionadaId, setTareaSeleccionadaId] = useState<string | null>(null);
     const [procesando, setProcesando] = useState<boolean>(false);
     const [tareaModal, setTareaModal] = useState<ResolutionTask | null>(null);
+    const [modalHistorialAbierto, setModalHistorialAbierto] = useState<boolean>(false);
 
     useEffect(() => {
         let montado = true;
@@ -130,7 +132,18 @@ function HomePageAdministrador() {
             <div className="ContenedorInferior-HomeAdministrador">
                 <div className="ContenedorInferior-IzquierdaHome">
                     <div className="ContenedorEncabezado-IzquierdaHome">
-                        <h1>Historial OMRO</h1>
+                        <h1>Panel de Orquestación</h1>
+                        <div className="Header-ColumnaHistorial">
+                            <button
+                                type="button"
+                                className="Btn-EncabezadoHistorial"
+                                onClick={() => setModalHistorialAbierto(true)}
+                                title="Ver Historial completo de OMRO"
+                                aria-label="Abrir ventana modal de Historial OMRO"
+                            >
+                                Historial
+                            </button>
+                        </div>
                     </div>
                     <div className="ContenedorListado-IzquierdaHome">
                         {cargandoOMRO ? (
@@ -143,12 +156,21 @@ function HomePageAdministrador() {
                                     </div>
                                 </div>
                             ))
-                        ) : tareasOMRO.length === 0 ? (
+                        ) : tareasPendientes.length === 0 ? (
                             <div className="EmptyState-OMRO">
-                                <p>No hay registros recientes en el historial OMRO.</p>
+                                <p>No hay acciones pendientes por realizar en el Panel de Orquestación.</p>
+                                {tareasOMRO.length > 0 && (
+                                    <button
+                                        type="button"
+                                        className="Btn-VerHistorialVacio"
+                                        onClick={() => setModalHistorialAbierto(true)}
+                                    >
+                                        Ver Historial OMRO ({tareasOMRO.length})
+                                    </button>
+                                )}
                             </div>
                         ) : (
-                            tareasOMRO.map((tarea) => {
+                            tareasPendientes.map((tarea) => {
                                 const esSeleccionada = tarea.id === tareaActiva?.id;
                                 const estadoLower = tarea.status.toLowerCase();
                                 const configAccion = obtenerConfiguracionAccion(tarea.aiPlan.tipoAccion);
@@ -156,12 +178,8 @@ function HomePageAdministrador() {
                                     <div
                                         key={tarea.id}
                                         className={`Card-ListadoOMRO ${esSeleccionada ? "seleccionada" : ""}`}
-                                        onClick={() => {
-                                            if (estadoLower === "pending") {
-                                                setTareaSeleccionadaId(tarea.id);
-                                            }
-                                        }}
-                                        style={{ cursor: estadoLower === "pending" ? "pointer" : "default" }}
+                                        onClick={() => setTareaSeleccionadaId(tarea.id)}
+                                        style={{ cursor: "pointer" }}
                                     >
                                         <div className="ContenedorIcono-CardOMRO">
                                             {renderizarIconoAccion(tarea.aiPlan.tipoAccion)}
@@ -193,13 +211,18 @@ function HomePageAdministrador() {
                                             </div>
                                         </div>
                                         <div className="ContenedorEstado-CardOMRO">
-                                            <div
-                                                className={`ContenedorLetra-CardOMRO ${configAccion.claseCss}`}
-                                                title={configAccion.nombreCompleto}
-                                                aria-label={`Acción de tipo ${configAccion.nombreCompleto}`}
+                                            <button
+                                                type="button"
+                                                className={`ContenedorLetra-CardOMRO Btn-LetraHistorial ${configAccion.claseCss}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setModalHistorialAbierto(true);
+                                                }}
+                                                title={`Historial OMRO · ${configAccion.nombreCompleto}`}
+                                                aria-label={`Abrir Historial OMRO. Tipo de acción: ${configAccion.nombreCompleto}`}
                                             >
                                                 <h1>{configAccion.letra}</h1>
-                                            </div>
+                                            </button>
                                         </div>
                                     </div>
                                 );
@@ -259,6 +282,16 @@ function HomePageAdministrador() {
             isOpen={tareaModal !== null}
             tarea={tareaModal}
             onClose={() => setTareaModal(null)}
+        />
+        <ModalHistorialOMRO
+            isOpen={modalHistorialAbierto}
+            onClose={() => setModalHistorialAbierto(false)}
+            tareas={tareasOMRO}
+            cargando={cargandoOMRO}
+            onSeleccionarAccion={(id) => {
+                setTareaSeleccionadaId(id);
+                setModalHistorialAbierto(false);
+            }}
         />
         </>
     );

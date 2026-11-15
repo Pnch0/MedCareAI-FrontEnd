@@ -1,3 +1,5 @@
+import { apiClient } from './apiClient.ts';
+
 export type PeriodoDashboard = '7d' | 'mes' | 'trimestre';
 
 export type NivelRiesgo = 'ALTO' | 'MEDIO' | 'BAJO';
@@ -71,6 +73,7 @@ export interface DashboardAusentismoDTO {
     porHorario: AusentismoHorarioDTO[];
     omro: EfectividadOMRODTO;
     alertasRiesgo: CitaRiesgoDTO[];
+    esRespaldoMock?: boolean;
 }
 
 const MOCK_DASHBOARD_POR_PERIODO: Record<PeriodoDashboard, DashboardAusentismoDTO> = {
@@ -329,14 +332,238 @@ const MOCK_DASHBOARD_POR_PERIODO: Record<PeriodoDashboard, DashboardAusentismoDT
     }
 };
 
+function esObjeto(valor: unknown): valor is Record<string, unknown> {
+    return typeof valor === 'object' && valor !== null && !Array.isArray(valor);
+}
+
+function leerProp(obj: Record<string, unknown>, ...claves: string[]): unknown {
+    for (const clave of claves) {
+        if (clave in obj && obj[clave] !== undefined && obj[clave] !== null) {
+            return obj[clave];
+        }
+    }
+    return undefined;
+}
+
+function aNumero(valor: unknown, defecto: number = 0): number {
+    const n = Number(valor);
+    return Number.isFinite(n) ? n : defecto;
+}
+
+function aPorcentaje(valor: unknown): number {
+    const n = aNumero(valor, 0);
+    const pct = n > 0 && n <= 1 ? n * 100 : n;
+    return Math.round(pct * 10) / 10;
+}
+
+function extraerListaObjetos(raw: unknown): Record<string, unknown>[] {
+    if (Array.isArray(raw)) {
+        return raw.filter(esObjeto);
+    }
+    if (esObjeto(raw) && Array.isArray(raw.$values)) {
+        return raw.$values.filter(esObjeto);
+    }
+    return [];
+}
+
+function normalizarTendencia(valor: unknown): 'alza' | 'baja' | 'estable' {
+    const texto = String(valor || '').toLowerCase().trim();
+    if (texto === 'alza' || texto === 'baja' || texto === 'estable') {
+        return texto;
+    }
+    return 'estable';
+}
+
+function normalizarEstadoDistribucion(valor: unknown): DistribucionEstadoDTO['estado'] {
+    const texto = String(valor || '').trim();
+    if (
+        texto === 'Asistió' ||
+        texto === 'No Asistió' ||
+        texto === 'Cancelada con Aviso' ||
+        texto === 'Confirmada Pendiente'
+    ) {
+        return texto;
+    }
+    const lower = texto.toLowerCase();
+    if (lower.includes('no asist') || lower.includes('inasist')) return 'No Asistió';
+    if (lower.includes('cancel')) return 'Cancelada con Aviso';
+    if (lower.includes('pendiente') || lower.includes('confirm')) return 'Confirmada Pendiente';
+    return 'Asistió';
+}
+
+function normalizarNivelRiesgo(valor: unknown): NivelRiesgo {
+    const upper = String(valor || '').toUpperCase().trim();
+    if (upper === 'ALTO' || upper === 'MEDIO' || upper === 'BAJO') {
+        return upper;
+    }
+    return 'MEDIO';
+}
+
+function normalizarEstadoRecordatorio(valor: unknown): CitaRiesgoDTO['estadoRecordatorio'] {
+    const texto = String(valor || '').trim();
+    if (texto === 'Enviado' || texto === 'Pendiente' || texto === 'Confirmado') {
+        return texto;
+    }
+    const lower = texto.toLowerCase();
+    if (lower.includes('confirm')) return 'Confirmado';
+    if (lower.includes('envi')) return 'Enviado';
+    return 'Pendiente';
+}
+
 /**
- * Obtiene las métricas del dashboard de ausentismo según el período seleccionado.
- * Actualmente utiliza Mock Data tipada; preparada para conectar al endpoint REST del backend.
+ * Normaliza el payload DashboardAusentismoDto del backend C# (PascalCase o camelCase)
+ * hacia la interfaz estricta del Frontend.
+ */
+export function normalizarDashboardAusentismo(raw: unknown): DashboardAusentismoDTO {
+    if (!esObjeto(raw)) {
+        throw new Error('Respuesta inválida del servidor para DashboardAusentismoDto');
+    }
+
+    const rawKpis = leerProp(raw, 'kpis', 'Kpis');
+    if (!esObjeto(rawKpis)) {
+        throw new Error('Falta el objeto Kpis en la respuesta de /api/dashboard/metrics');
+    }
+
+    const kpis: ResumenKPIsDTO = {
+        totalCitas: Math.round(aNumero(leerProp(rawKpis, 'totalCitas', 'TotalCitas'))),
+        tasaAsistencia: aPorcentaje(leerProp(rawKpis, 'tasaAsistencia', 'TasaAsistencia')),
+        tasaAusentismo: aPorcentaje(leerProp(rawKpis, 'tasaAusentismo', 'TasaAusentismo')),
+        deltaAusentismoVsPeriodoAnterior: aNumero(
+            leerProp(
+                rawKpis,
+                'deltaAusentismoVsMesAnterior',
+                'DeltaAusentismoVsMesAnterior',
+                'deltaAusentismoVsPeriodoAnterior',
+                'DeltaAusentismoVsPeriodoAnterior'
+            )
+        ),
+        citasRescatadasOMRO: Math.round(aNumero(leerProp(rawKpis, 'citasRescatadasOMRO', 'CitasRescatadasOMRO'))),
+        horasMedicasPerdidas: Math.round(aNumero(leerProp(rawKpis, 'horasMedicasPerdidas', 'HorasMedicasPerdidas'))),
+        impactoEstimadoPerdida: aNumero(leerProp(rawKpis, 'impactoEstimadoPerdida', 'ImpactoEstimadoPerdida'))
+    };
+
+    const tendencia: TendenciaTemporalDTO[] = extraerListaObjetos(leerProp(raw, 'tendencia', 'Tendencia')).map(
+        (item) => ({
+            periodo: String(leerProp(item, 'periodo', 'Periodo') ?? ''),
+            asistidas: Math.round(aNumero(leerProp(item, 'asistidas', 'Asistidas'))),
+            inasistencias: Math.round(aNumero(leerProp(item, 'inasistencias', 'Inasistencias'))),
+            canceladasAnticipadas: Math.round(
+                aNumero(leerProp(item, 'canceladasAnticipadas', 'CanceladasAnticipadas'))
+            ),
+            tasaAusentismo: aPorcentaje(leerProp(item, 'tasaAusentismo', 'TasaAusentismo'))
+        })
+    );
+
+    const porEspecialidad: AusentismoEspecialidadDTO[] = extraerListaObjetos(
+        leerProp(raw, 'porEspecialidad', 'PorEspecialidad')
+    ).map((item) => ({
+        especialidad: String(leerProp(item, 'especialidad', 'Especialidad') ?? 'General'),
+        totalCitas: Math.round(aNumero(leerProp(item, 'totalCitas', 'TotalCitas'))),
+        asistencias: Math.round(aNumero(leerProp(item, 'asistencias', 'Asistencias'))),
+        inasistencias: Math.round(aNumero(leerProp(item, 'inasistencias', 'Inasistencias'))),
+        tasaAusentismo: aPorcentaje(leerProp(item, 'tasaAusentismo', 'TasaAusentismo')),
+        tendencia: normalizarTendencia(leerProp(item, 'tendencia', 'Tendencia'))
+    }));
+
+    const distribucion: DistribucionEstadoDTO[] = extraerListaObjetos(
+        leerProp(raw, 'distribucion', 'Distribucion')
+    ).map((item) => ({
+        estado: normalizarEstadoDistribucion(leerProp(item, 'estado', 'Estado')),
+        cantidad: Math.round(aNumero(leerProp(item, 'cantidad', 'Cantidad'))),
+        porcentaje: aPorcentaje(leerProp(item, 'porcentaje', 'Porcentaje')),
+        color: String(leerProp(item, 'color', 'Color') ?? '#1E9CF1')
+    }));
+
+    const porHorario: AusentismoHorarioDTO[] = extraerListaObjetos(
+        leerProp(raw, 'porHorario', 'PorHorario')
+    ).map((item) => ({
+        franja: String(leerProp(item, 'franja', 'Franja') ?? ''),
+        tasaAusentismo: aPorcentaje(leerProp(item, 'tasaAusentismo', 'TasaAusentismo')),
+        citasTotales: Math.round(aNumero(leerProp(item, 'citasTotales', 'CitasTotales')))
+    }));
+
+    const rawOmro = leerProp(raw, 'omro', 'Omro');
+    const omroObj = esObjeto(rawOmro) ? rawOmro : {};
+    const omro: EfectividadOMRODTO = {
+        conRecordatorioAsistencia: aPorcentaje(
+            leerProp(omroObj, 'conRecordatorioAsistencia', 'ConRecordatorioAsistencia')
+        ),
+        sinRecordatorioAsistencia: aPorcentaje(
+            leerProp(omroObj, 'sinRecordatorioAsistencia', 'SinRecordatorioAsistencia')
+        ),
+        recordatoriosEnviados: Math.round(
+            aNumero(
+                leerProp(
+                    omroObj,
+                    'recordatoriosEnviadosMes',
+                    'RecordatoriosEnviadosMes',
+                    'recordatoriosEnviados',
+                    'RecordatoriosEnviados'
+                )
+            )
+        ),
+        confirmacionesRecibidas: Math.round(
+            aNumero(leerProp(omroObj, 'confirmacionesRecibidas', 'ConfirmacionesRecibidas'))
+        )
+    };
+
+    const alertasRiesgo: CitaRiesgoDTO[] = extraerListaObjetos(
+        leerProp(raw, 'alertasRiesgo', 'AlertasRiesgo')
+    ).map((item) => ({
+        id: String(leerProp(item, 'id', 'Id') ?? crypto.randomUUID()),
+        paciente: String(leerProp(item, 'paciente', 'Paciente') ?? 'Paciente'),
+        rut: String(leerProp(item, 'rut', 'Rut') ?? ''),
+        especialidad: String(leerProp(item, 'especialidad', 'Especialidad') ?? ''),
+        medico: String(leerProp(item, 'medico', 'Medico') ?? ''),
+        fecha: String(leerProp(item, 'fecha', 'Fecha') ?? ''),
+        hora: String(leerProp(item, 'hora', 'Hora') ?? ''),
+        probabilidadAusentismo: aPorcentaje(
+            leerProp(item, 'probabilidadAusentismo', 'ProbabilidadAusentismo')
+        ),
+        nivelRiesgo: normalizarNivelRiesgo(leerProp(item, 'nivelRiesgo', 'NivelRiesgo')),
+        factorPrincipal: String(leerProp(item, 'factorPrincipal', 'FactorPrincipal') ?? ''),
+        estadoRecordatorio: normalizarEstadoRecordatorio(
+            leerProp(item, 'estadoRecordatorio', 'EstadoRecordatorio')
+        )
+    }));
+
+    return {
+        kpis,
+        tendencia,
+        porEspecialidad,
+        distribucion,
+        porHorario,
+        omro,
+        alertasRiesgo
+    };
+}
+
+/**
+ * Obtiene las métricas del dashboard de ausentismo desde GET /api/dashboard/metrics.
+ * Si hay un error de conexión, timeout o listado inválido, recurre automáticamente
+ * a la mockdata tipada de respaldo (MOCK_DASHBOARD_POR_PERIODO).
  */
 export async function obtenerMetricasAusentismo(
     periodo: PeriodoDashboard = 'mes'
 ): Promise<DashboardAusentismoDTO> {
-    await new Promise<void>(resolve => setTimeout(resolve, 350));
-    const datos = MOCK_DASHBOARD_POR_PERIODO[periodo];
-    return structuredClone(datos);
+    try {
+        const respuesta: unknown = await apiClient('/api/dashboard/metrics', {
+            method: 'GET'
+        });
+        const normalizado = normalizarDashboardAusentismo(respuesta);
+        return {
+            ...normalizado,
+            esRespaldoMock: false
+        };
+    } catch (error: unknown) {
+        console.warn(
+            'Error al consultar GET /api/dashboard/metrics; usando mockdata de respaldo:',
+            error
+        );
+        const datosMock = MOCK_DASHBOARD_POR_PERIODO[periodo];
+        return {
+            ...structuredClone(datosMock),
+            esRespaldoMock: true
+        };
+    }
 }

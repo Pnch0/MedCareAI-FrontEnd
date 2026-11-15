@@ -371,9 +371,10 @@ body{
     flex-shrink: 0;
     color: #1E9CF1;
     font-size: 22px;
-    padding-left: 25px;
+    padding: 0 18px 0 25px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     border-bottom: 1px solid #E1EAEF;
     box-sizing: border-box;
 }
@@ -798,4 +799,63 @@ body{
 .Btn-AccionOMRO:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.Header-ColumnaHistorial-Recepcionista {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.Btn-EncabezadoHistorial-Recepcionista {
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: #0369A1;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.Btn-EncabezadoHistorial-Recepcionista:hover {
+    background-color: #E0F2FE;
+    border-color: #BAE6FD;
+    color: #0284C7;
+}
+
+.Btn-EncabezadoHistorial-Recepcionista:focus-visible,
+.Btn-LetraHistorial:focus-visible,
+.Btn-VerHistorialVacio-Recepcionista:focus-visible {
+    outline: 2px solid #1E9CF1;
+    outline-offset: 2px;
+}
+
+.Btn-LetraHistorial {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.Btn-LetraHistorial:hover {
+    transform: translateY(-1px) scale(1.04);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+    filter: brightness(0.97);
+}
+
+.Btn-VerHistorialVacio-Recepcionista {
+    margin-top: 8px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #BAE6FD;
+    background-color: #E0F2FE;
+    color: #0369A1;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.Btn-VerHistorialVacio-Recepcionista:hover {
+    background-color: #BAE6FD;
 }

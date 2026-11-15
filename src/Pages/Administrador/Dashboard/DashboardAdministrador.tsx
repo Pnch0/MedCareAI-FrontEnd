@@ -15,7 +15,6 @@ import {
 import {
     obtenerMetricasAusentismo,
     type DashboardAusentismoDTO,
-    type PeriodoDashboard,
     type CitaRiesgoDTO
 } from "../../../Services/dashboardAdmin.ts";
 import "./DashboardAdministrador.css";
@@ -29,17 +28,16 @@ function formatearMonedaCLP(monto: number): string {
 }
 
 function DashboardAdministrador() {
-    const [periodo, setPeriodo] = useState<PeriodoDashboard>("mes");
     const [datos, setDatos] = useState<DashboardAusentismoDTO | null>(null);
     const [cargando, setCargando] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [estadoActivoDonut, setEstadoActivoDonut] = useState<string | null>(null);
 
-    const cargarDatos = async (periodoSeleccionado: PeriodoDashboard): Promise<void> => {
+    const cargarDatos = async (): Promise<void> => {
         setCargando(true);
         setError(null);
         try {
-            const respuesta = await obtenerMetricasAusentismo(periodoSeleccionado);
+            const respuesta = await obtenerMetricasAusentismo();
             setDatos(respuesta);
         } catch (err: unknown) {
             const mensaje = err instanceof Error ? err.message : "No se pudieron cargar las métricas";
@@ -51,8 +49,8 @@ function DashboardAdministrador() {
     };
 
     useEffect(() => {
-        void cargarDatos(periodo);
-    }, [periodo]);
+        void cargarDatos();
+    }, []);
 
     const manejarEnviarRecordatorio = (citaId: string, nombrePaciente: string): void => {
         setDatos((prev) => {
@@ -78,27 +76,26 @@ function DashboardAdministrador() {
                     <p>Monitoreo estratégico de asistencia, impacto de recordatorios OMRO y riesgo de inasistencia</p>
                 </div>
 
-                <div className="Controles-DashboardAdmin" role="group" aria-label="Filtro de período temporal">
+                <div className="Controles-DashboardAdmin" aria-label="Estado y actualización de métricas">
+                    {datos && (
+                        <span
+                            className={`Badge-OrigenDatos ${datos.esRespaldoMock ? "mock" : "vivo"}`}
+                            title={
+                                datos.esRespaldoMock
+                                    ? "Mostrando datos de respaldo locales por error de conexión"
+                                    : "Datos sincronizados desde el servidor"
+                            }
+                        >
+                            {datos.esRespaldoMock ? "Modo respaldo" : "Datos en vivo"}
+                        </span>
+                    )}
                     <button
                         type="button"
-                        className={`Btn-Periodo ${periodo === "7d" ? "activo" : ""}`}
-                        onClick={() => setPeriodo("7d")}
+                        className="Btn-RefrescarDash"
+                        onClick={() => void cargarDatos()}
+                        disabled={cargando}
                     >
-                        Últimos 7 días
-                    </button>
-                    <button
-                        type="button"
-                        className={`Btn-Periodo ${periodo === "mes" ? "activo" : ""}`}
-                        onClick={() => setPeriodo("mes")}
-                    >
-                        Este Mes
-                    </button>
-                    <button
-                        type="button"
-                        className={`Btn-Periodo ${periodo === "trimestre" ? "activo" : ""}`}
-                        onClick={() => setPeriodo("trimestre")}
-                    >
-                        Último Trimestre
+                        <FaRedo aria-hidden="true" /> Actualizar
                     </button>
                 </div>
             </header>
@@ -108,7 +105,7 @@ function DashboardAdministrador() {
                 <section className="EstadoError-Dashboard" role="alert">
                     <FaExclamationTriangle className="Icono-ErrorDash" />
                     <p>{error}</p>
-                    <button type="button" className="Btn-ReintentarDash" onClick={() => void cargarDatos(periodo)}>
+                    <button type="button" className="Btn-ReintentarDash" onClick={() => void cargarDatos()}>
                         <FaRedo /> Reintentar
                     </button>
                 </section>
@@ -200,36 +197,42 @@ function DashboardAdministrador() {
                                 </div>
                             </div>
 
-                            <div className="Contenedor-Barras-Tendencia" role="img" aria-label="Gráfico de evolución temporal">
-                                {datos.tendencia.map((item) => {
-                                    const pctAsist = (item.asistidas / maxValorTendencia) * 100;
-                                    const pctInasist = (item.inasistencias / maxValorTendencia) * 100;
-                                    const pctCanc = (item.canceladasAnticipadas / maxValorTendencia) * 100;
-                                    return (
-                                        <div key={item.periodo} className="Columna-Tendencia">
-                                            <div className="Barra-Apilada-Wrapper">
-                                                <div
-                                                    className="Segmento-Barra cancelada"
-                                                    style={{ height: `${pctCanc}%` }}
-                                                    title={`Canceladas con aviso: ${item.canceladasAnticipadas}`}
-                                                />
-                                                <div
-                                                    className="Segmento-Barra inasistencia"
-                                                    style={{ height: `${pctInasist}%` }}
-                                                    title={`Inasistencias (No-Show): ${item.inasistencias}`}
-                                                />
-                                                <div
-                                                    className="Segmento-Barra asistida"
-                                                    style={{ height: `${pctAsist}%` }}
-                                                    title={`Asistidas: ${item.asistidas}`}
-                                                />
+                            {datos.tendencia.length === 0 ? (
+                                <div className="EmptyState-Dashboard">
+                                    Sin datos de evolución temporal registrados.
+                                </div>
+                            ) : (
+                                <div className="Contenedor-Barras-Tendencia" role="img" aria-label="Gráfico de evolución temporal">
+                                    {datos.tendencia.map((item) => {
+                                        const pctAsist = (item.asistidas / maxValorTendencia) * 100;
+                                        const pctInasist = (item.inasistencias / maxValorTendencia) * 100;
+                                        const pctCanc = (item.canceladasAnticipadas / maxValorTendencia) * 100;
+                                        return (
+                                            <div key={item.periodo} className="Columna-Tendencia">
+                                                <div className="Barra-Apilada-Wrapper">
+                                                    <div
+                                                        className="Segmento-Barra cancelada"
+                                                        style={{ height: `${pctCanc}%` }}
+                                                        title={`Canceladas con aviso: ${item.canceladasAnticipadas}`}
+                                                    />
+                                                    <div
+                                                        className="Segmento-Barra inasistencia"
+                                                        style={{ height: `${pctInasist}%` }}
+                                                        title={`Inasistencias (No-Show): ${item.inasistencias}`}
+                                                    />
+                                                    <div
+                                                        className="Segmento-Barra asistida"
+                                                        style={{ height: `${pctAsist}%` }}
+                                                        title={`Asistidas: ${item.asistidas}`}
+                                                    />
+                                                </div>
+                                                <span className="Label-Periodo-Barra">{item.periodo}</span>
+                                                <span className="Badge-Tasa-Mini">{item.tasaAusentismo}% aus.</span>
                                             </div>
-                                            <span className="Label-Periodo-Barra">{item.periodo}</span>
-                                            <span className="Badge-Tasa-Mini">{item.tasaAusentismo}% aus.</span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </article>
 
                         {/* Gráfico 2: Donut Chart de Distribución de Estados */}
@@ -241,69 +244,75 @@ function DashboardAdministrador() {
                                 </div>
                             </div>
 
-                            <div className="Contenedor-Donut-Flex">
-                                <svg
-                                    viewBox="0 0 180 180"
-                                    className="Donut-SVG"
-                                    role="img"
-                                    aria-label="Gráfico circular de distribución de citas"
-                                >
-                                    {(() => {
-                                        const radio = 65;
-                                        const circunferencia = 2 * Math.PI * radio;
-                                        let offsetAcumulado = 0;
+                            {datos.distribucion.length === 0 ? (
+                                <div className="EmptyState-Dashboard">
+                                    Sin distribución de estados registrada.
+                                </div>
+                            ) : (
+                                <div className="Contenedor-Donut-Flex">
+                                    <svg
+                                        viewBox="0 0 180 180"
+                                        className="Donut-SVG"
+                                        role="img"
+                                        aria-label="Gráfico circular de distribución de citas"
+                                    >
+                                        {(() => {
+                                            const radio = 65;
+                                            const circunferencia = 2 * Math.PI * radio;
+                                            let offsetAcumulado = 0;
 
-                                        return datos.distribucion.map((seg) => {
-                                            const longitud = (seg.porcentaje / 100) * circunferencia;
-                                            const dashArray = `${longitud} ${circunferencia - longitud}`;
-                                            const dashOffset = -offsetAcumulado;
-                                            offsetAcumulado += longitud;
-                                            const esActivo = estadoActivoDonut === seg.estado;
+                                            return datos.distribucion.map((seg) => {
+                                                const longitud = (seg.porcentaje / 100) * circunferencia;
+                                                const dashArray = `${longitud} ${circunferencia - longitud}`;
+                                                const dashOffset = -offsetAcumulado;
+                                                offsetAcumulado += longitud;
+                                                const esActivo = estadoActivoDonut === seg.estado;
 
-                                            return (
-                                                <circle
-                                                    key={seg.estado}
-                                                    cx="90"
-                                                    cy="90"
-                                                    r={radio}
-                                                    fill="transparent"
-                                                    stroke={seg.color}
-                                                    strokeWidth={esActivo ? 26 : 22}
-                                                    strokeDasharray={dashArray}
-                                                    strokeDashoffset={dashOffset}
-                                                    transform="rotate(-90 90 90)"
-                                                    className="Donut-Segmento"
-                                                    onMouseEnter={() => setEstadoActivoDonut(seg.estado)}
-                                                    onMouseLeave={() => setEstadoActivoDonut(null)}
-                                                />
-                                            );
-                                        });
-                                    })()}
-                                    <text x="90" y="86" textAnchor="middle" className="Donut-Texto-Centro-Valor">
-                                        {estadoActivoDonut
-                                            ? `${datos.distribucion.find((d) => d.estado === estadoActivoDonut)?.porcentaje}%`
-                                            : `${datos.kpis.tasaAsistencia}%`}
-                                    </text>
-                                    <text x="90" y="105" textAnchor="middle" className="Donut-Texto-Centro-Label">
-                                        {estadoActivoDonut || "Asistencia"}
-                                    </text>
-                                </svg>
+                                                return (
+                                                    <circle
+                                                        key={seg.estado}
+                                                        cx="90"
+                                                        cy="90"
+                                                        r={radio}
+                                                        fill="transparent"
+                                                        stroke={seg.color}
+                                                        strokeWidth={esActivo ? 26 : 22}
+                                                        strokeDasharray={dashArray}
+                                                        strokeDashoffset={dashOffset}
+                                                        transform="rotate(-90 90 90)"
+                                                        className="Donut-Segmento"
+                                                        onMouseEnter={() => setEstadoActivoDonut(seg.estado)}
+                                                        onMouseLeave={() => setEstadoActivoDonut(null)}
+                                                    />
+                                                );
+                                            });
+                                        })()}
+                                        <text x="90" y="86" textAnchor="middle" className="Donut-Texto-Centro-Valor">
+                                            {estadoActivoDonut
+                                                ? `${datos.distribucion.find((d) => d.estado === estadoActivoDonut)?.porcentaje}%`
+                                                : `${datos.kpis.tasaAsistencia}%`}
+                                        </text>
+                                        <text x="90" y="105" textAnchor="middle" className="Donut-Texto-Centro-Label">
+                                            {estadoActivoDonut || "Asistencia"}
+                                        </text>
+                                    </svg>
 
-                                <ul className="Lista-Leyenda-Donut">
-                                    {datos.distribucion.map((seg) => (
-                                        <li
-                                            key={seg.estado}
-                                            className={`Item-Leyenda-Donut ${estadoActivoDonut === seg.estado ? "resaltado" : ""}`}
-                                            onMouseEnter={() => setEstadoActivoDonut(seg.estado)}
-                                            onMouseLeave={() => setEstadoActivoDonut(null)}
-                                        >
-                                            <span className="Color-Box-Donut" style={{ backgroundColor: seg.color }} />
-                                            <span className="Estado-Nombre-Donut">{seg.estado}</span>
-                                            <strong className="Estado-Pct-Donut">{seg.porcentaje}%</strong>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                                    <ul className="Lista-Leyenda-Donut">
+                                        {datos.distribucion.map((seg) => (
+                                            <li
+                                                key={seg.estado}
+                                                className={`Item-Leyenda-Donut ${estadoActivoDonut === seg.estado ? "resaltado" : ""}`}
+                                                onMouseEnter={() => setEstadoActivoDonut(seg.estado)}
+                                                onMouseLeave={() => setEstadoActivoDonut(null)}
+                                            >
+                                                <span className="Color-Box-Donut" style={{ backgroundColor: seg.color }} />
+                                                <span className="Estado-Nombre-Donut">{seg.estado}</span>
+                                                <strong className="Estado-Pct-Donut">{seg.porcentaje}%</strong>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </article>
                     </section>
 
@@ -318,27 +327,33 @@ function DashboardAdministrador() {
                                 </div>
                             </div>
 
-                            <div className="Lista-Barras-Horizontales">
-                                {datos.porEspecialidad.map((esp) => {
-                                    const critico = esp.tasaAusentismo >= 14;
-                                    return (
-                                        <div key={esp.especialidad} className="Fila-Barra-Horizontal">
-                                            <div className="Fila-Barra-Info">
-                                                <span className="Nombre-Esp">{esp.especialidad}</span>
-                                                <span className={`Valor-Esp ${critico ? "critico" : ""}`}>
-                                                    {esp.tasaAusentismo.toFixed(1)}% ({esp.inasistencias}/{esp.totalCitas})
-                                                </span>
+                            {datos.porEspecialidad.length === 0 ? (
+                                <div className="EmptyState-Dashboard">
+                                    Sin métricas por especialidad registradas.
+                                </div>
+                            ) : (
+                                <div className="Lista-Barras-Horizontales">
+                                    {datos.porEspecialidad.map((esp) => {
+                                        const critico = esp.tasaAusentismo >= 14;
+                                        return (
+                                            <div key={esp.especialidad} className="Fila-Barra-Horizontal">
+                                                <div className="Fila-Barra-Info">
+                                                    <span className="Nombre-Esp">{esp.especialidad}</span>
+                                                    <span className={`Valor-Esp ${critico ? "critico" : ""}`}>
+                                                        {esp.tasaAusentismo.toFixed(1)}% ({esp.inasistencias}/{esp.totalCitas})
+                                                    </span>
+                                                </div>
+                                                <div className="Track-Barra">
+                                                    <div
+                                                        className={`Fill-Barra ${critico ? "rojo" : "azul"}`}
+                                                        style={{ width: `${Math.min(esp.tasaAusentismo * 4, 100)}%` }}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="Track-Barra">
-                                                <div
-                                                    className={`Fill-Barra ${critico ? "rojo" : "azul"}`}
-                                                    style={{ width: `${Math.min(esp.tasaAusentismo * 4, 100)}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </article>
 
                         {/* Ausentismo por Franja Horaria */}
@@ -350,27 +365,33 @@ function DashboardAdministrador() {
                                 </div>
                             </div>
 
-                            <div className="Lista-Barras-Horizontales">
-                                {datos.porHorario.map((hor) => {
-                                    const critico = hor.tasaAusentismo >= 15;
-                                    return (
-                                        <div key={hor.franja} className="Fila-Barra-Horizontal">
-                                            <div className="Fila-Barra-Info">
-                                                <span className="Nombre-Esp">{hor.franja}</span>
-                                                <span className={`Valor-Esp ${critico ? "critico" : ""}`}>
-                                                    {hor.tasaAusentismo.toFixed(1)}%
-                                                </span>
+                            {datos.porHorario.length === 0 ? (
+                                <div className="EmptyState-Dashboard">
+                                    Sin datos de horarios críticos registrados.
+                                </div>
+                            ) : (
+                                <div className="Lista-Barras-Horizontales">
+                                    {datos.porHorario.map((hor) => {
+                                        const critico = hor.tasaAusentismo >= 15;
+                                        return (
+                                            <div key={hor.franja} className="Fila-Barra-Horizontal">
+                                                <div className="Fila-Barra-Info">
+                                                    <span className="Nombre-Esp">{hor.franja}</span>
+                                                    <span className={`Valor-Esp ${critico ? "critico" : ""}`}>
+                                                        {hor.tasaAusentismo.toFixed(1)}%
+                                                    </span>
+                                                </div>
+                                                <div className="Track-Barra">
+                                                    <div
+                                                        className={`Fill-Barra ${critico ? "ambar" : "verde"}`}
+                                                        style={{ width: `${Math.min(hor.tasaAusentismo * 4, 100)}%` }}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="Track-Barra">
-                                                <div
-                                                    className={`Fill-Barra ${critico ? "ambar" : "verde"}`}
-                                                    style={{ width: `${Math.min(hor.tasaAusentismo * 4, 100)}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </article>
 
                         {/* Efectividad OMRO */}
@@ -421,7 +442,9 @@ function DashboardAdministrador() {
                                     <div>
                                         <span>Conversión</span>
                                         <strong>
-                                            {Math.round((datos.omro.confirmacionesRecibidas / datos.omro.recordatoriosEnviados) * 100)}%
+                                            {datos.omro.recordatoriosEnviados > 0
+                                                ? Math.round((datos.omro.confirmacionesRecibidas / datos.omro.recordatoriosEnviados) * 100)
+                                                : 0}%
                                         </strong>
                                     </div>
                                 </div>
@@ -438,66 +461,72 @@ function DashboardAdministrador() {
                             </div>
                         </div>
 
-                        <div className="Tabla-Responsive-Wrapper">
-                            <table className="Tabla-Riesgo">
-                                <thead>
-                                    <tr>
-                                        <th>Paciente</th>
-                                        <th>Especialidad / Médico</th>
-                                        <th>Fecha y Hora</th>
-                                        <th>Riesgo</th>
-                                        <th>Factor Detectado</th>
-                                        <th>Estado Aviso</th>
-                                        <th>Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {datos.alertasRiesgo.map((cita) => (
-                                        <tr key={cita.id}>
-                                            <td>
-                                                <div className="Celda-Paciente">
-                                                    <strong>{cita.paciente}</strong>
-                                                    <span>{cita.rut}</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div className="Celda-Paciente">
-                                                    <strong>{cita.especialidad}</strong>
-                                                    <span>{cita.medico}</span>
-                                                </div>
-                                            </td>
-                                            <td>{cita.fecha} - {cita.hora}</td>
-                                            <td>
-                                                <span className={`Badge-Riesgo ${cita.nivelRiesgo.toLowerCase()}`}>
-                                                    {cita.nivelRiesgo} ({cita.probabilidadAusentismo}%)
-                                                </span>
-                                            </td>
-                                            <td className="Celda-Factor">{cita.factorPrincipal}</td>
-                                            <td>
-                                                <span className={`Badge-Aviso ${cita.estadoRecordatorio.toLowerCase()}`}>
-                                                    {cita.estadoRecordatorio}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {cita.estadoRecordatorio === "Pendiente" ? (
-                                                    <button
-                                                        type="button"
-                                                        className="Btn-Accion-OMRO"
-                                                        onClick={() => manejarEnviarRecordatorio(cita.id, cita.paciente)}
-                                                    >
-                                                        <FaBell aria-hidden="true" /> Enviar OMRO
-                                                    </button>
-                                                ) : (
-                                                    <span className="Texto-Gestionado">
-                                                        <FaCheckCircle aria-hidden="true" /> Gestionado
-                                                    </span>
-                                                )}
-                                            </td>
+                        {datos.alertasRiesgo.length === 0 ? (
+                            <div className="EmptyState-Dashboard">
+                                No hay citas futuras en riesgo alto o medio de inasistencia en este momento.
+                            </div>
+                        ) : (
+                            <div className="Tabla-Responsive-Wrapper">
+                                <table className="Tabla-Riesgo">
+                                    <thead>
+                                        <tr>
+                                            <th>Paciente</th>
+                                            <th>Especialidad / Médico</th>
+                                            <th>Fecha y Hora</th>
+                                            <th>Riesgo</th>
+                                            <th>Factor Detectado</th>
+                                            <th>Estado Aviso</th>
+                                            <th>Acción</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        {datos.alertasRiesgo.map((cita) => (
+                                            <tr key={cita.id}>
+                                                <td>
+                                                    <div className="Celda-Paciente">
+                                                        <strong>{cita.paciente}</strong>
+                                                        <span>{cita.rut}</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div className="Celda-Paciente">
+                                                        <strong>{cita.especialidad}</strong>
+                                                        <span>{cita.medico}</span>
+                                                    </div>
+                                                </td>
+                                                <td>{cita.fecha} - {cita.hora}</td>
+                                                <td>
+                                                    <span className={`Badge-Riesgo ${cita.nivelRiesgo.toLowerCase()}`}>
+                                                        {cita.nivelRiesgo} ({cita.probabilidadAusentismo}%)
+                                                    </span>
+                                                </td>
+                                                <td className="Celda-Factor">{cita.factorPrincipal}</td>
+                                                <td>
+                                                    <span className={`Badge-Aviso ${cita.estadoRecordatorio.toLowerCase()}`}>
+                                                        {cita.estadoRecordatorio}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {cita.estadoRecordatorio === "Pendiente" ? (
+                                                        <button
+                                                            type="button"
+                                                            className="Btn-Accion-OMRO"
+                                                            onClick={() => manejarEnviarRecordatorio(cita.id, cita.paciente)}
+                                                        >
+                                                            <FaBell aria-hidden="true" /> Enviar OMRO
+                                                        </button>
+                                                    ) : (
+                                                        <span className="Texto-Gestionado">
+                                                            <FaCheckCircle aria-hidden="true" /> Gestionado
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </section>
                 </>
             )}

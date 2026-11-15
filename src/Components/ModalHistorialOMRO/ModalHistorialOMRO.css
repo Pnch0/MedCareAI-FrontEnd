@@ -1,0 +1,406 @@
+.ModalHistorialOMRO-Backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.52);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    padding: 16px;
+}
+
+.ModalHistorialOMRO-Contenedor {
+    background-color: #FFFFFF;
+    width: 720px;
+    max-width: 100%;
+    max-height: 86dvh;
+    border-radius: 14px;
+    border: 1px solid #E1EAEF;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalHistorialOmroFadeIn 0.18s ease-out;
+}
+
+@keyframes modalHistorialOmroFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.ModalHistorialOMRO-Header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 24px;
+    border-bottom: 1px solid #E1EAEF;
+    background-color: #F8FAFC;
+}
+
+.ModalHistorialOMRO-HeaderIzq {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.ModalHistorialOMRO-IconoHeader {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background-color: #E0F2FE;
+    color: #0369A1;
+    border: 1px solid #BAE6FD;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.ModalHistorialOMRO-TituloGrupo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.ModalHistorialOMRO-Subtitulo {
+    font-size: 12px;
+    font-weight: 600;
+    color: #0369A1;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.ModalHistorialOMRO-Titulo {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0F172A;
+    line-height: 1.25;
+}
+
+.ModalHistorialOMRO-BtnCerrar {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background-color: transparent;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.ModalHistorialOMRO-BtnCerrar:hover {
+    background-color: #E2E8F0;
+    color: #0F172A;
+}
+
+.ModalHistorialOMRO-BtnCerrar:focus-visible {
+    outline: 2px solid #1E9CF1;
+    outline-offset: 2px;
+}
+
+.ModalHistorialOMRO-Filtros {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E1EAEF;
+    flex-wrap: wrap;
+}
+
+.ModalHistorialOMRO-Tab {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid #E2E8F0;
+    background-color: #F8FAFC;
+    color: #475569;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.ModalHistorialOMRO-Tab:hover {
+    background-color: #E0F2FE;
+    color: #0369A1;
+    border-color: #BAE6FD;
+}
+
+.ModalHistorialOMRO-Tab.activo {
+    background-color: #1E9CF1;
+    color: #FFFFFF;
+    border-color: #1E9CF1;
+}
+
+.ModalHistorialOMRO-Tab:focus-visible {
+    outline: 2px solid #1E9CF1;
+    outline-offset: 2px;
+}
+
+.ModalHistorialOMRO-Body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px 24px;
+    background-color: #F8FAFC;
+}
+
+.ModalHistorialOMRO-Body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ModalHistorialOMRO-Body::-webkit-scrollbar-thumb {
+    background-color: #CBD5E1;
+    border-radius: 8px;
+}
+
+.ModalHistorialOMRO-EstadoVacio {
+    padding: 40px 16px;
+    text-align: center;
+    color: #475569;
+    font-size: 14px;
+}
+
+.ModalHistorialOMRO-Lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ModalHistorialOMRO-Item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 16px;
+    background-color: #FFFFFF;
+    border: 1px solid #E1EAEF;
+    border-radius: 12px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ModalHistorialOMRO-Item:hover {
+    border-color: #BAE6FD;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.ModalHistorialOMRO-Letra {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.ModalHistorialOMRO-Letra.accion-sobrecupo {
+    background-color: #E0F2FE;
+    color: #0369A1;
+    border: 1px solid #BAE6FD;
+}
+
+.ModalHistorialOMRO-Letra.accion-recordatorio {
+    background-color: #DCFCE7;
+    color: #15803D;
+    border: 1px solid #BBF7D0;
+}
+
+.ModalHistorialOMRO-Letra.accion-reasignacion {
+    background-color: #FEF3C7;
+    color: #B45309;
+    border: 1px solid #FDE68A;
+}
+
+.ModalHistorialOMRO-Letra.accion-otro {
+    background-color: #F1F5F9;
+    color: #475569;
+    border: 1px solid #CBD5E1;
+}
+
+.ModalHistorialOMRO-ItemInfo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ModalHistorialOMRO-ItemTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.ModalHistorialOMRO-ItemTop h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+.ModalHistorialOMRO-BadgeEstado {
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.ModalHistorialOMRO-BadgeEstado.estado-pending {
+    background-color: #E0F2FE;
+    color: #0369A1;
+}
+
+.ModalHistorialOMRO-BadgeEstado.estado-approved {
+    background-color: #DCFCE7;
+    color: #15803D;
+}
+
+.ModalHistorialOMRO-BadgeEstado.estado-rejected {
+    background-color: #F1F5F9;
+    color: #475569;
+}
+
+.ModalHistorialOMRO-ItemDesc {
+    margin: 0;
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.45;
+}
+
+.ModalHistorialOMRO-ItemMeta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
+.ModalHistorialOMRO-MetaFecha {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748B;
+}
+
+.ModalHistorialOMRO-MetaRiesgo {
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.ModalHistorialOMRO-MetaRiesgo.alto {
+    background-color: #FEE2E2;
+    color: #B91C1C;
+}
+
+.ModalHistorialOMRO-MetaRiesgo.medio {
+    background-color: #FEF3C7;
+    color: #B45309;
+}
+
+.ModalHistorialOMRO-MetaTipo {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.ModalHistorialOMRO-BtnAtender {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: none;
+    background-color: #1E9CF1;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.ModalHistorialOMRO-BtnAtender:hover {
+    background-color: #0284C7;
+}
+
+.ModalHistorialOMRO-BtnAtender:focus-visible {
+    outline: 2px solid #1E9CF1;
+    outline-offset: 2px;
+}
+
+.ModalHistorialOMRO-Footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 14px 24px;
+    border-top: 1px solid #E1EAEF;
+    background-color: #FFFFFF;
+}
+
+.ModalHistorialOMRO-BtnCerrarFooter {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid #CBD5E1;
+    background-color: #FFFFFF;
+    color: #0F172A;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.ModalHistorialOMRO-BtnCerrarFooter:hover {
+    background-color: #F1F5F9;
+    border-color: #94A3B8;
+}
+
+.ModalHistorialOMRO-BtnCerrarFooter:focus-visible {
+    outline: 2px solid #1E9CF1;
+    outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+    .ModalHistorialOMRO-Header,
+    .ModalHistorialOMRO-Filtros,
+    .ModalHistorialOMRO-Body,
+    .ModalHistorialOMRO-Footer {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .ModalHistorialOMRO-Item {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .ModalHistorialOMRO-BtnAtender {
+        margin-left: 0;
+    }
+}

@@ -83,8 +83,10 @@
     height: 10dvh;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     color: #1E9CF1;
-    padding-left: 20px;
+    padding: 0 14px 0 20px;
+    box-sizing: border-box;
 }
 
 .ContenedorListado-IzquierdaHome{
@@ -475,4 +477,71 @@
 .ContenedorBotones-DerechaHome button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.Header-ColumnaHistorial {
+    width: 10%;
+    min-width: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.Btn-EncabezadoHistorial {
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: #0369A1;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.Btn-EncabezadoHistorial:hover {
+    background-color: #E0F2FE;
+    border-color: #BAE6FD;
+    color: #0284C7;
+}
+
+.Btn-EncabezadoHistorial:focus-visible,
+.Btn-LetraHistorial:focus-visible,
+.Btn-VerHistorialVacio:focus-visible {
+    outline: 2px solid #1E9CF1;
+    outline-offset: 2px;
+}
+
+.Btn-LetraHistorial {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.Btn-LetraHistorial:hover {
+    transform: translateY(-1px) scale(1.04);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+    filter: brightness(0.97);
+}
+
+.Btn-LetraHistorial h1 {
+    margin: 0;
+    font-size: inherit;
+    line-height: 1;
+}
+
+.Btn-VerHistorialVacio {
+    margin-top: 10px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #BAE6FD;
+    background-color: #E0F2FE;
+    color: #0369A1;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.Btn-VerHistorialVacio:hover {
+    background-color: #BAE6FD;
 }
