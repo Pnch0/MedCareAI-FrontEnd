@@ -94,12 +94,12 @@
     height: 80px;
     display: flex;
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: center;
 }
 
 .CardBox-Inferior button{
     background-color: #1E9CF1;
-    padding: 10px 20px;
+    padding: 10px 36px;
     color: #FFFFFF;
     border-radius: 10px;
     outline: none;

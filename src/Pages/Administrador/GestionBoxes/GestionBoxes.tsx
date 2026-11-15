@@ -98,13 +98,6 @@ function GestionBoxesAdminitrador(){
         }
     };
 
-    const eliminarBox = (id: string | number) => {
-        const confirmar = window.confirm('¿Estas seguro de eliminar este box?');
-        if (confirmar) {
-            setBoxes(prev => prev.filter(box => box.id !== id));
-        }
-    };
-
     return(
         <>
         <div className="ContenedorPrincipal-GestionBoxes">
@@ -137,7 +130,6 @@ function GestionBoxesAdminitrador(){
                             </div>
                             <div className="CardBox-Inferior">
                                 <button type="button" onClick={() => abrirModalEditar(box)}>Editar</button>
-                                <button type="button" onClick={() => eliminarBox(box.id)}>Eliminar</button>
                             </div>
                         </div>
                     ))
