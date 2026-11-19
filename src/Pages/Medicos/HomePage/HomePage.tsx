@@ -254,8 +254,9 @@ function HomePageMedico(){
             // 3. Actualizar estado reactivo
             setCitasDelDia(prev => prev.map(c => c.id === id ? { ...c, estado: 'en-curso', estadoTexto: 'En curso' } : c));
             toast.info('Cita médica iniciada');
-        } catch (err: any) {
-            toast.error(`Error al iniciar cita: ${err.message}`);
+        } catch (err: unknown) {
+            const mensaje = err instanceof Error && err.message ? err.message : 'Error inesperado al iniciar cita';
+            toast.error(`Error al iniciar cita: ${mensaje}`);
         }
     };
 
@@ -277,8 +278,9 @@ function HomePageMedico(){
             // 3. Actualizar estado reactivo (automáticamente pasa a la siguiente)
             setCitasDelDia(prev => prev.map(c => c.id === id ? { ...c, estado: 'finalizada', estadoTexto: 'Finalizada' } : c));
             toast.success('Cita médica finalizada exitosamente');
-        } catch (err: any) {
-            toast.error(`Error al finalizar cita: ${err.message}`);
+        } catch (err: unknown) {
+            const mensaje = err instanceof Error && err.message ? err.message : 'Error inesperado al finalizar cita';
+            toast.error(`Error al finalizar cita: ${mensaje}`);
         }
     };
 

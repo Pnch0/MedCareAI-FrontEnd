@@ -282,32 +282,72 @@ export function resolverBox(boxId: string | number | undefined, mapaBoxes?: Map<
     return 1;
 }
 
+export type EstadoCitaBackend =
+    | 'confirmada'
+    | 'check_in'
+    | 'en_curso'
+    | 'finalizada'
+    | 'cancelada'
+    | 'no_asistio';
+
+export interface UpdateAppointmentStatusRequestDto {
+    estado: EstadoCitaBackend;
+    reason?: string;
+}
+
+function normalizarEstadoParaBackend(
+    estado: EstadoCitaBackend | 'en-curso' | 'asistio' | 'presente' | string
+): EstadoCitaBackend | null {
+    const norm = estado.trim().toLowerCase().replace(/-/g, '_');
+    if (norm === 'confirmada' || norm === 'confirmado') return 'confirmada';
+    if (norm === 'check_in' || norm === 'checkin' || norm === 'asistio' || norm === 'presente') return 'check_in';
+    if (norm === 'en_curso' || norm === 'encurso') return 'en_curso';
+    if (norm === 'finalizada' || norm === 'finalizado') return 'finalizada';
+    if (norm === 'cancelada' || norm === 'cancelado') return 'cancelada';
+    if (norm === 'no_asistio' || norm === 'noasistio') return 'no_asistio';
+    return null;
+}
+
 /**
  * Envía la actualización de estado de la consulta médica al AppointmentsController:
  * PATCH /api/Appointments/{id}/estado
- * Body: { estado: 'en_curso' | 'finalizada' }
+ * Body: { estado: 'confirmada' | 'check_in' | 'en_curso' | 'finalizada' | 'cancelada' | 'no_asistio', reason?: string }
  */
 export async function actualizarEstadoCitaBackend(
-    citaId: string, 
-    estado: 'en_curso' | 'finalizada' | 'presente' | 'asistio' | 'no_asistio' | string
+    citaId: string,
+    estado: EstadoCitaBackend | 'en-curso' | 'presente' | 'asistio' | string,
+    reason?: string
 ): Promise<boolean> {
     if (!citaId) return false;
 
-    // El backend en C# tiene la ruta [HttpPatch("{id:guid}/estado")]
+    const estadoBackend = normalizarEstadoParaBackend(estado);
+    if (!estadoBackend) {
+        throw new Error(`El estado "${estado}" no es válido o no está soportado.`);
+    }
+
     const esGuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(citaId);
     if (!esGuid) {
         console.warn(`ID de cita (${citaId}) no tiene formato GUID estándar, solo se guardará localmente.`);
         return false;
     }
 
+    const payload: UpdateAppointmentStatusRequestDto = {
+        estado: estadoBackend,
+        ...(reason ? { reason } : {})
+    };
+
     try {
         await apiClient(`/api/Appointments/${citaId}/estado`, {
             method: 'PATCH',
-            body: JSON.stringify({ estado })
+            body: JSON.stringify(payload)
         });
         return true;
-    } catch (error: any) {
-        console.warn(`Error al actualizar estado ${estado} en backend:`, error.message);
+    } catch (error: unknown) {
+        if (isAgendaHttpClientError(error)) {
+            throw error;
+        }
+        const mensaje = error instanceof Error ? error.message : String(error);
+        console.warn(`Error de red al actualizar estado ${estadoBackend} en backend:`, mensaje);
         return false;
     }
 }

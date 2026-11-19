@@ -175,8 +175,9 @@ function GestionCitasMedico(){
             // 3. Actualizar estado visual
             setCitas(prev => prev.map(cita => cita.id === id ? { ...cita, estado: 'en-curso' } : cita));
             toast.info('Cita médica iniciada');
-        } catch (err: any) {
-            toast.error(`Error al iniciar cita: ${err.message}`);
+        } catch (err: unknown) {
+            const mensaje = err instanceof Error && err.message ? err.message : 'Error inesperado al iniciar cita';
+            toast.error(`Error al iniciar cita: ${mensaje}`);
         }
     };
 
@@ -198,8 +199,9 @@ function GestionCitasMedico(){
             // 3. Remover la cita finalizada de la vista activa
             setCitas(prev => prev.filter(cita => cita.id !== id));
             toast.success('Cita médica finalizada exitosamente');
-        } catch (err: any) {
-            toast.error(`Error al finalizar cita: ${err.message}`);
+        } catch (err: unknown) {
+            const mensaje = err instanceof Error && err.message ? err.message : 'Error inesperado al finalizar cita';
+            toast.error(`Error al finalizar cita: ${mensaje}`);
         }
     };
 
