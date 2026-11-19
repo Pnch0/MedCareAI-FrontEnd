@@ -133,7 +133,7 @@ function HomePageRecepcionista() {
         if (!tareaActivaOMRO || procesandoOMRO) return;
         setProcesandoOMRO(true);
         try {
-            const exito = await resolverTareaOMRO(tareaActivaOMRO.id, decision);
+            const exito = await resolverTareaOMRO(tareaActivaOMRO.id, decision, tareaActivaOMRO);
             if (exito) {
                 setTareasOMRO((prev) =>
                     prev.map((t) => (t.id === tareaActivaOMRO.id ? { ...t, status: decision } : t))
@@ -332,15 +332,13 @@ function HomePageRecepcionista() {
                             ) : tareasPendientesOMRO.length === 0 ? (
                                 <div className="EmptyState-OMRO-Recepcionista" role="status">
                                     <p>No hay acciones pendientes por realizar en el Panel de Orquestación.</p>
-                                    {tareasOMRO.length > 0 && (
-                                        <button
-                                            type="button"
-                                            className="Btn-VerHistorialVacio-Recepcionista"
-                                            onClick={() => setModalHistorialAbierto(true)}
-                                        >
-                                            Ver Historial OMRO ({tareasOMRO.length})
-                                        </button>
-                                    )}
+                                    <button
+                                        type="button"
+                                        className="Btn-VerHistorialVacio-Recepcionista"
+                                        onClick={() => setModalHistorialAbierto(true)}
+                                    >
+                                        Ver Historial OMRO{tareasOMRO.length > 0 ? ` (${tareasOMRO.length})` : ""}
+                                    </button>
                                 </div>
                             ) : (
                                 tareasPendientesOMRO.map((tarea) => {

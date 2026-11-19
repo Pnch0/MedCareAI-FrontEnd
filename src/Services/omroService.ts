@@ -378,14 +378,86 @@ export async function obtenerResolucionesPendientesOMRO(): Promise<ResolutionTas
     return [];
 }
 
+const OMRO_RESOLVED_CACHE_KEY = 'medcare_omro_resolved_cache';
+
+function leerCacheResueltas(): ResolutionTask[] {
+    try {
+        const raw = localStorage.getItem(OMRO_RESOLVED_CACHE_KEY);
+        if (!raw) return [];
+        const parsed: unknown = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.filter(
+            (item): item is ResolutionTask =>
+                Boolean(item) &&
+                typeof item === 'object' &&
+                typeof (item as ResolutionTask).id === 'string' &&
+                typeof (item as ResolutionTask).status === 'string'
+        );
+    } catch {
+        return [];
+    }
+}
+
+function guardarEnCacheResueltas(tarea: ResolutionTask): void {
+    try {
+        const actuales = leerCacheResueltas();
+        const filtradas = actuales.filter((t) => t.id !== tarea.id);
+        const actualizadas = [tarea, ...filtradas].slice(0, 50);
+        localStorage.setItem(OMRO_RESOLVED_CACHE_KEY, JSON.stringify(actualizadas));
+    } catch {
+        // Ignorar errores de cuota de almacenamiento
+    }
+}
+
+async function persistirEnSupabase(
+    taskId: string,
+    decision: 'Approved' | 'Rejected',
+    tareaOriginal?: ResolutionTask
+): Promise<boolean> {
+    try {
+        if (tareaOriginal) {
+            const { error } = await supabase
+                .from('ai_resolution_tasks')
+                .upsert(
+                    {
+                        id: taskId,
+                        resource_id: tareaOriginal.resourceId || null,
+                        risk_probability: tareaOriginal.riskProbability,
+                        ai_plan_json: tareaOriginal.aiPlanRaw,
+                        status: decision,
+                        created_at: tareaOriginal.createdAtIso || new Date().toISOString()
+                    },
+                    { onConflict: 'id' }
+                );
+            return !error;
+        }
+
+        const { error } = await supabase
+            .from('ai_resolution_tasks')
+            .update({ status: decision })
+            .eq('id', taskId);
+        return !error;
+    } catch (err: unknown) {
+        console.warn('Error al persistir estado en ai_resolution_tasks:', err);
+        return false;
+    }
+}
+
 /**
- * Obtiene el historial completo de tareas OMRO (pendientes + resueltas) combinando
- * el endpoint GET /api/Resolutions/pending con la tabla ai_resolution_tasks de Supabase.
+ * Obtiene el historial completo de tareas OMRO (pendientes + aprobadas + rechazadas)
+ * combinando caché local de resueltas, Supabase (ai_resolution_tasks) y el backend C#.
  */
 export async function obtenerHistorialOMRO(): Promise<ResolutionTask[]> {
     const mapaTareas = new Map<string, ResolutionTask>();
 
-    // 1. Consultar historial completo en Supabase (ai_resolution_tasks)
+    // 1. Cargar historial resuelto persistido localmente (resiliencia ante falta de endpoint de historial)
+    for (const tareaCache of leerCacheResueltas()) {
+        if (tareaCache.id) {
+            mapaTareas.set(tareaCache.id, tareaCache);
+        }
+    }
+
+    // 2. Consultar historial completo en Supabase (ai_resolution_tasks)
     try {
         const { data, error } = await supabase
             .from('ai_resolution_tasks')
@@ -403,7 +475,22 @@ export async function obtenerHistorialOMRO(): Promise<ResolutionTask[]> {
         console.warn('No se pudo leer historial desde ai_resolution_tasks:', err);
     }
 
-    // 2. Consultar tareas pendientes vivas desde el motor C# (GET /api/Resolutions/pending)
+    // 3. Intentar consultar listado completo si el backend expone GET /api/Resolutions
+    try {
+        const historialBackend: unknown = await apiClient('/api/Resolutions', { method: 'GET' });
+        if (Array.isArray(historialBackend)) {
+            for (const dto of historialBackend as ResolutionTaskBackendDto[]) {
+                const tarea = normalizarResolutionTask(dto);
+                if (tarea.id) {
+                    mapaTareas.set(tarea.id, tarea);
+                }
+            }
+        }
+    } catch {
+        // El backend puede exponer únicamente /api/Resolutions/pending; continuamos sin interrumpir
+    }
+
+    // 4. Consultar tareas pendientes vivas desde el motor C# (GET /api/Resolutions/pending)
     try {
         const resBackend: unknown = await apiClient('/api/Resolutions/pending', { method: 'GET' });
         if (Array.isArray(resBackend)) {
@@ -415,7 +502,7 @@ export async function obtenerHistorialOMRO(): Promise<ResolutionTask[]> {
             }
         }
     } catch (apiErr: unknown) {
-        console.warn('GET /api/Resolutions/pending no disponible, manteniendo datos de Supabase:', apiErr);
+        console.warn('GET /api/Resolutions/pending no disponible, manteniendo datos de respaldo:', apiErr);
     }
 
     return Array.from(mapaTareas.values()).sort((a, b) => {
@@ -441,11 +528,12 @@ function isHttpClientError(error: unknown): error is HttpError {
 
 /**
  * Registra la decisión del administrador o recepcionista (Approved / Rejected) sobre una tarea OMRO.
- * Consume PATCH /api/Resolutions/{id}/approve|reject (204 NoContent) y sincroniza Supabase.
+ * Consume PATCH /api/Resolutions/{id}/approve|reject (204 NoContent) y persiste la resolución en Supabase y caché local.
  */
 export async function resolverTareaOMRO(
     taskId: string,
-    decision: 'Approved' | 'Rejected'
+    decision: 'Approved' | 'Rejected',
+    tareaOriginal?: ResolutionTask
 ): Promise<boolean> {
     let actualizadoBackend = false;
 
@@ -462,16 +550,14 @@ export async function resolverTareaOMRO(
         console.warn(`PATCH /api/Resolutions/${taskId}/${accionRuta} no disponible, intentando persistir en Supabase:`, err);
     }
 
-    try {
-        const { error } = await supabase
-            .from('ai_resolution_tasks')
-            .update({ status: decision })
-            .eq('id', taskId);
-
-        if (!error) return true;
-    } catch (err: unknown) {
-        console.warn('Error al actualizar estado en ai_resolution_tasks:', err);
+    if (tareaOriginal) {
+        guardarEnCacheResueltas({
+            ...tareaOriginal,
+            status: decision
+        });
     }
 
-    return actualizadoBackend;
+    const persistidoSupabase = await persistirEnSupabase(taskId, decision, tareaOriginal);
+
+    return actualizadoBackend || persistidoSupabase;
 }

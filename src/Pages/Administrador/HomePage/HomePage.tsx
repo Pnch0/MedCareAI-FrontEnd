@@ -110,7 +110,7 @@ function HomePageAdministrador() {
         if (!tareaActiva || procesando) return;
         setProcesando(true);
         try {
-            const exito = await resolverTareaOMRO(tareaActiva.id, decision);
+            const exito = await resolverTareaOMRO(tareaActiva.id, decision, tareaActiva);
             if (exito) {
                 setTareasOMRO((prev) =>
                     prev.map((t) => (t.id === tareaActiva.id ? { ...t, status: decision } : t))
@@ -202,15 +202,13 @@ function HomePageAdministrador() {
                         ) : tareasPendientes.length === 0 ? (
                             <div className="EmptyState-OMRO" role="status">
                                 <p>No hay acciones pendientes por realizar en el Panel de Orquestación.</p>
-                                {tareasOMRO.length > 0 && (
-                                    <button
-                                        type="button"
-                                        className="Btn-VerHistorialVacio"
-                                        onClick={() => setModalHistorialAbierto(true)}
-                                    >
-                                        Ver Historial OMRO ({tareasOMRO.length})
-                                    </button>
-                                )}
+                                <button
+                                    type="button"
+                                    className="Btn-VerHistorialVacio"
+                                    onClick={() => setModalHistorialAbierto(true)}
+                                >
+                                    Ver Historial OMRO{tareasOMRO.length > 0 ? ` (${tareasOMRO.length})` : ""}
+                                </button>
                             </div>
                         ) : (
                             tareasPendientes.map((tarea) => {
