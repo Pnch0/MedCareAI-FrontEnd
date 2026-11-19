@@ -148,7 +148,11 @@ function HomePageRecepcionista() {
             }
         } catch (err: unknown) {
             console.error("Error al resolver tarea OMRO:", err);
-            toast.error("Error al procesar la acción OMRO");
+            const mensaje =
+                err instanceof Error && err.message
+                    ? err.message
+                    : "Error al procesar la acción OMRO";
+            toast.error(mensaje);
         } finally {
             setProcesandoOMRO(false);
         }
@@ -326,7 +330,7 @@ function HomePageRecepcionista() {
                                     </div>
                                 ))
                             ) : tareasPendientesOMRO.length === 0 ? (
-                                <div className="EmptyState-OMRO-Recepcionista">
+                                <div className="EmptyState-OMRO-Recepcionista" role="status">
                                     <p>No hay acciones pendientes por realizar en el Panel de Orquestación.</p>
                                     {tareasOMRO.length > 0 && (
                                         <button
@@ -450,8 +454,8 @@ function HomePageRecepcionista() {
                                     </div>
                                 </>
                             ) : (
-                                <div className="EstadoVacio-AccionesOMRO">
-                                    <FaCheckCircle className="Icono-SinPendientes-Recepcionista" />
+                                <div className="EstadoVacio-AccionesOMRO" role="status">
+                                    <FaCheckCircle className="Icono-SinPendientes-Recepcionista" aria-hidden="true" />
                                     <h3>Sin decisiones pendientes</h3>
                                     <p>OMRO no tiene acciones por aprobar.</p>
                                 </div>

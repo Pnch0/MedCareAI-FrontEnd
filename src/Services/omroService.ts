@@ -425,8 +425,23 @@ export async function obtenerHistorialOMRO(): Promise<ResolutionTask[]> {
     });
 }
 
+interface HttpError extends Error {
+    status?: number;
+}
+
+function isHttpClientError(error: unknown): error is HttpError {
+    return (
+        error instanceof Error &&
+        'status' in error &&
+        typeof (error as HttpError).status === 'number' &&
+        (error as HttpError).status! >= 400 &&
+        (error as HttpError).status! < 500
+    );
+}
+
 /**
- * Registra la decisión del administrador (Approved / Rejected) sobre una tarea OMRO.
+ * Registra la decisión del administrador o recepcionista (Approved / Rejected) sobre una tarea OMRO.
+ * Consume PATCH /api/Resolutions/{id}/approve|reject (204 NoContent) y sincroniza Supabase.
  */
 export async function resolverTareaOMRO(
     taskId: string,
@@ -437,11 +452,14 @@ export async function resolverTareaOMRO(
     const accionRuta = decision === 'Approved' ? 'approve' : 'reject';
     try {
         await apiClient(`/api/Resolutions/${taskId}/${accionRuta}`, {
-            method: 'POST'
+            method: 'PATCH'
         });
         actualizadoBackend = true;
-    } catch {
-        // Si el backend no expone aún POST /{id}/approve|reject, persistimos en Supabase directamente
+    } catch (err: unknown) {
+        if (isHttpClientError(err)) {
+            throw err;
+        }
+        console.warn(`PATCH /api/Resolutions/${taskId}/${accionRuta} no disponible, intentando persistir en Supabase:`, err);
     }
 
     try {

@@ -125,8 +125,12 @@ function HomePageAdministrador() {
             } else {
                 toast.error("No se pudo registrar la decisión en el servidor");
             }
-        } catch {
-            toast.error("Error al procesar la decisión OMRO");
+        } catch (err: unknown) {
+            const mensaje =
+                err instanceof Error && err.message
+                    ? err.message
+                    : "Error al procesar la decisión OMRO";
+            toast.error(mensaje);
         } finally {
             setProcesando(false);
         }
@@ -196,7 +200,7 @@ function HomePageAdministrador() {
                                 </div>
                             ))
                         ) : tareasPendientes.length === 0 ? (
-                            <div className="EmptyState-OMRO">
+                            <div className="EmptyState-OMRO" role="status">
                                 <p>No hay acciones pendientes por realizar en el Panel de Orquestación.</p>
                                 {tareasOMRO.length > 0 && (
                                     <button
@@ -308,8 +312,8 @@ function HomePageAdministrador() {
                             </div>
                         </>
                     ) : (
-                        <div className="EstadoVacio-DecisionOMRO">
-                            <FaCheckCircle className="Icono-SinPendientes" />
+                        <div className="EstadoVacio-DecisionOMRO" role="status">
+                            <FaCheckCircle className="Icono-SinPendientes" aria-hidden="true" />
                             <h3>Sin decisiones pendientes</h3>
                             <p>El motor OMRO no tiene acciones pendientes por aprobar en este momento.</p>
                         </div>
