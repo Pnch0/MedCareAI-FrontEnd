@@ -158,9 +158,11 @@ function HomePageRecepcionista() {
         }
     };
 
-    const handleMarcarAsistencia = async (citaId: string, nuevoEstado: EstadoAsistencia) => {
+    const handleMarcarAsistencia = async (citaId: string, nuevoEstado: EstadoAsistencia): Promise<void> => {
         const cita = citas.find(c => c.id === citaId);
         const nombrePaciente = cita ? cita.paciente : 'Paciente';
+        const estadoAnterior: EstadoAsistencia = cita ? cita.estadoAsistencia : 'pendiente';
+        const horaAnterior = cita?.horaMarcada;
 
         // Actualización optimista en UI
         setCitas(prev => prev.map(c => {
@@ -172,13 +174,26 @@ function HomePageRecepcionista() {
             return c;
         }));
 
-        if (nuevoEstado === 'asistio') {
-            toast.success(`Asistencia confirmada para ${nombrePaciente}`);
-        } else {
-            toast.warning(`Inasistencia registrada para ${nombrePaciente}`);
+        try {
+            await guardarAsistenciaCita(citaId, nuevoEstado);
+            if (nuevoEstado === 'asistio') {
+                toast.success(`Asistencia confirmada para ${nombrePaciente}`);
+            } else {
+                toast.warning(`Inasistencia registrada para ${nombrePaciente}`);
+            }
+        } catch (err: unknown) {
+            // Revertir estado optimista si el backend rechaza la operación (ej. 409 Conflict / 404 NotFound)
+            setCitas(prev => prev.map(c => {
+                if (c.id === citaId) {
+                    return { ...c, estadoAsistencia: estadoAnterior, horaMarcada: horaAnterior };
+                }
+                return c;
+            }));
+            const mensaje = err instanceof Error && err.message
+                ? err.message
+                : 'No se pudo registrar la asistencia en el servidor';
+            toast.error(mensaje);
         }
-
-        await guardarAsistenciaCita(citaId, nuevoEstado);
     };
 
     const handleRevertirAsistencia = async (citaId: string) => {

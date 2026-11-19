@@ -525,28 +525,78 @@ export function obtenerMapaAsistencias(): Record<string, { estado: EstadoAsisten
     }
 }
 
+interface AgendaHttpError extends Error {
+    status?: number;
+}
+
+function isAgendaHttpClientError(error: unknown): error is AgendaHttpError {
+    return (
+        error instanceof Error &&
+        'status' in error &&
+        typeof (error as AgendaHttpError).status === 'number' &&
+        (error as AgendaHttpError).status! >= 400 &&
+        (error as AgendaHttpError).status! < 500
+    );
+}
+
+/**
+ * Realiza el check-in (confirmación de asistencia/llegada) de una cita médica en el backend C#:
+ * POST /api/Appointments/{id}/check-in (también soporta PATCH).
+ * Retorna true en caso de éxito (204 NoContent), false si el ID es local o el backend no está disponible,
+ * o propaga el Error de negocio si el backend responde 4xx (404 NotFound / 409 Conflict).
+ */
+export async function realizarCheckInCita(citaId: string): Promise<boolean> {
+    if (!citaId) return false;
+
+    const esGuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(citaId);
+    if (!esGuid) {
+        console.warn(`ID de cita (${citaId}) no tiene formato GUID estándar; se registrará únicamente localmente.`);
+        return false;
+    }
+
+    try {
+        await apiClient(`/api/Appointments/${citaId}/check-in`, {
+            method: 'POST'
+        });
+        return true;
+    } catch (error: unknown) {
+        if (isAgendaHttpClientError(error)) {
+            throw error;
+        }
+        console.warn(`POST /api/Appointments/${citaId}/check-in no disponible, manteniendo registro local:`, error);
+        return false;
+    }
+}
+
 /**
  * Registra o actualiza la asistencia de una cita en recepción.
  */
 export async function guardarAsistenciaCita(
-    citaId: string, 
+    citaId: string,
     estado: EstadoAsistencia
 ): Promise<void> {
+    // 1. Si es check-in ('asistio'), ejecutar primero el comando en el backend para validar reglas de negocio (404/409)
+    if (estado === 'asistio') {
+        await realizarCheckInCita(citaId);
+    } else if (estado === 'no_asistio') {
+        await actualizarEstadoCitaBackend(citaId, 'no_asistio');
+    }
+
+    // 2. Persistir en almacenamiento local y sincronizar con el panel del médico
     try {
         const mapa = obtenerMapaAsistencias();
         const ahora = new Date();
         const horaStr = `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
-        
+
         mapa[citaId] = {
             estado,
             horaMarcada: horaStr
         };
         localStorage.setItem(LOCAL_ASISTENCIA_CITAS_KEY, JSON.stringify(mapa));
 
-        // Sincronizar con el panel del médico
         try {
             const rawGestion = localStorage.getItem('medcare_gestion_estados_citas');
-            let mapaGestion: Record<string, string> = rawGestion ? JSON.parse(rawGestion) : {};
+            const mapaGestion: Record<string, string> = rawGestion ? (JSON.parse(rawGestion) as Record<string, string>) : {};
             if (estado === 'asistio') {
                 if (mapaGestion[citaId] !== 'finalizada' && mapaGestion[citaId] !== 'en-curso') {
                     mapaGestion[citaId] = 'presente';
@@ -557,16 +607,11 @@ export async function guardarAsistenciaCita(
                 delete mapaGestion[citaId];
             }
             localStorage.setItem('medcare_gestion_estados_citas', JSON.stringify(mapaGestion));
-        } catch {}
-
-        // Notificar al backend en segundo plano
-        if (estado === 'asistio') {
-            await actualizarEstadoCitaBackend(citaId, 'presente');
-        } else if (estado === 'no_asistio') {
-            await actualizarEstadoCitaBackend(citaId, 'no_asistio');
+        } catch {
+            // Ignorar error de parseo local
         }
-    } catch (e) {
-        console.warn('Error al guardar asistencia de cita:', e);
+    } catch (e: unknown) {
+        console.warn('Error al guardar asistencia de cita en almacenamiento local:', e);
     }
 }
 
