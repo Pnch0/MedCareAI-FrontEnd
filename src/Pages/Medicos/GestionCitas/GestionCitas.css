@@ -161,3 +161,90 @@
     height: 40px;
     border-radius: 8px;
 }
+
+.Encabezado-Tarjeta-Gestion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.Encabezado-Tarjeta-Gestion h3 {
+    margin: 0;
+}
+
+.Badge-Sobrecupo-Gestion {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background-color: #E0F2FE;
+    color: #0369A1;
+    border: 1px solid #BAE6FD;
+    font-size: 0.72rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.Triaje-Gestion-Box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
+}
+
+.Semaforo-Gestion {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    width: fit-content;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.Semaforo-Dot-Gestion {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.Semaforo-Gestion.riesgo-alto {
+    background-color: #FEE2E2;
+    color: #B91C1C;
+}
+.Semaforo-Gestion.riesgo-alto .Semaforo-Dot-Gestion {
+    background-color: #DC2626;
+}
+
+.Semaforo-Gestion.riesgo-medio {
+    background-color: #FEF3C7;
+    color: #B45309;
+}
+.Semaforo-Gestion.riesgo-medio .Semaforo-Dot-Gestion {
+    background-color: #D97706;
+}
+
+.Semaforo-Gestion.riesgo-bajo {
+    background-color: #DCFCE7;
+    color: #15803D;
+}
+.Semaforo-Gestion.riesgo-bajo .Semaforo-Dot-Gestion {
+    background-color: #16A34A;
+}
+
+.Resumen-Triaje-Gestion {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #475569;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

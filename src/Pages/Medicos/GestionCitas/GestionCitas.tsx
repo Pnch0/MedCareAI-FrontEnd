@@ -9,7 +9,8 @@ import {
     formatearFechaISO,
     obtenerIndiceDia,
     MEDICO_DEFAULT_ID,
-    type Cita
+    type Cita,
+    type RiskBand
 } from "../../../Services/agenda.ts";
 
 export type EstadoCita = 'pendiente' | 'en-curso' | 'finalizada';
@@ -21,6 +22,10 @@ export type CitaGestion = {
     horaInicio: string;
     horaFin: string;
     estado: EstadoCita;
+    isOverbook?: boolean;
+    overbookStatus?: string | null;
+    riskBand?: RiskBand | null;
+    resumenTriaje?: string | null;
 };
 
 const LOCAL_ESTADOS_CITAS_KEY = 'medcare_gestion_estados_citas';
@@ -135,7 +140,11 @@ function GestionCitasMedico(){
                     edad,
                     horaInicio,
                     horaFin,
-                    estado: estadoActual
+                    estado: estadoActual,
+                    isOverbook: cita.isOverbook,
+                    overbookStatus: cita.overbookStatus ?? null,
+                    riskBand: cita.riskBand ?? null,
+                    resumenTriaje: cita.nlpSummary || cita.motivo || null
                 });
             }
 
@@ -231,9 +240,31 @@ function GestionCitasMedico(){
                     <div className="Tarjetas-GestionCitas">
                         {citasOrdenadas.map((cita) => (
                             <div key={cita.id} className="Tarjeta-GestionCitas">
-                                <h3>{cita.paciente}</h3>
+                                <div className="Encabezado-Tarjeta-Gestion">
+                                    <h3>{cita.paciente}</h3>
+                                    {cita.isOverbook && (
+                                        <span className="Badge-Sobrecupo-Gestion">
+                                            Sobrecupo
+                                        </span>
+                                    )}
+                                </div>
                                 <p className="Edad-Cita">Edad: {cita.edad}</p>
                                 <p className="Hora-Cita">Hora: {cita.horaInicio} - {cita.horaFin}</p>
+                                {(cita.resumenTriaje || cita.riskBand) && (
+                                    <div className="Triaje-Gestion-Box">
+                                        {cita.riskBand && (
+                                            <span className={`Semaforo-Gestion riesgo-${cita.riskBand.toLowerCase()}`}>
+                                                <i className="Semaforo-Dot-Gestion" aria-hidden="true" />
+                                                Riesgo {cita.riskBand}
+                                            </span>
+                                        )}
+                                        {cita.resumenTriaje && (
+                                            <p className="Resumen-Triaje-Gestion" title={cita.resumenTriaje}>
+                                                {cita.resumenTriaje}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
                                 {cita.estado === 'pendiente' ? (
                                     <button
                                         type="button"

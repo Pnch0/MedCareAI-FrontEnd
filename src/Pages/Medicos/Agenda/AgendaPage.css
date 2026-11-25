@@ -242,6 +242,93 @@
     max-width: 92%;
 }
 
+.Bloque-CitaMedica.es-sobrecupo {
+    background-color: #F0F9FF;
+    border-left: 3px solid #0284C7;
+}
+
+.Badge-Sobrecupo-Agenda {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background-color: #E0F2FE;
+    color: #0369A1;
+    border: 1px solid #BAE6FD;
+    font-size: 0.65rem;
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+.Bloque-CitaMedica .Badge-Sobrecupo-Agenda {
+    margin-left: 0;
+    margin-top: 2px;
+}
+
+.Badge-Sobrecupo-Modal {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background-color: #E0F2FE;
+    color: #0369A1;
+    border: 1px solid #BAE6FD;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.Triaje-Header-Modal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #334155;
+}
+
+.Semaforo-RiskBand {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.Semaforo-Punto {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.Semaforo-RiskBand.riesgo-alto {
+    background-color: #FEE2E2;
+    color: #B91C1C;
+}
+.Semaforo-RiskBand.riesgo-alto .Semaforo-Punto {
+    background-color: #DC2626;
+}
+
+.Semaforo-RiskBand.riesgo-medio {
+    background-color: #FEF3C7;
+    color: #B45309;
+}
+.Semaforo-RiskBand.riesgo-medio .Semaforo-Punto {
+    background-color: #D97706;
+}
+
+.Semaforo-RiskBand.riesgo-bajo {
+    background-color: #DCFCE7;
+    color: #15803D;
+}
+.Semaforo-RiskBand.riesgo-bajo .Semaforo-Punto {
+    background-color: #16A34A;
+}
+
 /* DISEÑO CALENDARIOS */
 
 .ContenedorCalendario-AgendaMedico {

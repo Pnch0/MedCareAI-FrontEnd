@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 import {
     obtenerMetricasAusentismo,
+    obtenerMetricasSobrecupo,
     type DashboardAusentismoDTO,
     type CitaRiesgoDTO
 } from "../../../Services/dashboardAdmin.ts";
@@ -32,6 +33,7 @@ function DashboardAdministrador() {
     const [cargando, setCargando] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [estadoActivoDonut, setEstadoActivoDonut] = useState<string | null>(null);
+    const [refrescandoSobrecupo, setRefrescandoSobrecupo] = useState<boolean>(false);
 
     const cargarDatos = async (): Promise<void> => {
         setCargando(true);
@@ -51,6 +53,24 @@ function DashboardAdministrador() {
     useEffect(() => {
         void cargarDatos();
     }, []);
+
+    const manejarRefrescarSobrecupo = async (): Promise<void> => {
+        if (refrescandoSobrecupo) return;
+        setRefrescandoSobrecupo(true);
+        try {
+            const nuevasMetricas = await obtenerMetricasSobrecupo();
+            if (nuevasMetricas) {
+                setDatos((prev) => (prev ? { ...prev, overbookMetrics: nuevasMetricas } : prev));
+                toast.success("Métricas de sobrecupo actualizadas");
+            } else {
+                toast.info("No se encontraron métricas nuevas de sobrecupo");
+            }
+        } catch {
+            toast.error("No se pudieron actualizar las métricas de sobrecupo");
+        } finally {
+            setRefrescandoSobrecupo(false);
+        }
+    };
 
     const manejarEnviarRecordatorio = (citaId: string, nombrePaciente: string): void => {
         setDatos((prev) => {
@@ -454,6 +474,97 @@ function DashboardAdministrador() {
                             </div>
                         </article>
                     </section>
+
+                    {/* Nivel 3.5: Rendimiento de Sobrecupo y Modo Sombra */}
+                    {datos.overbookMetrics && (
+                        <section
+                            className="Panel-Sobrecupo-Dashboard"
+                            aria-label="Rendimiento de Sobrecupo y Modo Sombra"
+                        >
+                            <div className="Panel-Header">
+                                <div>
+                                    <h2>Rendimiento de Sobrecupo y Modo Sombra</h2>
+                                    <p>Efectividad de cupos adicionales, colisiones y calibración en modo sombra</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="Btn-RefrescarSobrecupo"
+                                    onClick={() => void manejarRefrescarSobrecupo()}
+                                    disabled={refrescandoSobrecupo}
+                                >
+                                    <FaRedo aria-hidden="true" />
+                                    {refrescandoSobrecupo ? "Actualizando..." : "Refrescar"}
+                                </button>
+                            </div>
+
+                            <div className="Grid-Sobrecupo-Metrics">
+                                <article className="Card-Sobrecupo-Metrica">
+                                    <span className="Sobrecupo-Label">Cupos Rellenados</span>
+                                    <strong className="Sobrecupo-Valor texto-azul">
+                                        {datos.overbookMetrics.slotRefilled}
+                                    </strong>
+                                    <span className="Sobrecupo-Sub">Reasignaciones exitosas</span>
+                                </article>
+
+                                <article className="Card-Sobrecupo-Metrica">
+                                    <span className="Sobrecupo-Label">Sobrecupos (Abiertos / Ocupados)</span>
+                                    <strong className="Sobrecupo-Valor">
+                                        {datos.overbookMetrics.overbookSlotsOpened} /{" "}
+                                        {datos.overbookMetrics.overbookSlotsOccupied}
+                                    </strong>
+                                    <span className="Sobrecupo-Sub">
+                                        {datos.overbookMetrics.overbookSlotsOpened > 0
+                                            ? `${Math.round(
+                                                  (datos.overbookMetrics.overbookSlotsOccupied /
+                                                      datos.overbookMetrics.overbookSlotsOpened) *
+                                                      100
+                                              )}% ocupación`
+                                            : "Sin sobrecupos abiertos"}
+                                    </span>
+                                </article>
+
+                                <article className="Card-Sobrecupo-Metrica">
+                                    <span className="Sobrecupo-Label">Colisiones</span>
+                                    <strong
+                                        className={`Sobrecupo-Valor ${
+                                            datos.overbookMetrics.overbookCollisions > 0
+                                                ? "texto-rojo"
+                                                : "texto-verde"
+                                        }`}
+                                    >
+                                        {datos.overbookMetrics.overbookCollisions}
+                                    </strong>
+                                    <span className="Sobrecupo-Sub">Choques de horario detectados</span>
+                                </article>
+
+                                <article className="Card-Sobrecupo-Metrica">
+                                    <span className="Sobrecupo-Label">Pacientes Desplazados</span>
+                                    <strong className="Sobrecupo-Valor">
+                                        {datos.overbookMetrics.displacedPatients}
+                                    </strong>
+                                    <span className="Sobrecupo-Sub">Reubicados por solapamiento</span>
+                                </article>
+
+                                <article className="Card-Sobrecupo-Metrica">
+                                    <span className="Sobrecupo-Label">Tasa de Falsos Positivos</span>
+                                    <strong className="Sobrecupo-Valor texto-ambar">
+                                        {datos.overbookMetrics.falsePositiveRate.toFixed(1)}%
+                                    </strong>
+                                    <span className="Sobrecupo-Sub">Predicciones no confirmadas</span>
+                                </article>
+
+                                <article className="Card-Sobrecupo-Metrica">
+                                    <span className="Sobrecupo-Label">Evaluaciones Modo Sombra</span>
+                                    <strong className="Sobrecupo-Valor">
+                                        {datos.overbookMetrics.shadowEvaluatedCount}
+                                    </strong>
+                                    <span className="Sobrecupo-Sub">
+                                        {datos.overbookMetrics.shadowFalsePositivesCount} falsos positivos sombra
+                                    </span>
+                                </article>
+                            </div>
+                        </section>
+                    )}
 
                     {/* Nivel 4: Tabla Accionable de Riesgo de Ausentismo */}
                     <section className="Panel-Tabla-Riesgo" aria-label="Citas con riesgo de ausentismo">

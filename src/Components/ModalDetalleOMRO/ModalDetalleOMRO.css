@@ -189,6 +189,36 @@
     color: #475569;
 }
 
+.ModalOMRO-Chip.chip-shadow-mode {
+    background-color: #F3E8FF;
+    color: #6B21A8;
+    border: 1px solid #E9D5FF;
+}
+
+.ModalOMRO-Chip.chip-policy {
+    background-color: #F8FAFC;
+    color: #1E293B;
+    border: 1px solid #CBD5E1;
+}
+
+.ModalOMRO-Chip.chip-confidence {
+    background-color: #ECFDF5;
+    color: #047857;
+    border: 1px solid #A7F3D0;
+}
+
+.ModalOMRO-Chip.chip-expiration {
+    background-color: #FFFBEB;
+    color: #B45309;
+    border: 1px solid #FDE68A;
+}
+
+.ModalOMRO-Chip.chip-expiration.expirada {
+    background-color: #FEF2F2;
+    color: #B91C1C;
+    border: 1px solid #FECACA;
+}
+
 .ModalOMRO-CajaRazonamiento {
     background-color: #F8FAFC;
     border: 1px solid #E1EAEF;

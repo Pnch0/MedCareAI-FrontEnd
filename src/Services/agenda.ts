@@ -3,6 +3,7 @@ import { obtenerCatalogoMedicos } from './catalogoMedico.ts';
 
 export type DiaSemana = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0=Lunes, 1=Martes, 2=Miércoles, 3=Jueves, 4=Viernes, 5=Sábado, 6=Domingo
 export type Box = 1 | 2 | 3 | 4 | 5 | 6 | 7 | string | number;
+export type RiskBand = 'Alto' | 'Medio' | 'Bajo';
 
 export interface Cita {
     id: string;
@@ -18,6 +19,9 @@ export interface Cita {
     nlpSummary?: string | null;
     symptomsRaw?: string | null;
     patientId?: string | null;
+    isOverbook?: boolean;
+    overbookStatus?: string | null;
+    riskBand?: RiskBand | null;
 }
 
 export interface SlotAgendaBackend {
@@ -30,6 +34,9 @@ export interface SlotAgendaBackend {
     citaId: string | null;
     pacienteNombre: string | null;
     motivoConsulta: string | null;
+    isOverbook?: boolean;
+    overbookStatus?: string | null;
+    riskBand?: string | null;
 }
 
 const LOCAL_CITAS_KEY = 'medcare_citas_activas';
@@ -352,10 +359,19 @@ export async function actualizarEstadoCitaBackend(
     }
 }
 
+function normalizarRiskBand(raw: unknown): RiskBand | null {
+    if (typeof raw !== 'string') return null;
+    const upper = raw.trim().toUpperCase();
+    if (upper === 'HIGH' || upper === 'ALTO' || upper === 'ALTA') return 'Alto';
+    if (upper === 'MEDIUM' || upper === 'MEDIO' || upper === 'MEDIA' || upper === 'MODERATE') return 'Medio';
+    if (upper === 'LOW' || upper === 'BAJO' || upper === 'BAJA') return 'Bajo';
+    return null;
+}
+
 /**
  * Consulta la agenda diaria del médico en el backend de Render:
- * 1. GET /api/Appointments/medico/{medicoId}?fecha={fecha} (AppointmentsController)
- * 2. GET /api/Agenda/medico/{medicoId}?fecha={fecha} (Fallback)
+ * 1. GET /api/Appointments/medico/{medicoId}?fecha={fecha} (AppointmentsController - incluye riskBand)
+ * 2. GET /api/Agenda/medico/{medicoId}?fecha={fecha} (AgendaController - incluye isOverbook y overbookStatus)
  */
 export async function obtenerAgendaDiariaMedico(
     medicoId: string = MEDICO_DEFAULT_ID,
@@ -367,74 +383,80 @@ export async function obtenerAgendaDiariaMedico(
     const citasLocales = obtenerCitasLocales();
     const mapaBoxes = mapaBoxesParam || (await cargarMapaBoxes());
 
-    let slots: any = null;
+    const [resAppointmentsResult, resAgendaResult] = await Promise.allSettled([
+        apiClient(`/api/Appointments/medico/${medicoId}?fecha=${fechaStr}`, { method: 'GET' }),
+        apiClient(`/api/Agenda/medico/${medicoId}?fecha=${fechaStr}`, { method: 'GET' })
+    ]);
 
-    // 1. Intentar consultar AppointmentsController: GET /api/Appointments/medico/{medicoId}?fecha={fecha}
-    try {
-        const resAppointments = await apiClient(`/api/Appointments/medico/${medicoId}?fecha=${fechaStr}`, {
-            method: 'GET'
-        });
-        if (Array.isArray(resAppointments) && resAppointments.length > 0) {
-            slots = resAppointments;
-        }
-    } catch {
-        // Fallback a /api/Agenda/medico si no responde
-    }
+    const appointmentsList: Record<string, unknown>[] =
+        resAppointmentsResult.status === 'fulfilled' && Array.isArray(resAppointmentsResult.value)
+            ? (resAppointmentsResult.value as Record<string, unknown>[])
+            : [];
 
-    // 2. Si no hubo resultados en Appointments, intentar /api/Agenda/medico/{medicoId}?fecha={fecha}
-    if (!slots || !Array.isArray(slots) || slots.length === 0) {
-        try {
-            const resAgenda = await apiClient(`/api/Agenda/medico/${medicoId}?fecha=${fechaStr}`, {
-                method: 'GET'
-            });
-            if (Array.isArray(resAgenda) && resAgenda.length > 0) {
-                slots = resAgenda;
+    const agendaList: Record<string, unknown>[] =
+        resAgendaResult.status === 'fulfilled' && Array.isArray(resAgendaResult.value)
+            ? (resAgendaResult.value as Record<string, unknown>[])
+            : [];
+
+    // Indexar metadatos de sobrecupo desde /api/Agenda/medico/{medicoId}
+    const overbookPorId = new Map<string, { isOverbook: boolean; overbookStatus: string | null }>();
+    for (const ag of agendaList) {
+        const isOverbook = Boolean(ag.isOverbook ?? ag.IsOverbook ?? false);
+        const rawOverbookStatus = ag.overbookStatus ?? ag.OverbookStatus ?? null;
+        const overbookStatus = typeof rawOverbookStatus === 'string' && rawOverbookStatus.trim()
+            ? rawOverbookStatus.trim()
+            : null;
+
+        if (isOverbook || overbookStatus) {
+            const keys = [ag.citaId, ag.appointmentId, ag.scheduleBlockId, ag.id];
+            for (const k of keys) {
+                if (k) overbookPorId.set(String(k), { isOverbook, overbookStatus });
             }
-        } catch (e) {
-            console.warn('Error al consultar /api/Agenda/medico desde el backend:', e);
         }
     }
 
+    const slots: Record<string, unknown>[] = appointmentsList.length > 0 ? appointmentsList : agendaList;
+
     try {
-        if (Array.isArray(slots) && slots.length > 0) {
+        if (slots.length > 0) {
             const citasMapeadas: Cita[] = [];
 
             for (const slot of slots) {
                 // 1. Extraer hora de inicio (soporta startTime de AppointmentsController y fechaInicio de AgendaController)
-                const rawStart = slot.startTime || slot.fechaInicio || slot.horaInicio || slot.timeSlot || '';
-                const horaInicio = rawStart.includes('T') 
-                    ? rawStart.slice(11, 16) 
+                const rawStart = String(slot.startTime || slot.fechaInicio || slot.horaInicio || slot.timeSlot || '');
+                const horaInicio = rawStart.includes('T')
+                    ? rawStart.slice(11, 16)
                     : (rawStart.length >= 5 ? rawStart.slice(0, 5) : '08:00');
 
                 // 2. Extraer hora de fin
-                const rawEnd = slot.endTime || slot.fechaFin || slot.horaFin || '';
-                const horaFin = rawEnd.includes('T') 
-                    ? rawEnd.slice(11, 16) 
+                const rawEnd = String(slot.endTime || slot.fechaFin || slot.horaFin || '');
+                const horaFin = rawEnd.includes('T')
+                    ? rawEnd.slice(11, 16)
                     : (rawEnd.length >= 5 ? rawEnd.slice(0, 5) : '09:00');
 
                 const horaRango = `${horaInicio} - ${horaFin}`;
 
                 // 3. Extraer Box (soporta boxName, boxId o box)
-                const boxResuelto = resolverBox(slot.boxName || slot.boxId || slot.box, mapaBoxes);
+                const boxResuelto = resolverBox(String(slot.boxName || slot.boxId || slot.box || ''), mapaBoxes);
 
                 // 4. Extraer Paciente
-                const pacienteNombre = slot.patientName || slot.pacienteNombre || slot.paciente || null;
+                const pacienteNombre = (slot.patientName || slot.pacienteNombre || slot.paciente || null) as string | null;
 
                 // 5. Extraer Motivo de consulta / Síntomas procesados por IA
-                const rawNlpSummary: string | null = slot.nlpSummary || slot.nlp_summary || slot.summary || null;
+                const rawNlpSummary = (slot.nlpSummary || slot.nlp_summary || slot.summary || null) as string | null;
                 const nlpSummary: string | null = rawNlpSummary ? sanitizarResumenIA(rawNlpSummary) : null;
 
                 // Extraer síntomas originales soportando múltiples claves del DTO
                 let symptomsRaw: string | null =
-                    slot.symptomsRaw ||
-                    slot.symptoms_raw ||
-                    slot.symptoms ||
-                    slot.sintomas ||
-                    slot.motivoConsulta ||
-                    slot.motivo_consulta ||
-                    slot.reason ||
-                    slot.motivo ||
-                    null;
+                    (slot.symptomsRaw ||
+                        slot.symptoms_raw ||
+                        slot.symptoms ||
+                        slot.sintomas ||
+                        slot.motivoConsulta ||
+                        slot.motivo_consulta ||
+                        slot.reason ||
+                        slot.motivo ||
+                        null) as string | null;
 
                 // Si los síntomas originales coinciden con el resumen IA o tienen prefijo técnico, anularlos para evitar duplicidad
                 if (
@@ -450,11 +472,29 @@ export async function obtenerAgendaDiariaMedico(
 
                 // 6. Extraer Cita ID
                 const citaId = slot.appointmentId || slot.citaId || slot.id || slot.scheduleBlockId;
+                const citaIdStr = String(citaId);
+
+                // 7. Extraer isOverbook, overbookStatus (Agenda) y riskBand (Appointments)
+                const overbookAgenda =
+                    overbookPorId.get(citaIdStr) ||
+                    (slot.scheduleBlockId ? overbookPorId.get(String(slot.scheduleBlockId)) : undefined);
+                const isOverbook = Boolean(
+                    slot.isOverbook ?? slot.IsOverbook ?? overbookAgenda?.isOverbook ?? false
+                );
+                const rawOverbookStatus =
+                    slot.overbookStatus ?? slot.OverbookStatus ?? overbookAgenda?.overbookStatus ?? null;
+                const overbookStatus =
+                    typeof rawOverbookStatus === 'string' && rawOverbookStatus.trim()
+                        ? rawOverbookStatus.trim()
+                        : null;
+                const riskBand = normalizarRiskBand(
+                    slot.riskBand ?? slot.RiskBand ?? slot.risk_band
+                );
 
                 // Si el backend ya tiene una cita asignada en este slot (Fuente de la verdad)
                 if ((slot.disponibilidad !== 'libre' && slot.disponibilidad !== undefined) || pacienteNombre) {
                     citasMapeadas.push({
-                        id: String(citaId),
+                        id: citaIdStr,
                         dia: diaIndice,
                         hora: horaRango,
                         paciente: pacienteNombre || 'Paciente',
@@ -462,23 +502,26 @@ export async function obtenerAgendaDiariaMedico(
                         box: boxResuelto,
                         fecha: fechaStr,
                         disponibilidad: 'ocupado',
-                        citaId: String(citaId),
-                        medicoId: slot.medicoId || medicoId,
+                        citaId: citaIdStr,
+                        medicoId: String(slot.medicoId || medicoId),
                         nlpSummary,
                         symptomsRaw,
-                        patientId: slot.patientId || slot.pacienteId || null
+                        patientId: (slot.patientId || slot.pacienteId || null) as string | null,
+                        isOverbook,
+                        overbookStatus,
+                        riskBand
                     });
                 }
             }
 
             return citasMapeadas;
         }
-    } catch (parseErr) {
+    } catch (parseErr: unknown) {
         console.warn('Error al mapear slots de agenda:', parseErr);
     }
 
     // Fallback únicamente si el backend falló o no devolvió slots
-    if (!slots || !Array.isArray(slots) || slots.length === 0) {
+    if (slots.length === 0) {
         const localesFiltradas = citasLocales.filter(c => c.fecha === fechaStr || c.dia === diaIndice);
         return localesFiltradas;
     }

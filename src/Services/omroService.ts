@@ -1,5 +1,4 @@
 import { apiClient } from './apiClient.ts';
-import { supabase } from './supabaseClient.ts';
 
 export type TipoAccionOMRO = 'Sobrecupo' | 'Recordatorio' | 'Reasignacion' | 'Otro';
 
@@ -26,15 +25,29 @@ export interface OmroProposedAction {
     actionType?: string;
     ActionType?: string;
     type?: string;
+    Type?: string;
     description?: string;
+    reason?: string;
     parameters?: Record<string, unknown>;
 }
 
 export interface OmroAiPlanPayload {
     title?: string;
     reasoning?: string;
+    deferredActions?: OmroProposedAction[];
+    DeferredActions?: OmroProposedAction[];
     proposedActions?: OmroProposedAction[];
     ProposedActions?: OmroProposedAction[];
+    isShadowModeFallback?: boolean;
+    IsShadowModeFallback?: boolean;
+    matchedRuleId?: string;
+    MatchedRuleId?: string;
+    policyVersion?: string;
+    PolicyVersion?: string;
+    confidenceScore?: number;
+    ConfidenceScore?: number;
+    proposalExpiresAt?: string;
+    ProposalExpiresAt?: string;
     [key: string]: unknown;
 }
 
@@ -44,6 +57,7 @@ function mapearActionTypeString(actionTypeRaw: string): TipoAccionOMRO | null {
 
     if (
         upper.includes('MONITOR') ||
+        upper.includes('NOTIF') ||
         upper.includes('REMIND') ||
         upper.includes('CONFIRM') ||
         upper.includes('PHONE') ||
@@ -51,6 +65,7 @@ function mapearActionTypeString(actionTypeRaw: string): TipoAccionOMRO | null {
         upper.includes('RECORDATORIO') ||
         upper.includes('SMS') ||
         upper.includes('WHATSAPP') ||
+        upper.includes('EMAIL') ||
         upper.includes('AVISO')
     ) {
         return 'Recordatorio';
@@ -85,17 +100,23 @@ function limpiarNegaciones(texto: string): string {
 
 function clasificarTipoAccion(texto: string, parsedObj?: Record<string, unknown> | null): TipoAccionOMRO {
     if (parsedObj) {
-        // Prioridad 1: Contrato estructurado proposedActions del motor OMRO
+        // Prioridad 1: Contrato v2.0 (deferredActions) y compatibilidad v1 (proposedActions)
         const payload = parsedObj as OmroAiPlanPayload;
-        const acciones = Array.isArray(payload.proposedActions)
+        const accionesDiferidas = Array.isArray(payload.deferredActions)
+            ? payload.deferredActions
+            : Array.isArray(payload.DeferredActions)
+            ? payload.DeferredActions
+            : [];
+        const accionesPropuestas = Array.isArray(payload.proposedActions)
             ? payload.proposedActions
             : Array.isArray(payload.ProposedActions)
             ? payload.ProposedActions
             : [];
+        const acciones = [...accionesDiferidas, ...accionesPropuestas];
 
         for (const acc of acciones) {
             if (acc && typeof acc === 'object') {
-                const rawType = String(acc.actionType ?? acc.ActionType ?? acc.type ?? '');
+                const rawType = String(acc.actionType ?? acc.ActionType ?? acc.type ?? acc.Type ?? '');
                 const mapeado = mapearActionTypeString(rawType);
                 if (mapeado) return mapeado;
             }
@@ -169,6 +190,21 @@ export interface ResolutionTaskBackendDto {
     createdAt?: string;
     CreatedAt?: string;
     created_at?: string;
+    isShadowModeFallback?: boolean;
+    IsShadowModeFallback?: boolean;
+    is_shadow_mode_fallback?: boolean;
+    matchedRuleId?: string | null;
+    MatchedRuleId?: string | null;
+    matched_rule_id?: string | null;
+    policyVersion?: string | null;
+    PolicyVersion?: string | null;
+    policy_version?: string | null;
+    confidenceScore?: number | null;
+    ConfidenceScore?: number | null;
+    confidence_score?: number | null;
+    proposalExpiresAt?: string | null;
+    ProposalExpiresAt?: string | null;
+    proposal_expires_at?: string | null;
 }
 
 export interface AiPlanContenido {
@@ -187,6 +223,11 @@ export interface ResolutionTask {
     status: string;
     createdAt: string;
     createdAtIso: string;
+    isShadowModeFallback: boolean;
+    matchedRuleId: string | null;
+    policyVersion: string | null;
+    confidenceScore: number | null;
+    proposalExpiresAt: string | null;
 }
 
 function formatearFechaChile(fechaIso: string): string {
@@ -324,6 +365,40 @@ export function parsearAiPlanJson(
     };
 }
 
+function parsearObjetoPlan(
+    aiPlanInput: string | Record<string, unknown> | null | undefined
+): Record<string, unknown> | null {
+    if (!aiPlanInput) return null;
+    if (typeof aiPlanInput === 'object' && !Array.isArray(aiPlanInput)) {
+        return aiPlanInput;
+    }
+    if (typeof aiPlanInput === 'string') {
+        try {
+            const parsed: unknown = JSON.parse(aiPlanInput);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                return parsed as Record<string, unknown>;
+            }
+        } catch {
+            return null;
+        }
+    }
+    return null;
+}
+
+function normalizarConfidenceScore(valor: unknown): number | null {
+    if (valor === null || valor === undefined || valor === '') return null;
+    const num = Number(valor);
+    if (Number.isNaN(num)) return null;
+    const pct = num > 0 && num <= 1 ? num * 100 : num;
+    return Math.round(pct * 10) / 10;
+}
+
+function normalizarTextoOpcional(valor: unknown): string | null {
+    if (typeof valor !== 'string') return null;
+    const trimmed = valor.trim();
+    return trimmed.length > 0 ? trimmed : null;
+}
+
 function normalizarResolutionTask(dto: ResolutionTaskBackendDto): ResolutionTask {
     const id = String(dto.id || dto.Id || '');
     const resourceId = String(dto.resourceId || dto.ResourceId || dto.resource_id || '');
@@ -333,7 +408,46 @@ function normalizarResolutionTask(dto: ResolutionTaskBackendDto): ResolutionTask
     const createdAtIso = String(dto.createdAt || dto.CreatedAt || dto.created_at || '');
 
     const aiPlan = parsearAiPlanJson(rawPlan);
-    console.log(`[OMRO Frontend] Tarea ${id || 'sin-id'}: tipo='${aiPlan.tipoAccion}' | aiPlanJson original:`, rawPlan);
+    const planObj = parsearObjetoPlan(rawPlan);
+
+    const shadowRaw =
+        dto.isShadowModeFallback ??
+        dto.IsShadowModeFallback ??
+        dto.is_shadow_mode_fallback ??
+        planObj?.isShadowModeFallback ??
+        planObj?.IsShadowModeFallback;
+
+    const matchedRuleId = normalizarTextoOpcional(
+        dto.matchedRuleId ??
+            dto.MatchedRuleId ??
+            dto.matched_rule_id ??
+            planObj?.matchedRuleId ??
+            planObj?.MatchedRuleId
+    );
+
+    const policyVersion = normalizarTextoOpcional(
+        dto.policyVersion ??
+            dto.PolicyVersion ??
+            dto.policy_version ??
+            planObj?.policyVersion ??
+            planObj?.PolicyVersion
+    );
+
+    const confidenceScore = normalizarConfidenceScore(
+        dto.confidenceScore ??
+            dto.ConfidenceScore ??
+            dto.confidence_score ??
+            planObj?.confidenceScore ??
+            planObj?.ConfidenceScore
+    );
+
+    const proposalExpiresAt = normalizarTextoOpcional(
+        dto.proposalExpiresAt ??
+            dto.ProposalExpiresAt ??
+            dto.proposal_expires_at ??
+            planObj?.proposalExpiresAt ??
+            planObj?.ProposalExpiresAt
+    );
 
     return {
         id,
@@ -343,13 +457,18 @@ function normalizarResolutionTask(dto: ResolutionTaskBackendDto): ResolutionTask
         aiPlanRaw: typeof rawPlan === 'string' ? rawPlan : JSON.stringify(rawPlan),
         status,
         createdAt: formatearFechaChile(createdAtIso),
-        createdAtIso
+        createdAtIso,
+        isShadowModeFallback: Boolean(shadowRaw),
+        matchedRuleId,
+        policyVersion,
+        confidenceScore,
+        proposalExpiresAt
     };
 }
 
 /**
- * Obtiene las resoluciones pendientes desde el endpoint GET /api/Resolutions/pending
- * con respaldo directo a Supabase en caso de falla o indisponibilidad.
+ * Obtiene las resoluciones pendientes exclusivamente desde la API MedCareOS:
+ * GET /api/Resolutions/pending
  */
 export async function obtenerResolucionesPendientesOMRO(): Promise<ResolutionTask[]> {
     try {
@@ -358,21 +477,7 @@ export async function obtenerResolucionesPendientesOMRO(): Promise<ResolutionTas
             return (respuesta as ResolutionTaskBackendDto[]).map(normalizarResolutionTask);
         }
     } catch (err: unknown) {
-        console.warn('Error al consultar GET /api/Resolutions/pending, usando respaldo Supabase:', err);
-    }
-
-    try {
-        const { data, error } = await supabase
-            .from('ai_resolution_tasks')
-            .select('*')
-            .ilike('status', 'pending')
-            .order('created_at', { ascending: false });
-
-        if (!error && Array.isArray(data)) {
-            return (data as ResolutionTaskBackendDto[]).map(normalizarResolutionTask);
-        }
-    } catch (supaErr: unknown) {
-        console.warn('Error al consultar pendientes en Supabase:', supaErr);
+        console.warn('Error al consultar GET /api/Resolutions/pending:', err);
     }
 
     return [];
@@ -409,73 +514,21 @@ function guardarEnCacheResueltas(tarea: ResolutionTask): void {
     }
 }
 
-async function persistirEnSupabase(
-    taskId: string,
-    decision: 'Approved' | 'Rejected',
-    tareaOriginal?: ResolutionTask
-): Promise<boolean> {
-    try {
-        if (tareaOriginal) {
-            const { error } = await supabase
-                .from('ai_resolution_tasks')
-                .upsert(
-                    {
-                        id: taskId,
-                        resource_id: tareaOriginal.resourceId || null,
-                        risk_probability: tareaOriginal.riskProbability,
-                        ai_plan_json: tareaOriginal.aiPlanRaw,
-                        status: decision,
-                        created_at: tareaOriginal.createdAtIso || new Date().toISOString()
-                    },
-                    { onConflict: 'id' }
-                );
-            return !error;
-        }
-
-        const { error } = await supabase
-            .from('ai_resolution_tasks')
-            .update({ status: decision })
-            .eq('id', taskId);
-        return !error;
-    } catch (err: unknown) {
-        console.warn('Error al persistir estado en ai_resolution_tasks:', err);
-        return false;
-    }
-}
-
 /**
  * Obtiene el historial completo de tareas OMRO (pendientes + aprobadas + rechazadas)
- * combinando caché local de resueltas, Supabase (ai_resolution_tasks) y el backend C#.
+ * consultando los endpoints REST del backend C# y caché local de sesión para resueltas.
  */
 export async function obtenerHistorialOMRO(): Promise<ResolutionTask[]> {
     const mapaTareas = new Map<string, ResolutionTask>();
 
-    // 1. Cargar historial resuelto persistido localmente (resiliencia ante falta de endpoint de historial)
+    // 1. Cargar caché local de resoluciones aprobadas/rechazadas en la sesión
     for (const tareaCache of leerCacheResueltas()) {
         if (tareaCache.id) {
             mapaTareas.set(tareaCache.id, tareaCache);
         }
     }
 
-    // 2. Consultar historial completo en Supabase (ai_resolution_tasks)
-    try {
-        const { data, error } = await supabase
-            .from('ai_resolution_tasks')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(30);
-
-        if (!error && Array.isArray(data)) {
-            for (const row of data as ResolutionTaskBackendDto[]) {
-                const tarea = normalizarResolutionTask(row);
-                if (tarea.id) mapaTareas.set(tarea.id, tarea);
-            }
-        }
-    } catch (err: unknown) {
-        console.warn('No se pudo leer historial desde ai_resolution_tasks:', err);
-    }
-
-    // 3. Intentar consultar listado completo si el backend expone GET /api/Resolutions
+    // 2. Consultar listado completo si el backend expone GET /api/Resolutions
     try {
         const historialBackend: unknown = await apiClient('/api/Resolutions', { method: 'GET' });
         if (Array.isArray(historialBackend)) {
@@ -487,10 +540,10 @@ export async function obtenerHistorialOMRO(): Promise<ResolutionTask[]> {
             }
         }
     } catch {
-        // El backend puede exponer únicamente /api/Resolutions/pending; continuamos sin interrumpir
+        // El backend puede exponer únicamente /api/Resolutions/pending
     }
 
-    // 4. Consultar tareas pendientes vivas desde el motor C# (GET /api/Resolutions/pending)
+    // 3. Consultar tareas pendientes vivas desde el motor C# (GET /api/Resolutions/pending)
     try {
         const resBackend: unknown = await apiClient('/api/Resolutions/pending', { method: 'GET' });
         if (Array.isArray(resBackend)) {
@@ -502,7 +555,7 @@ export async function obtenerHistorialOMRO(): Promise<ResolutionTask[]> {
             }
         }
     } catch (apiErr: unknown) {
-        console.warn('GET /api/Resolutions/pending no disponible, manteniendo datos de respaldo:', apiErr);
+        console.warn('GET /api/Resolutions/pending no disponible:', apiErr);
     }
 
     return Array.from(mapaTareas.values()).sort((a, b) => {
@@ -512,42 +565,31 @@ export async function obtenerHistorialOMRO(): Promise<ResolutionTask[]> {
     });
 }
 
-interface HttpError extends Error {
-    status?: number;
-}
-
-function isHttpClientError(error: unknown): error is HttpError {
-    return (
-        error instanceof Error &&
-        'status' in error &&
-        typeof (error as HttpError).status === 'number' &&
-        (error as HttpError).status! >= 400 &&
-        (error as HttpError).status! < 500
-    );
-}
-
 /**
  * Registra la decisión del administrador o recepcionista (Approved / Rejected) sobre una tarea OMRO.
- * Consume PATCH /api/Resolutions/{id}/approve|reject (204 NoContent) y persiste la resolución en Supabase y caché local.
+ * Depende exclusivamente de PATCH /api/Resolutions/{id}/approve|reject (204 NoContent).
+ * Si la API falla, propaga el error con mensaje claro hacia la vista.
  */
 export async function resolverTareaOMRO(
     taskId: string,
     decision: 'Approved' | 'Rejected',
     tareaOriginal?: ResolutionTask
 ): Promise<boolean> {
-    let actualizadoBackend = false;
+    if (!taskId) {
+        throw new Error('Identificador de tarea OMRO inválido.');
+    }
 
     const accionRuta = decision === 'Approved' ? 'approve' : 'reject';
+
     try {
         await apiClient(`/api/Resolutions/${taskId}/${accionRuta}`, {
             method: 'PATCH'
         });
-        actualizadoBackend = true;
     } catch (err: unknown) {
-        if (isHttpClientError(err)) {
+        if (err instanceof Error && err.message) {
             throw err;
         }
-        console.warn(`PATCH /api/Resolutions/${taskId}/${accionRuta} no disponible, intentando persistir en Supabase:`, err);
+        throw new Error('No se pudo conectar con la API de MedCareOS para registrar la decisión OMRO.');
     }
 
     if (tareaOriginal) {
@@ -557,7 +599,5 @@ export async function resolverTareaOMRO(
         });
     }
 
-    const persistidoSupabase = await persistirEnSupabase(taskId, decision, tareaOriginal);
-
-    return actualizadoBackend || persistidoSupabase;
+    return true;
 }

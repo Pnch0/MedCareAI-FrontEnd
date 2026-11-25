@@ -658,6 +658,80 @@
     text-align: center;
 }
 
+/* Nivel 3.5: Rendimiento de Sobrecupo y Modo Sombra */
+.Panel-Sobrecupo-Dashboard {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    margin-bottom: 24px;
+}
+
+.Btn-RefrescarSobrecupo {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid #CBD5E1;
+    background-color: #FFFFFF;
+    color: #334155;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.Btn-RefrescarSobrecupo:hover:not(:disabled) {
+    background-color: #F8FAFC;
+    border-color: #94A3B8;
+}
+
+.Btn-RefrescarSobrecupo:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.Grid-Sobrecupo-Metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+}
+
+.Card-Sobrecupo-Metrica {
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.Sobrecupo-Label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.Sobrecupo-Valor {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #0F172A;
+    line-height: 1.2;
+}
+
+.Sobrecupo-Valor.texto-azul { color: #0284C7; }
+.Sobrecupo-Valor.texto-verde { color: #059669; }
+.Sobrecupo-Valor.texto-rojo { color: #DC2626; }
+.Sobrecupo-Valor.texto-ambar { color: #D97706; }
+
+.Sobrecupo-Sub {
+    font-size: 0.75rem;
+    color: #64748B;
+}
+
 /* Responsividad */
 @media (max-width: 960px) {
     .ContenedorPrincipal-DashboardAdmin {

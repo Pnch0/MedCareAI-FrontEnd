@@ -1,5 +1,13 @@
 import React, { useEffect } from 'react';
-import { FaBrain, FaCalendarAlt, FaTimes } from 'react-icons/fa';
+import {
+    FaBrain,
+    FaCalendarAlt,
+    FaClock,
+    FaEyeSlash,
+    FaPercentage,
+    FaShieldAlt,
+    FaTimes
+} from 'react-icons/fa';
 import {
     obtenerConfiguracionAccion,
     type ResolutionTask
@@ -10,6 +18,32 @@ interface ModalDetalleOMROProps {
     isOpen: boolean;
     tarea: ResolutionTask | null;
     onClose: () => void;
+}
+
+function formatearVencimiento(isoStr: string): { texto: string; expirada: boolean } {
+    const fecha = new Date(isoStr);
+    if (Number.isNaN(fecha.getTime())) {
+        return { texto: `Vence: ${isoStr}`, expirada: false };
+    }
+
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const anio = fecha.getFullYear();
+    const hora = String(fecha.getHours()).padStart(2, '0');
+    const min = String(fecha.getMinutes()).padStart(2, '0');
+    const fechaFormateada = `${dia}-${mes}-${anio} ${hora}:${min}`;
+
+    const diffMs = fecha.getTime() - Date.now();
+    if (diffMs <= 0) {
+        return { texto: `Expirada (${fechaFormateada})`, expirada: true };
+    }
+
+    const totalMin = Math.floor(diffMs / 60000);
+    const horas = Math.floor(totalMin / 60);
+    const mins = totalMin % 60;
+    const restante = horas > 0 ? `${horas}h ${mins}m` : `${mins}m`;
+
+    return { texto: `Vence: ${fechaFormateada} (${restante} rest.)`, expirada: false };
 }
 
 function traducirEstadoModal(status: string): string {
@@ -112,6 +146,38 @@ export const ModalDetalleOMRO: React.FC<ModalDetalleOMROProps> = ({
                         <span className={`ModalOMRO-Chip ${claseEstado}`}>
                             {traducirEstadoModal(tarea.status)}
                         </span>
+                        {tarea.isShadowModeFallback && (
+                            <span className="ModalOMRO-Chip chip-shadow-mode">
+                                <FaEyeSlash aria-hidden="true" />
+                                Derivado desde Modo Sombra
+                            </span>
+                        )}
+                        {(tarea.matchedRuleId || tarea.policyVersion) && (
+                            <span className="ModalOMRO-Chip chip-policy">
+                                <FaShieldAlt aria-hidden="true" />
+                                {tarea.matchedRuleId ? `Regla: ${tarea.matchedRuleId}` : 'Política'}
+                                {tarea.policyVersion ? ` · v${tarea.policyVersion}` : ''}
+                            </span>
+                        )}
+                        {tarea.confidenceScore !== null && (
+                            <span className="ModalOMRO-Chip chip-confidence">
+                                <FaPercentage aria-hidden="true" />
+                                Confianza: {tarea.confidenceScore}%
+                            </span>
+                        )}
+                        {tarea.proposalExpiresAt && (() => {
+                            const vencimiento = formatearVencimiento(tarea.proposalExpiresAt);
+                            return (
+                                <span
+                                    className={`ModalOMRO-Chip chip-expiration ${
+                                        vencimiento.expirada ? 'expirada' : ''
+                                    }`}
+                                >
+                                    <FaClock aria-hidden="true" />
+                                    {vencimiento.texto}
+                                </span>
+                            );
+                        })()}
                     </div>
 
                     <section className="ModalOMRO-CajaRazonamiento" aria-label="Razonamiento clínico">

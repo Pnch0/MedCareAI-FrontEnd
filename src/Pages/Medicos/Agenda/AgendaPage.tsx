@@ -143,7 +143,12 @@ function AgendaPageMedico(){
                                         </div>
                                         <div className="BloqueDatos-AgendaMedico">
                                             <h4>{cita.paciente}</h4>
-                                            <p className="BloqueDatos-Box">Box {cita.box}</p>
+                                            <p className="BloqueDatos-Box">
+                                                Box {cita.box}
+                                                {cita.isOverbook && (
+                                                    <span className="Badge-Sobrecupo-Agenda">Sobrecupo</span>
+                                                )}
+                                            </p>
                                         </div>
                                     </div>
                                 );
@@ -173,12 +178,15 @@ function AgendaPageMedico(){
                                     {citasDelDia.map((cita) => (
                                         <div
                                             key={cita.id}
-                                            className="Bloque-CitaMedica"
+                                            className={`Bloque-CitaMedica ${cita.isOverbook ? 'es-sobrecupo' : ''}`}
                                             onClick={() => abrirModalCita(cita)}
                                             style={{ cursor: 'pointer' }}
                                         >
                                             <p>{cita.hora}</p>
                                             <h4>{cita.paciente}</h4>
+                                            {cita.isOverbook && (
+                                                <span className="Badge-Sobrecupo-Agenda">Sobrecupo</span>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -198,12 +206,26 @@ function AgendaPageMedico(){
                     {citaSeleccionada && (
                         <>
                             <p className='Nombre-Paciente'>{citaSeleccionada.paciente}</p>
+                            {citaSeleccionada.isOverbook && (
+                                <span className="Badge-Sobrecupo-Modal">
+                                    Sobrecupo{citaSeleccionada.overbookStatus ? ` · ${citaSeleccionada.overbookStatus}` : ''}
+                                </span>
+                            )}
                             <div className="Modal-FilaDoble">
                                 <p>Box: {citaSeleccionada.box}</p>
                                 <p>Horario: {citaSeleccionada.hora}</p>
                             </div>
                             <div className="Contenedor-MotivoConsulta">
-                                <p>{citaSeleccionada.motivo}</p>
+                                {citaSeleccionada.riskBand && (
+                                    <div className="Triaje-Header-Modal">
+                                        <span>Resumen de Triaje NLP</span>
+                                        <span className={`Semaforo-RiskBand riesgo-${citaSeleccionada.riskBand.toLowerCase()}`}>
+                                            <i className="Semaforo-Punto" aria-hidden="true" />
+                                            Riesgo {citaSeleccionada.riskBand}
+                                        </span>
+                                    </div>
+                                )}
+                                <p>{citaSeleccionada.nlpSummary || citaSeleccionada.motivo}</p>
                             </div>
                         </>
                     )}

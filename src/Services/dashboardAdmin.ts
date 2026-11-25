@@ -65,6 +65,17 @@ export interface CitaRiesgoDTO {
     estadoRecordatorio: 'Enviado' | 'Pendiente' | 'Confirmado';
 }
 
+export interface OverbookMetricsDTO {
+    slotRefilled: number;
+    overbookSlotsOpened: number;
+    overbookSlotsOccupied: number;
+    overbookCollisions: number;
+    displacedPatients: number;
+    falsePositiveRate: number;
+    shadowEvaluatedCount: number;
+    shadowFalsePositivesCount: number;
+}
+
 export interface DashboardAusentismoDTO {
     kpis: ResumenKPIsDTO;
     tendencia: TendenciaTemporalDTO[];
@@ -73,6 +84,7 @@ export interface DashboardAusentismoDTO {
     porHorario: AusentismoHorarioDTO[];
     omro: EfectividadOMRODTO;
     alertasRiesgo: CitaRiesgoDTO[];
+    overbookMetrics?: OverbookMetricsDTO;
     esRespaldoMock?: boolean;
 }
 
@@ -86,6 +98,16 @@ const MOCK_DASHBOARD_POR_PERIODO: Record<PeriodoDashboard, DashboardAusentismoDT
             citasRescatadasOMRO: 14,
             horasMedicasPerdidas: 11,
             impactoEstimadoPerdida: 275000
+        },
+        overbookMetrics: {
+            slotRefilled: 9,
+            overbookSlotsOpened: 12,
+            overbookSlotsOccupied: 9,
+            overbookCollisions: 0,
+            displacedPatients: 0,
+            falsePositiveRate: 4.2,
+            shadowEvaluatedCount: 38,
+            shadowFalsePositivesCount: 2
         },
         tendencia: [
             { periodo: 'Lun', asistidas: 48, inasistencias: 8, canceladasAnticipadas: 4, tasaAusentismo: 13.3 },
@@ -172,6 +194,16 @@ const MOCK_DASHBOARD_POR_PERIODO: Record<PeriodoDashboard, DashboardAusentismoDT
             citasRescatadasOMRO: 48,
             horasMedicasPerdidas: 42,
             impactoEstimadoPerdida: 1050000
+        },
+        overbookMetrics: {
+            slotRefilled: 34,
+            overbookSlotsOpened: 42,
+            overbookSlotsOccupied: 34,
+            overbookCollisions: 1,
+            displacedPatients: 1,
+            falsePositiveRate: 5.1,
+            shadowEvaluatedCount: 146,
+            shadowFalsePositivesCount: 7
         },
         tendencia: [
             { periodo: 'Sem 1', asistidas: 268, inasistencias: 48, canceladasAnticipadas: 18, tasaAusentismo: 14.4 },
@@ -269,6 +301,16 @@ const MOCK_DASHBOARD_POR_PERIODO: Record<PeriodoDashboard, DashboardAusentismoDT
             citasRescatadasOMRO: 136,
             horasMedicasPerdidas: 134,
             impactoEstimadoPerdida: 3350000
+        },
+        overbookMetrics: {
+            slotRefilled: 98,
+            overbookSlotsOpened: 124,
+            overbookSlotsOccupied: 98,
+            overbookCollisions: 3,
+            displacedPatients: 2,
+            falsePositiveRate: 4.8,
+            shadowEvaluatedCount: 412,
+            shadowFalsePositivesCount: 20
         },
         tendencia: [
             { periodo: 'Sept', asistidas: 1052, inasistencias: 204, canceladasAnticipadas: 54, tasaAusentismo: 15.6 },
@@ -410,6 +452,49 @@ function normalizarEstadoRecordatorio(valor: unknown): CitaRiesgoDTO['estadoReco
     return 'Pendiente';
 }
 
+export function normalizarOverbookMetrics(raw: unknown): OverbookMetricsDTO {
+    const obj = esObjeto(raw) ? raw : {};
+    return {
+        slotRefilled: Math.round(aNumero(leerProp(obj, 'slotRefilled', 'SlotRefilled'))),
+        overbookSlotsOpened: Math.round(
+            aNumero(leerProp(obj, 'overbookSlotsOpened', 'OverbookSlotsOpened'))
+        ),
+        overbookSlotsOccupied: Math.round(
+            aNumero(leerProp(obj, 'overbookSlotsOccupied', 'OverbookSlotsOccupied'))
+        ),
+        overbookCollisions: Math.round(
+            aNumero(leerProp(obj, 'overbookCollisions', 'OverbookCollisions'))
+        ),
+        displacedPatients: Math.round(
+            aNumero(leerProp(obj, 'displacedPatients', 'DisplacedPatients'))
+        ),
+        falsePositiveRate: aPorcentaje(leerProp(obj, 'falsePositiveRate', 'FalsePositiveRate')),
+        shadowEvaluatedCount: Math.round(
+            aNumero(leerProp(obj, 'shadowEvaluatedCount', 'ShadowEvaluatedCount'))
+        ),
+        shadowFalsePositivesCount: Math.round(
+            aNumero(leerProp(obj, 'shadowFalsePositivesCount', 'ShadowFalsePositivesCount'))
+        )
+    };
+}
+
+/**
+ * Obtiene métricas dedicadas de sobrecupo y modo sombra desde GET /api/Dashboard/overbook-metrics.
+ */
+export async function obtenerMetricasSobrecupo(): Promise<OverbookMetricsDTO | null> {
+    try {
+        const respuesta: unknown = await apiClient('/api/Dashboard/overbook-metrics', {
+            method: 'GET'
+        });
+        if (esObjeto(respuesta)) {
+            return normalizarOverbookMetrics(respuesta);
+        }
+    } catch (err: unknown) {
+        console.warn('No se pudo consultar GET /api/Dashboard/overbook-metrics:', err);
+    }
+    return null;
+}
+
 /**
  * Normaliza el payload DashboardAusentismoDto del backend C# (PascalCase o camelCase)
  * hacia la interfaz estricta del Frontend.
@@ -527,6 +612,11 @@ export function normalizarDashboardAusentismo(raw: unknown): DashboardAusentismo
         )
     }));
 
+    const rawOverbook = leerProp(raw, 'overbookMetrics', 'OverbookMetrics');
+    const overbookMetrics = esObjeto(rawOverbook)
+        ? normalizarOverbookMetrics(rawOverbook)
+        : undefined;
+
     return {
         kpis,
         tendencia,
@@ -534,12 +624,14 @@ export function normalizarDashboardAusentismo(raw: unknown): DashboardAusentismo
         distribucion,
         porHorario,
         omro,
-        alertasRiesgo
+        alertasRiesgo,
+        ...(overbookMetrics ? { overbookMetrics } : {})
     };
 }
 
 /**
  * Obtiene las métricas del dashboard de ausentismo desde GET /api/Dashboard/metrics.
+ * Si no incluye overbookMetrics, consulta GET /api/Dashboard/overbook-metrics como fallback.
  * Si hay un error de conexión, timeout o listado inválido, recurre automáticamente
  * a la mockdata tipada de respaldo (MOCK_DASHBOARD_POR_PERIODO).
  */
@@ -552,6 +644,14 @@ export async function obtenerMetricasAusentismo(
         });
         console.log('[Dashboard] Datos recibidos de GET /api/Dashboard/metrics:', respuesta);
         const normalizado = normalizarDashboardAusentismo(respuesta);
+
+        if (!normalizado.overbookMetrics) {
+            const overbookFallback = await obtenerMetricasSobrecupo();
+            if (overbookFallback) {
+                normalizado.overbookMetrics = overbookFallback;
+            }
+        }
+
         return {
             ...normalizado,
             esRespaldoMock: false
