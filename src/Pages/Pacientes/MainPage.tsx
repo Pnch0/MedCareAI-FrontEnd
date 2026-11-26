@@ -6,6 +6,7 @@ import './MainPage.css';
 import { FaUserCircle, FaChevronLeft, FaChevronRight, FaCalendarCheck } from "react-icons/fa";
 import { Contador } from '../../Components/Contador/Contador.tsx'
 import { ModalReserva } from '../../Components/ModalReserva/ModalReserva.tsx';
+import { PortalPacientePanel } from '../../Components/PortalPaciente/PortalPacientePanel.tsx';
 import medico from '../../Assets/medico.jpg';
 import CENTROMEDICO from '../../Assets/centro-medico.jfif';
 import SALADEESPERA from '../../Assets/sala-de-espera.jfif';
@@ -172,6 +173,8 @@ function MainPage(){
                 )}
             </div>
         </div>
+
+        {isAuthenticated && <PortalPacientePanel />}
 
         <div 
             className="Contenedor-ImagenPrincipal"
