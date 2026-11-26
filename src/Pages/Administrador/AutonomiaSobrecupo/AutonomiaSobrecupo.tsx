@@ -301,7 +301,7 @@ function AutonomiaSobrecupo() {
 
                         <article className="Card-KPI-Autonomia destacada">
                             <div className="KPI-Header-Autonomia">
-                                <span>Límite Superior Wilson (95%)</span>
+                                <span>Cota Superior de Error (Wilson 95%)</span>
                                 <FaShieldAlt aria-hidden="true" />
                             </div>
                             <div
@@ -314,7 +314,7 @@ function AutonomiaSobrecupo() {
                                 {readiness.wilsonUpperBound95.toFixed(1)}%
                             </div>
                             <span className="KPI-Sub-Autonomia">
-                                Cota estadística superior al 95% de confianza
+                                Peor escenario estadístico estimado
                             </span>
                         </article>
                     </section>
@@ -328,7 +328,8 @@ function AutonomiaSobrecupo() {
                             </h2>
                             <p className="Panel-Subtitulo">
                                 Antes de permitir sobrecupo automático, el motor verifica el tamaño muestral
-                                mínimo y la cota superior de Wilson al 95%.
+                                mínimo (200) y la tasa de falsos positivos (&lt; 15%), auditando la cota
+                                superior de Wilson al 95%.
                             </p>
 
                             {readiness.blockingReasons.length > 0 ? (
@@ -355,7 +356,7 @@ function AutonomiaSobrecupo() {
                         <article className="Panel-Autonomia" aria-label="Control de activación auditado">
                             <h2>
                                 <FaShieldAlt aria-hidden="true" />
-                                Control de Política (`AutoOverbookEnabled`)
+                                Control de Política de Sobrecupo
                             </h2>
                             <p className="Panel-Subtitulo">
                                 Todo cambio queda registrado en la bitácora de auditoría con usuario
@@ -382,7 +383,7 @@ function AutonomiaSobrecupo() {
                                             onChange={(e) => setAllowDemoOverride(e.target.checked)}
                                             disabled={procesandoCambio}
                                         />
-                                        Permitir anulación manual de demostración (`allowDemoOverride`)
+                                        Permitir activación forzada (Modo Demo)
                                     </label>
                                 )}
 
