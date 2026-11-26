@@ -5,6 +5,9 @@ import MainLayout from './Components/Layouts/MainLayout/MainLayout.tsx';
 import LoginPage from './Pages/LoginPage/LoginPage.tsx';
 import RegisterPage from './Pages/RegisterPage/RegisterPage.tsx';
 import MainPage from './Pages/Pacientes/MainPage.tsx';
+import RespondAppointmentPage from './Pages/Public/RespondAppointmentPage.tsx';
+import RescheduleAppointmentPage from './Pages/Public/RescheduleAppointmentPage.tsx';
+import RespondWaitingListOfferPage from './Pages/Public/RespondWaitingListOfferPage.tsx';
 
 {/* IMPORTACION VISTA MEDICO */}
 import HomePageMedico from './Pages/Medicos/HomePage/HomePage.tsx';
@@ -46,6 +49,11 @@ function App() {
             <Route path="/register-page" element={<RegisterPage />} />
             <Route path="/main-page-paciente" element={<MainPage />} />
           </Route>
+
+          {/* RUTAS PÚBLICAS DE ACCIÓN POR TOKEN (WHATSAPP / EMAIL, SIN LOGIN NI MAINLAYOUT) */}
+          <Route path="/appointments/respond" element={<RespondAppointmentPage />} />
+          <Route path="/appointments/reschedule" element={<RescheduleAppointmentPage />} />
+          <Route path="/waiting-list/offers/respond" element={<RespondWaitingListOfferPage />} />
 
           <Route element={<ProtectedRoute />}>
             <Route element={<MainLayout />}>
