@@ -23,6 +23,7 @@ import DashboardAdministrador from './Pages/Administrador/Dashboard/DashboardAdm
 import GestionUsuariosAdministrador from './Pages/Administrador/GestionUsuarios/GestionUsuarios.tsx';
 import GestionBoxesAdminitrador from './Pages/Administrador/GestionBoxes/GestionBoxes.tsx';
 import GestionHorariosAdministrador from './Pages/Administrador/GestionHorarios/GestionHorarios.tsx';
+import AutonomiaSobrecupoAdministrador from './Pages/Administrador/AutonomiaSobrecupo/AutonomiaSobrecupo.tsx';
 
 
 function App() {
@@ -70,6 +71,7 @@ function App() {
               <Route path="/gestion-usuarios-page-administrador" element={<GestionUsuariosAdministrador />} />
               <Route path="/gestion-boxes-page-administrador" element={<GestionBoxesAdminitrador />} />
               <Route path="/gestion-horarios-page-administrador" element={<GestionHorariosAdministrador />} />
+              <Route path="/admin/autonomia-sobrecupo" element={<AutonomiaSobrecupoAdministrador />} />
             </Route>
             </Route>
           </Route>
