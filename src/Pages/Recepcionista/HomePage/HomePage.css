@@ -886,3 +886,193 @@ body{
 .Btn-VerHistorialVacio-Recepcionista:hover {
     background-color: #BAE6FD;
 }
+
+/* Pestañas del Panel Derecho Recepcionista */
+.Tabs-PanelRecepcionista {
+    display: flex;
+    gap: 8px;
+    padding: 8px 14px;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E1EAEF;
+    flex-shrink: 0;
+}
+
+.Tab-BtnRecepcionista {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    background-color: #F8FAFC;
+    color: #475569;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.Tab-BtnRecepcionista.activo {
+    background-color: #E0F2FE;
+    color: #0369A1;
+    border-color: #BAE6FD;
+}
+
+.Tab-CountPill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background-color: #FFFFFF;
+    color: #0F172A;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Bandeja Tareas de Recepción */
+.Filtros-TareasRecepcion {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.Select-FiltroRecepcion {
+    flex: 1;
+    min-width: 120px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #CBD5E1;
+    background-color: #FFFFFF;
+    color: #1E293B;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.Card-TareaRecepcion {
+    background-color: #FFFFFF;
+    border: 1px solid #E1EAEF;
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.Card-TareaRecepcion-Top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.Badge-TipoTareaRec {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background-color: #F1F5F9;
+    color: #334155;
+}
+
+.Badge-PrioridadRec {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 8px;
+}
+
+.Badge-PrioridadRec.urgent,
+.Badge-PrioridadRec.high {
+    background-color: #FEE2E2;
+    color: #B91C1C;
+}
+
+.Badge-PrioridadRec.medium {
+    background-color: #FEF3C7;
+    color: #B45309;
+}
+
+.Badge-PrioridadRec.low {
+    background-color: #DCFCE7;
+    color: #15803D;
+}
+
+.Titulo-TareaRec {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+.Desc-TareaRec {
+    margin: 0;
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.4;
+}
+
+.Acciones-TareaRec {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.Input-NotaTareaRec {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #CBD5E1;
+    font-size: 12px;
+    color: #0F172A;
+    box-sizing: border-box;
+}
+
+.Botones-TareaRec-Row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.Btn-TareaRec {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: none;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.Btn-TareaRec:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.Btn-TareaRec.tomar {
+    background-color: #E0F2FE;
+    color: #0369A1;
+}
+
+.Btn-TareaRec.completar {
+    background-color: #059669;
+    color: #FFFFFF;
+}
+
+.Btn-TareaRec.cancelar {
+    background-color: #FEE2E2;
+    color: #B91C1C;
+}
+
+.Btn-TareaRec.override {
+    background-color: #FEF3C7;
+    color: #92400E;
+    border: 1px solid #FDE68A;
+}

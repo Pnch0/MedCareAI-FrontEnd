@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import "./HomePage.css";
 import {
     FaClipboardList,
@@ -7,12 +7,14 @@ import {
     FaBell,
     FaUserPlus,
     FaExchangeAlt,
-    FaInfoCircle
+    FaInfoCircle,
+    FaExclamationTriangle
 } from "react-icons/fa";
 import { toast } from "sonner";
 import RegisterPatientModal from "../../../Components/ModalRegistro/ModalRegistro";
 import { ModalDetalleOMRO } from "../../../Components/ModalDetalleOMRO/ModalDetalleOMRO.tsx";
 import { ModalHistorialOMRO } from "../../../Components/ModalHistorialOMRO/ModalHistorialOMRO.tsx";
+import { ModalOverrideColision } from "../../../Components/ModalOverrideColision/ModalOverrideColision.tsx";
 import {
     obtenerCitasDelDiaRecepcion,
     guardarAsistenciaCita,
@@ -26,6 +28,15 @@ import {
     type ResolutionTask,
     type TipoAccionOMRO
 } from "../../../Services/omroService.ts";
+import {
+    cancelarTareaRecepcion,
+    completarTareaRecepcion,
+    obtenerTareasRecepcion,
+    tomarTareaRecepcion,
+    type ReceptionTaskItem,
+    type ReceptionTaskPriorityFilter,
+    type ReceptionTaskStatusFilter
+} from "../../../Services/receptionTasksService.ts";
 
 function renderizarIconoAccionOMRO(tipo: TipoAccionOMRO) {
     switch (tipo) {
@@ -61,6 +72,20 @@ function HomePageRecepcionista() {
     const [procesandoOMRO, setProcesandoOMRO] = useState<boolean>(false);
     const [tareaModalOMRO, setTareaModalOMRO] = useState<ResolutionTask | null>(null);
     const [modalHistorialAbierto, setModalHistorialAbierto] = useState<boolean>(false);
+
+    // Pestañas del Panel Superior Derecho ("omro" | "recepcion")
+    const [tabPanelDerecho, setTabPanelDerecho] = useState<"omro" | "recepcion">("omro");
+    const [tareasRecepcion, setTareasRecepcion] = useState<ReceptionTaskItem[]>([]);
+    const [cargandoTareasRec, setCargandoTareasRec] = useState<boolean>(false);
+    const [filtroEstadoRec, setFiltroEstadoRec] = useState<ReceptionTaskStatusFilter>("");
+    const [filtroPrioridadRec, setFiltroPrioridadRec] = useState<ReceptionTaskPriorityFilter>("");
+    const [procesandoTareaRecId, setProcesandoTareaRecId] = useState<string | null>(null);
+    const [notaCompletarPorId, setNotaCompletarPorId] = useState<Record<string, string>>({});
+    const [colisionModalCtx, setColisionModalCtx] = useState<{
+        appointmentId: string;
+        competingAppointmentId?: string | null;
+        descripcion?: string;
+    } | null>(null);
 
     const fechaHoyTexto = useMemo(() => {
         const hoy = new Date();
@@ -122,6 +147,108 @@ function HomePageRecepcionista() {
             montado = false;
         };
     }, []);
+
+    const recargarTareasRecepcion = useCallback(async (
+        status: ReceptionTaskStatusFilter = filtroEstadoRec,
+        priority: ReceptionTaskPriorityFilter = filtroPrioridadRec
+    ): Promise<void> => {
+        setCargandoTareasRec(true);
+        try {
+            const res = await obtenerTareasRecepcion({
+                status,
+                priority,
+                page: 1,
+                pageSize: 30
+            });
+            setTareasRecepcion(res.items);
+        } catch (err: unknown) {
+            console.warn("No se pudieron cargar tareas de recepción:", err);
+        } finally {
+            setCargandoTareasRec(false);
+        }
+    }, [filtroEstadoRec, filtroPrioridadRec]);
+
+    useEffect(() => {
+        let activo = true;
+        const iniciarTareasRec = async (): Promise<void> => {
+            try {
+                const res = await obtenerTareasRecepcion({
+                    status: filtroEstadoRec,
+                    priority: filtroPrioridadRec,
+                    page: 1,
+                    pageSize: 30
+                });
+                if (activo) {
+                    setTareasRecepcion(res.items);
+                }
+            } catch (err: unknown) {
+                console.warn("Error al consultar /api/reception-tasks:", err);
+            }
+        };
+        void iniciarTareasRec();
+        return () => {
+            activo = false;
+        };
+    }, [filtroEstadoRec, filtroPrioridadRec]);
+
+    const pendientesRecepcionCount = useMemo(
+        () =>
+            tareasRecepcion.filter(
+                (t) =>
+                    t.status.toLowerCase() === "pending" ||
+                    t.status.toLowerCase() === "inprogress"
+            ).length,
+        [tareasRecepcion]
+    );
+
+    const manejarTomarTareaRec = async (taskId: string): Promise<void> => {
+        if (procesandoTareaRecId) return;
+        setProcesandoTareaRecId(taskId);
+        try {
+            await tomarTareaRecepcion(taskId);
+            toast.success("Tarea asignada a tu bandeja.");
+            await recargarTareasRecepcion();
+        } catch (err: unknown) {
+            toast.error(err instanceof Error && err.message ? err.message : "No se pudo tomar la tarea.");
+        } finally {
+            setProcesandoTareaRecId(null);
+        }
+    };
+
+    const manejarCompletarTareaRec = async (taskId: string): Promise<void> => {
+        if (procesandoTareaRecId) return;
+        setProcesandoTareaRecId(taskId);
+        try {
+            const nota = notaCompletarPorId[taskId] || "";
+            await completarTareaRecepcion(taskId, nota);
+            toast.success("Tarea completada.");
+            setNotaCompletarPorId((prev) => {
+                const copia = { ...prev };
+                delete copia[taskId];
+                return copia;
+            });
+            await recargarTareasRecepcion();
+        } catch (err: unknown) {
+            toast.error(err instanceof Error && err.message ? err.message : "No se pudo completar la tarea.");
+        } finally {
+            setProcesandoTareaRecId(null);
+        }
+    };
+
+    const manejarCancelarTareaRec = async (taskId: string): Promise<void> => {
+        if (procesandoTareaRecId) return;
+        setProcesandoTareaRecId(taskId);
+        try {
+            const nota = notaCompletarPorId[taskId] || "";
+            await cancelarTareaRecepcion(taskId, nota);
+            toast.info("Tarea cancelada.");
+            await recargarTareasRecepcion();
+        } catch (err: unknown) {
+            toast.error(err instanceof Error && err.message ? err.message : "No se pudo cancelar la tarea.");
+        } finally {
+            setProcesandoTareaRecId(null);
+        }
+    };
 
     const tareasPendientesOMRO = tareasOMRO.filter((t) => t.status.toLowerCase() === "pending");
     const tareaActivaOMRO =
@@ -322,99 +449,263 @@ function HomePageRecepcionista() {
                         <div className="EncabezadoContenedor-SuperiorDerecha">
                             <h2>Panel de Orquestación</h2>
                             <div className="Header-ColumnaHistorial-Recepcionista">
-                                <button
-                                    type="button"
-                                    className="Btn-EncabezadoHistorial-Recepcionista"
-                                    onClick={() => setModalHistorialAbierto(true)}
-                                    title="Ver Historial completo de OMRO"
-                                    aria-label="Abrir ventana modal de Historial OMRO"
-                                >
-                                    Historial
-                                </button>
-                            </div>
-                        </div>
-                        <div className="ContenedorListado-OMRO-Recepcionista">
-                            {cargandoOMRO ? (
-                                [1, 2].map((idx) => (
-                                    <div key={idx} className="Card-ListadoOMRO-Recepcionista Card-OMRO-Skeleton-Recepcionista">
-                                        <div className="Skeleton-OMRO-Circle" />
-                                        <div className="Skeleton-OMRO-Text">
-                                            <div className="Skeleton-OMRO-Line1" />
-                                            <div className="Skeleton-OMRO-Line2" />
-                                        </div>
-                                    </div>
-                                ))
-                            ) : tareasPendientesOMRO.length === 0 ? (
-                                <div className="EmptyState-OMRO-Recepcionista" role="status">
-                                    <p>No hay acciones pendientes por realizar en el Panel de Orquestación.</p>
+                                {tabPanelDerecho === "omro" && (
                                     <button
                                         type="button"
-                                        className="Btn-VerHistorialVacio-Recepcionista"
+                                        className="Btn-EncabezadoHistorial-Recepcionista"
                                         onClick={() => setModalHistorialAbierto(true)}
+                                        title="Ver Historial completo de OMRO"
+                                        aria-label="Abrir ventana modal de Historial OMRO"
                                     >
-                                        Ver Historial OMRO{tareasOMRO.length > 0 ? ` (${tareasOMRO.length})` : ""}
+                                        Historial
                                     </button>
-                                </div>
-                            ) : (
-                                tareasPendientesOMRO.map((tarea) => {
-                                    const esSeleccionada = tarea.id === tareaActivaOMRO?.id;
-                                    const estadoLower = tarea.status.toLowerCase();
-                                    const configAccion = obtenerConfiguracionAccion(tarea.aiPlan.tipoAccion);
-                                    return (
-                                        <div
-                                            key={tarea.id}
-                                            className={`Card-ListadoOMRO-Recepcionista ${esSeleccionada ? "seleccionada" : ""}`}
-                                            onClick={() => setTareaSeleccionadaId(tarea.id)}
-                                            style={{ cursor: "pointer" }}
-                                        >
-                                            <div className="ContenedorIcono-CardOMRO">
-                                                {renderizarIconoAccionOMRO(tarea.aiPlan.tipoAccion)}
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="Tabs-PanelRecepcionista" role="tablist" aria-label="Bandejas de recepción">
+                            <button
+                                type="button"
+                                role="tab"
+                                aria-selected={tabPanelDerecho === "omro"}
+                                className={`Tab-BtnRecepcionista ${tabPanelDerecho === "omro" ? "activo" : ""}`}
+                                onClick={() => setTabPanelDerecho("omro")}
+                            >
+                                Propuestas OMRO (HITL)
+                                <span className="Tab-CountPill">{tareasPendientesOMRO.length}</span>
+                            </button>
+                            <button
+                                type="button"
+                                role="tab"
+                                aria-selected={tabPanelDerecho === "recepcion"}
+                                className={`Tab-BtnRecepcionista ${tabPanelDerecho === "recepcion" ? "activo" : ""}`}
+                                onClick={() => setTabPanelDerecho("recepcion")}
+                            >
+                                Tareas de Recepción
+                                <span className="Tab-CountPill">{pendientesRecepcionCount}</span>
+                            </button>
+                        </div>
+
+                        {tabPanelDerecho === "omro" ? (
+                            <div className="ContenedorListado-OMRO-Recepcionista">
+                                {cargandoOMRO ? (
+                                    [1, 2].map((idx) => (
+                                        <div key={idx} className="Card-ListadoOMRO-Recepcionista Card-OMRO-Skeleton-Recepcionista">
+                                            <div className="Skeleton-OMRO-Circle" />
+                                            <div className="Skeleton-OMRO-Text">
+                                                <div className="Skeleton-OMRO-Line1" />
+                                                <div className="Skeleton-OMRO-Line2" />
                                             </div>
-                                            <div className="ContenedorDatos-CardOMRO">
-                                                <h3>{tarea.aiPlan.titulo}</h3>
-                                                <p className="Resumen-CardOMRO" title={tarea.aiPlan.descripcion}>
-                                                    {tarea.aiPlan.descripcion}
-                                                </p>
-                                                <div className="MetaDatos-CardOMRO">
-                                                    <p>{tarea.createdAt}</p>
-                                                    <span className={`Badge-RiesgoOMRO ${tarea.riskProbability >= 70 ? "alto" : "medio"}`}>
-                                                        Riesgo {tarea.riskProbability}%
-                                                    </span>
-                                                    <span className={`Badge-EstadoOMRO ${estadoLower}`}>
-                                                        {traducirEstadoOMRO(tarea.status)}
-                                                    </span>
+                                        </div>
+                                    ))
+                                ) : tareasPendientesOMRO.length === 0 ? (
+                                    <div className="EmptyState-OMRO-Recepcionista" role="status">
+                                        <p>No hay acciones pendientes por realizar en el Panel de Orquestación.</p>
+                                        <button
+                                            type="button"
+                                            className="Btn-VerHistorialVacio-Recepcionista"
+                                            onClick={() => setModalHistorialAbierto(true)}
+                                        >
+                                            Ver Historial OMRO{tareasOMRO.length > 0 ? ` (${tareasOMRO.length})` : ""}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    tareasPendientesOMRO.map((tarea) => {
+                                        const esSeleccionada = tarea.id === tareaActivaOMRO?.id;
+                                        const estadoLower = tarea.status.toLowerCase();
+                                        const configAccion = obtenerConfiguracionAccion(tarea.aiPlan.tipoAccion);
+                                        return (
+                                            <div
+                                                key={tarea.id}
+                                                className={`Card-ListadoOMRO-Recepcionista ${esSeleccionada ? "seleccionada" : ""}`}
+                                                onClick={() => setTareaSeleccionadaId(tarea.id)}
+                                                style={{ cursor: "pointer" }}
+                                            >
+                                                <div className="ContenedorIcono-CardOMRO">
+                                                    {renderizarIconoAccionOMRO(tarea.aiPlan.tipoAccion)}
+                                                </div>
+                                                <div className="ContenedorDatos-CardOMRO">
+                                                    <h3>{tarea.aiPlan.titulo}</h3>
+                                                    <p className="Resumen-CardOMRO" title={tarea.aiPlan.descripcion}>
+                                                        {tarea.aiPlan.descripcion}
+                                                    </p>
+                                                    <div className="MetaDatos-CardOMRO">
+                                                        <p>{tarea.createdAt}</p>
+                                                        <span className={`Badge-RiesgoOMRO ${tarea.riskProbability >= 70 ? "alto" : "medio"}`}>
+                                                            Riesgo {tarea.riskProbability}%
+                                                        </span>
+                                                        <span className={`Badge-EstadoOMRO ${estadoLower}`}>
+                                                            {traducirEstadoOMRO(tarea.status)}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            className="Btn-VerJustificacionOMRO"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setTareaModalOMRO(tarea);
+                                                            }}
+                                                        >
+                                                            <FaInfoCircle aria-hidden="true" />
+                                                            Ver justificación
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div className="ContenedorEstado-CardOMRO">
                                                     <button
                                                         type="button"
-                                                        className="Btn-VerJustificacionOMRO"
+                                                        className={`ContenedorLetra-CardOMRO Btn-LetraHistorial ${configAccion.claseCss}`}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            setTareaModalOMRO(tarea);
+                                                            setModalHistorialAbierto(true);
                                                         }}
+                                                        title={`Historial OMRO · ${configAccion.nombreCompleto}`}
+                                                        aria-label={`Abrir Historial OMRO. Tipo de acción: ${configAccion.nombreCompleto}`}
                                                     >
-                                                        <FaInfoCircle aria-hidden="true" />
-                                                        Ver justificación
+                                                        <h1>{configAccion.letra}</h1>
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div className="ContenedorEstado-CardOMRO">
-                                                <button
-                                                    type="button"
-                                                    className={`ContenedorLetra-CardOMRO Btn-LetraHistorial ${configAccion.claseCss}`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setModalHistorialAbierto(true);
-                                                    }}
-                                                    title={`Historial OMRO · ${configAccion.nombreCompleto}`}
-                                                    aria-label={`Abrir Historial OMRO. Tipo de acción: ${configAccion.nombreCompleto}`}
-                                                >
-                                                    <h1>{configAccion.letra}</h1>
-                                                </button>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        ) : (
+                            <div className="ContenedorListado-OMRO-Recepcionista">
+                                <div className="Filtros-TareasRecepcion">
+                                    <select
+                                        className="Select-FiltroRecepcion"
+                                        aria-label="Filtrar por estado"
+                                        value={filtroEstadoRec}
+                                        onChange={(e) =>
+                                            setFiltroEstadoRec(e.target.value as ReceptionTaskStatusFilter)
+                                        }
+                                    >
+                                        <option value="">Todos los estados</option>
+                                        <option value="Pending">Pendientes</option>
+                                        <option value="InProgress">En progreso</option>
+                                        <option value="Completed">Completadas</option>
+                                        <option value="Cancelled">Canceladas</option>
+                                    </select>
+                                    <select
+                                        className="Select-FiltroRecepcion"
+                                        aria-label="Filtrar por prioridad"
+                                        value={filtroPrioridadRec}
+                                        onChange={(e) =>
+                                            setFiltroPrioridadRec(e.target.value as ReceptionTaskPriorityFilter)
+                                        }
+                                    >
+                                        <option value="">Todas las prioridades</option>
+                                        <option value="Urgent">Urgente</option>
+                                        <option value="High">Alta</option>
+                                        <option value="Medium">Media</option>
+                                        <option value="Low">Baja</option>
+                                    </select>
+                                </div>
+
+                                {cargandoTareasRec ? (
+                                    <div className="EmptyState-OMRO-Recepcionista" role="status">
+                                        <p>Cargando tareas de recepción...</p>
+                                    </div>
+                                ) : tareasRecepcion.length === 0 ? (
+                                    <div className="EmptyState-OMRO-Recepcionista" role="status">
+                                        <p>No hay tareas de recepción para los filtros seleccionados.</p>
+                                    </div>
+                                ) : (
+                                    tareasRecepcion.map((task) => {
+                                        const stLower = task.status.toLowerCase();
+                                        const esCerrada = stLower === "completed" || stLower === "cancelled";
+                                        const esColision =
+                                            task.taskType.toUpperCase().includes("COLLISION") ||
+                                            task.title.toUpperCase().includes("COLIS") ||
+                                            task.description.toUpperCase().includes("COLIS");
+                                        const ocupada = procesandoTareaRecId === task.id;
+
+                                        return (
+                                            <div key={task.id} className="Card-TareaRecepcion">
+                                                <div className="Card-TareaRecepcion-Top">
+                                                    <span className="Badge-TipoTareaRec">{task.taskType}</span>
+                                                    <span className={`Badge-PrioridadRec ${task.priority.toLowerCase()}`}>
+                                                        {task.priority}
+                                                    </span>
+                                                    <span className={`Badge-EstadoOMRO ${stLower}`}>
+                                                        {task.status}
+                                                    </span>
+                                                </div>
+                                                <h3 className="Titulo-TareaRec">{task.title}</h3>
+                                                {task.description && (
+                                                    <p className="Desc-TareaRec">{task.description}</p>
+                                                )}
+                                                {!esCerrada && (
+                                                    <div className="Acciones-TareaRec">
+                                                        <input
+                                                            type="text"
+                                                            className="Input-NotaTareaRec"
+                                                            placeholder="Nota de resolución / motivo (opcional)"
+                                                            value={notaCompletarPorId[task.id] || ""}
+                                                            onChange={(e) =>
+                                                                setNotaCompletarPorId((prev) => ({
+                                                                    ...prev,
+                                                                    [task.id]: e.target.value
+                                                                }))
+                                                            }
+                                                            disabled={ocupada}
+                                                        />
+                                                        <div className="Botones-TareaRec-Row">
+                                                            {stLower === "pending" && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="Btn-TareaRec tomar"
+                                                                    disabled={ocupada}
+                                                                    onClick={() => void manejarTomarTareaRec(task.id)}
+                                                                >
+                                                                    Tomar
+                                                                </button>
+                                                            )}
+                                                            <button
+                                                                type="button"
+                                                                className="Btn-TareaRec completar"
+                                                                disabled={ocupada}
+                                                                onClick={() => void manejarCompletarTareaRec(task.id)}
+                                                            >
+                                                                Completar
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="Btn-TareaRec cancelar"
+                                                                disabled={ocupada}
+                                                                onClick={() => void manejarCancelarTareaRec(task.id)}
+                                                            >
+                                                                Cancelar
+                                                            </button>
+                                                            {(esColision || task.appointmentId) && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="Btn-TareaRec override"
+                                                                    disabled={ocupada || !task.appointmentId}
+                                                                    onClick={() => {
+                                                                        if (task.appointmentId) {
+                                                                            setColisionModalCtx({
+                                                                                appointmentId: task.appointmentId,
+                                                                                competingAppointmentId:
+                                                                                    task.competingAppointmentId,
+                                                                                descripcion: task.description
+                                                                            });
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <FaExclamationTriangle aria-hidden="true" />
+                                                                    Override Colisión
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        )}
                     </div>
                     <div className="ContenedorDerecha-InferiorRecepcionista">
                         <div className="Contenedor-InfoBoxes">
@@ -494,6 +785,16 @@ function HomePageRecepcionista() {
             onSeleccionarAccion={(id) => {
                 setTareaSeleccionadaId(id);
                 setModalHistorialAbierto(false);
+            }}
+        />
+        <ModalOverrideColision
+            isOpen={colisionModalCtx !== null}
+            appointmentId={colisionModalCtx?.appointmentId ?? null}
+            competingAppointmentId={colisionModalCtx?.competingAppointmentId ?? null}
+            descripcionContexto={colisionModalCtx?.descripcion}
+            onClose={() => setColisionModalCtx(null)}
+            onSuccess={() => {
+                void recargarTareasRecepcion();
             }}
         />
         </>
