@@ -502,7 +502,7 @@ export const PortalPacientePanel: React.FC = () => {
                                         disabled={guardandoPrefs}
                                     />
                                     Autorizo recibir recordatorios y ofertas de lista de espera vía
-                                    WhatsApp (`whatsAppOptIn`).
+                                    WhatsApp.
                                 </label>
 
                                 {isOptedOut && (
@@ -526,7 +526,7 @@ export const PortalPacientePanel: React.FC = () => {
                                         disabled={guardandoPrefs}
                                         onClick={() => setConfirmarOptOutAbierto(true)}
                                     >
-                                        Revocar comunicaciones (Opt-Out)
+                                        Revocar comunicaciones
                                     </button>
                                 </div>
                             </>
