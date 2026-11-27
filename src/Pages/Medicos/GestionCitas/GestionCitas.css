@@ -40,33 +40,40 @@
     padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    height: 200px;
+    gap: 8px;
+    height: 275px;
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 
 .Tarjeta-GestionCitas h3{
     margin: 0;
     color: #333;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .Tarjeta-GestionCitas .Edad-Cita{
+    margin: 0;
     font-weight: bold;
     color: #9F9F9F;
+    font-size: 0.92rem;
 }
 
 .Tarjeta-GestionCitas .Hora-Cita{
     margin: 0;
     color: #6B7280;
-    font-size: 0.95rem;
-    line-height: 1.5;
+    font-size: 0.92rem;
+    line-height: 1.4;
 }
 
 
 .Tarjeta-GestionCitas .Btn-Accion-Cita{
     margin-top: auto;
+    flex-shrink: 0;
     border: none;
     border-radius: 8px;
     padding: 10px;
